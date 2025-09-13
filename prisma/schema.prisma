@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model NationalitySalary {
+  id          String   @id @default(cuid())
+  nationality String   @unique
+  salary      Float
+  workers     Worker[] @relation("NationalityWorkers")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  role      Role     @default(STAFF)
+}
+
+model Worker {
+  id                String           @id @default(cuid())
+  code              Int             @unique @default(autoincrement())
+  name              String
+  nationality       String
+  nationalitySalaryId String?
+  nationalitySalary NationalitySalary? @relation(fields: [nationalitySalaryId], references: [id], name: "NationalityWorkers")
+  residencyNumber   String           @unique
+  dateOfBirth      DateTime
+  phone            String
+  status           String           @default("AVAILABLE")  // AVAILABLE, RENTED, UNAVAILABLE
+  salary           Float?
+  contracts        Contract[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+}
+
+model Client {
+  id        String     @id @default(cuid())
+  name      String
+  phone     String
+  email     String?
+  address   String
+  idNumber  String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  contracts Contract[]
+}
+
+model Marketer {
+  id        String     @id @default(cuid())
+  name      String
+  phone     String
+  email     String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  contracts Contract[]
+}
+
+model Contract {
+  id             String    @id @default(cuid())
+  workerId       String
+  clientId       String
+  startDate      DateTime
+  endDate        DateTime
+  packageType    String
+  totalAmount    Float
+  status         String    @default("ACTIVE")
+  notifiedBefore Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  marketerId     String?
+  client         Client    @relation(fields: [clientId], references: [id])
+  marketer       Marketer? @relation(fields: [marketerId], references: [id])
+  worker         Worker    @relation(fields: [workerId], references: [id])
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  STAFF
+}
+
+enum Nationality {
+  ETHIOPIA
+  UGANDA
+  KENYA
+  INDONESIA
+  BURUNDI
+}
