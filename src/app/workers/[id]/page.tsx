@@ -7,7 +7,7 @@ import WorkerActions from '../../../components/workers/WorkerActions';
 export default async function WorkerDetailsPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const session = await getSession();
 
@@ -15,9 +15,10 @@ export default async function WorkerDetailsPage({
     redirect('/auth/login');
   }
 
+  const { id } = await params;
   const worker = await prisma.worker.findUnique({
     where: {
-      id: params.id,
+      id,
     },
     include: {
       nationalitySalary: true,

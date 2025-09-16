@@ -20,8 +20,8 @@ export async function POST() {
     if (result.success) {
       return NextResponse.json({
         success: true,
-        message: `تم تحديث ${result.updatedContracts} عقد منتهي بنجاح`,
-        updatedContracts: result.updatedContracts
+        message: `تم تحديث ${result.updatedCount} عقد منتهي بنجاح`,
+        updatedContracts: result.updatedCount
       });
     } else {
       return NextResponse.json(

@@ -1,5 +1,4 @@
 ﻿import { prisma } from '@/lib/prisma';
-import { ContractStatus } from '@prisma/client';
 
 export async function updateExpiredContracts() {
   const today = new Date();
@@ -11,11 +10,11 @@ export async function updateExpiredContracts() {
           lt: today
         },
         status: {
-          not: ContractStatus.EXPIRED
+          not: 'EXPIRED'
         }
       },
       data: {
-        status: ContractStatus.EXPIRED
+        status: 'EXPIRED'
       }
     });
 

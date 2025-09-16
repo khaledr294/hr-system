@@ -3,14 +3,15 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 
-export default async function MarketerDetailsPage({ params }: { params: { id: string } }) {
+export default async function MarketerDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
   if (!session) {
     redirect('/auth/login');
   }
 
+  const { id } = await params;
   const marketer = await prisma.marketer.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       contracts: true,
     },
