@@ -2,13 +2,13 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const session = await getSession();
   if (!session) {
     return new Response('Unauthorized', { status: 401 });
   }
-
   try {
+    const params = await context.params;
     // Get contract to find workerId
     const contract = await prisma.contract.findUnique({
       where: { id: params.id },

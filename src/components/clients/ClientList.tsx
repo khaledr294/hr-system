@@ -33,7 +33,7 @@ export default function ClientList({ clients }: ClientListProps) {
       render: (_: unknown, item: Client) => (
         <Link
           href={`/clients/${item.id}`}
-          className="text-blue-600 hover:text-blue-800"
+          className="inline-block text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 border-2 border-slate-900 font-bold transition-colors duration-200"
         >
           عرض التفاصيل
         </Link>
@@ -42,7 +42,7 @@ export default function ClientList({ clients }: ClientListProps) {
   ];
 
   return (
-    <div className="bg-white shadow-sm rounded-lg">
+    <div className="bg-white border-2 border-slate-900">
       <Table
         columns={columns}
         data={clients}

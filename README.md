@@ -1,13 +1,23 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏢 نظام إدارة الموارد البشرية - شركة ساعد للإستقدام
 
-## Getting Started
+نظام شامل لإدارة العمالة المنزلية والعقود والمسوقين مع واجهة عربية حديثة.
 
-First, run the development server:
+## 🚀 العرض التوضيحي
 
+### خيارات التجربة:
+
+#### 1. 💻 GitHub Codespaces (تجربة كاملة - موصى بها)
+1. اضغط على زر "Code" أعلى الصفحة
+2. اختر "Codespaces" 
+3. اضغط "Create codespace"
+4. انتظر تحميل البيئة (2-3 دقائق)
+5. النظام سيعمل تلقائياً على المنفذ 3000
+
+#### 2. 🐳 Docker (سريع ومحلي)
 ```bash
-npm run dev
-# or
-yarn dev
+git clone [repository-url]
+cd hr-system
+docker-compose up
 # or
 pnpm dev
 # or

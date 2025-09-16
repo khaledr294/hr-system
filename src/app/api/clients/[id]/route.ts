@@ -4,15 +4,14 @@ import { getSession } from '@/lib/session';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   const session = await getSession();
-
   if (!session) {
     return new Response('Unauthorized', { status: 401 });
   }
-
   try {
+    const params = await context.params;
     const client = await prisma.client.findUnique({
       where: { id: params.id },
       include: {
@@ -42,20 +41,17 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   const session = await getSession();
-
   if (!session) {
     return new Response('Unauthorized', { status: 401 });
   }
-
   try {
+    const params = await context.params;
     const data = await req.json();
-
     // Validate required fields
     const requiredFields = ['name', 'phone', 'address', 'idNumber'];
-
     for (const field of requiredFields) {
       if (!data[field]) {
         return new Response(`Missing required field: ${field}`, { status: 400 });
@@ -93,15 +89,14 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   const session = await getSession();
-
   if (!session) {
     return new Response('Unauthorized', { status: 401 });
   }
-
   try {
+    const params = await context.params;
     // Check if client has any active contracts
     const client = await prisma.client.findUnique({
       where: { id: params.id },

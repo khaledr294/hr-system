@@ -4,6 +4,22 @@ import { redirect } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 import Link from 'next/link';
 
+interface Contract {
+  id: string;
+  status: string;
+  startDate: Date;
+  endDate: Date;
+  packageType: string;
+  packageName?: string | null;
+  contractNumber?: string | null;
+  client: {
+    name: string;
+  };
+  worker: {
+    name: string;
+  };
+}
+
 export default async function ContractsPage() {
   const session = await getSession();
 
@@ -32,28 +48,32 @@ export default async function ContractsPage() {
     const end = new Date(contract.endDate);
     return contract.status === 'ACTIVE' && (end > now) && !expiringSoon.includes(contract);
   });
-  const completed = contracts.filter(contract => contract.status === 'COMPLETED' || new Date(contract.endDate) < now);
+  const completed = contracts.filter((contract: Contract) => contract.status === 'COMPLETED' || new Date(contract.endDate) < now);
 
-  function renderTable(list, title) {
+  function renderTable(list: Contract[], title: string) {
     return (
       <div className="mb-8">
-        <h2 className="font-semibold text-lg mb-2">{title}</h2>
+        <h2 className="font-bold text-xl mb-4 text-gray-900 tracking-wide">{title}</h2>
         <div className="bg-white shadow-sm rounded-lg overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-gradient-to-r from-indigo-100 to-blue-100">
               <tr>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">العميل</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">العاملة</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ البداية</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ النهاية</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">نوع الباقة</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
+                <th className="px-6 py-4 text-right text-base font-bold text-indigo-900 uppercase tracking-wider">رقم العقد</th>
+                <th className="px-6 py-4 text-right text-base font-bold text-indigo-900 uppercase tracking-wider">العميل</th>
+                <th className="px-6 py-4 text-right text-base font-bold text-indigo-900 uppercase tracking-wider">العاملة</th>
+                <th className="px-6 py-4 text-right text-base font-bold text-indigo-900 uppercase tracking-wider">تاريخ البداية</th>
+                <th className="px-6 py-4 text-right text-base font-bold text-indigo-900 uppercase tracking-wider">تاريخ النهاية</th>
+                <th className="px-6 py-4 text-right text-base font-bold text-indigo-900 uppercase tracking-wider">نوع الباقة</th>
+                <th className="px-6 py-4 text-right text-base font-bold text-indigo-900 uppercase tracking-wider">الحالة</th>
+                <th className="px-6 py-4 text-right text-base font-bold text-indigo-900 uppercase tracking-wider">الإجراءات</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {list.map((contract) => (
+              {list.map((contract: Contract) => (
                 <tr key={contract.id}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {contract.contractNumber || '-'}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {contract.client?.name || '-'}
                   </td>
@@ -67,9 +87,7 @@ export default async function ContractsPage() {
                     {new Date(contract.endDate).toLocaleDateString('ar-SA')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {contract.packageType === 'MONTHLY' ? 'شهري'
-                      : contract.packageType === 'QUARTERLY' ? 'ربع سنوي'
-                      : 'سنوي'}
+                    {contract.packageName || contract.packageType}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
@@ -113,7 +131,17 @@ export default async function ContractsPage() {
   return (
     <DashboardLayout>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">جميع العقود</h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-semibold text-gray-900">جميع العقود</h1>
+          <div className="flex gap-3">
+            <Link
+              href="/contracts/templates"
+              className="inline-flex items-center px-4 py-2 border border-blue-600 rounded-md shadow-sm text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              📄 إدارة قوالب العقود
+            </Link>
+          </div>
+        </div>
       </div>
       {renderTable(expiringSoon, 'عقود على وشك الانتهاء (متبقي 3 أيام أو أقل)')}
       {renderTable(active, 'العقود النشطة')}

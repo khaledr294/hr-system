@@ -1,8 +1,7 @@
-import { NextRequest } from 'next/server';
 import { getSession } from '@/lib/session';
 import { checkExpiringContracts } from '@/lib/notifications';
 
-export async function POST(req: NextRequest) {
+export async function POST() {
   const session = await getSession();
 
   if (!session || session.user.role !== 'ADMIN') {

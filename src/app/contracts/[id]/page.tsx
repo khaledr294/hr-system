@@ -4,12 +4,14 @@ import { redirect } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 import Link from 'next/link';
 import TerminateContractButton from '@/components/contracts/TerminateContractButton';
+import DeleteContractButton from '@/components/contracts/DeleteContractButton';
+import GenerateWordButton from '@/components/contracts/GenerateWordButton';
 import React from 'react';
 
 export default async function ContractDetailsPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const session = await getSession();
 
@@ -17,12 +19,13 @@ export default async function ContractDetailsPage({
     redirect('/auth/login');
   }
 
+  const { id } = await params;
   const contract = await prisma.contract.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       client: true,
       worker: true,
-    },
+    }
   });
 
   if (!contract) {
@@ -35,15 +38,34 @@ export default async function ContractDetailsPage({
         <div className="mb-6 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">تفاصيل العقد</h1>
           <div className="flex gap-2">
-            <Link
-              href={`/contracts/${contract.id}/edit`}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              تعديل العقد
-            </Link>
-            <TerminateContractButton contractId={contract.id} />
+            {/* إظهار زر التعديل وزر الإنهاء فقط إذا لم يكن العقد منتهي */}
+            {new Date(contract.endDate) >= new Date() && (
+              <>
+                <Link
+                  href={`/contracts/${contract.id}/edit`}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  تعديل العقد
+                </Link>
+                <TerminateContractButton contractId={contract.id} />
+              </>
+            )}
+            <div className="flex gap-3">
+              <GenerateWordButton 
+                contractId={contract.id}
+                className="px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-md transition-colors"
+              >
+                📄 إنتاج وثيقة العقد (Word)
+              </GenerateWordButton>
+            </div>
           </div>
         </div>
+
+        {/* زر حذف العقد - متاح فقط لمدير الموارد البشرية */}
+        <DeleteContractButton 
+          contractId={contract.id} 
+          isHRManager={session.user.role === 'HR_MANAGER'} 
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div>
@@ -86,6 +108,10 @@ export default async function ContractDetailsPage({
           <h2 className="text-lg font-semibold text-gray-900 mb-4">تفاصيل العقد</h2>
           <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
+              <dt className="text-sm font-medium text-gray-500">رقم العقد الرسمي</dt>
+              <dd className="mt-1 text-sm text-gray-900">{contract.contractNumber || '-'}</dd>
+            </div>
+            <div>
               <dt className="text-sm font-medium text-gray-500">تاريخ البداية</dt>
               <dd className="mt-1 text-sm text-gray-900">{new Date(contract.startDate).toLocaleDateString('ar-SA')}</dd>
             </div>
@@ -95,11 +121,7 @@ export default async function ContractDetailsPage({
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">نوع الباقة</dt>
-              <dd className="mt-1 text-sm text-gray-900">
-                {contract.packageType === 'MONTHLY' ? 'شهري' 
-                 : contract.packageType === 'QUARTERLY' ? 'ربع سنوي'
-                 : 'سنوي'}
-              </dd>
+              <dd className="mt-1 text-sm text-gray-900">{contract.packageName || contract.packageType}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">المبلغ الإجمالي</dt>
@@ -125,6 +147,12 @@ export default async function ContractDetailsPage({
             </div>
           </dl>
         </div>
+
+        {/* زر حذف العقد - متاح فقط لمدير الموارد البشرية */}
+        <DeleteContractButton 
+          contractId={contract.id} 
+          isHRManager={session.user.role === 'HR_MANAGER' || session.user.role === 'HR'} 
+        />
       </div>
     </DashboardLayout>
   );

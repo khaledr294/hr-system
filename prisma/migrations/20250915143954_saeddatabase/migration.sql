@@ -1,8 +1,26 @@
 -- CreateEnum
-CREATE TYPE "public"."Role" AS ENUM ('ADMIN', 'MANAGER', 'STAFF');
+CREATE TYPE "public"."Role" AS ENUM ('ADMIN', 'HR', 'GENERAL_MANAGER', 'MARKETER', 'STAFF');
 
 -- CreateEnum
 CREATE TYPE "public"."Nationality" AS ENUM ('ETHIOPIA', 'UGANDA', 'KENYA', 'INDONESIA', 'BURUNDI');
+
+-- CreateTable
+CREATE TABLE "public"."Worker" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "code" INTEGER NOT NULL,
+    "nationality" TEXT NOT NULL,
+    "residencyNumber" TEXT NOT NULL,
+    "dateOfBirth" TIMESTAMP(3) NOT NULL,
+    "phone" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'AVAILABLE',
+    "salary" DOUBLE PRECISION,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "nationalitySalaryId" TEXT,
+
+    CONSTRAINT "Worker_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "public"."NationalitySalary" (
@@ -16,32 +34,21 @@ CREATE TABLE "public"."NationalitySalary" (
 -- CreateTable
 CREATE TABLE "public"."User" (
     "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "password" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "role" "public"."Role" NOT NULL DEFAULT 'STAFF',
-
-    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "public"."Worker" (
-    "id" TEXT NOT NULL,
-    "code" SERIAL NOT NULL,
-    "name" TEXT NOT NULL,
-    "nationality" TEXT NOT NULL,
+    "name" TEXT NOT NULL DEFAULT '',
+    "email" TEXT,
+    "password" TEXT,
+    "role" TEXT DEFAULT 'STAFF',
+    "nationality" TEXT DEFAULT '',
     "nationalitySalaryId" TEXT,
-    "residencyNumber" TEXT NOT NULL,
-    "dateOfBirth" TIMESTAMP(3) NOT NULL,
-    "phone" TEXT NOT NULL,
+    "residencyNumber" TEXT,
+    "dateOfBirth" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "phone" TEXT DEFAULT '',
     "status" TEXT NOT NULL DEFAULT 'AVAILABLE',
     "salary" DOUBLE PRECISION,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Worker_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -78,9 +85,11 @@ CREATE TABLE "public"."Contract" (
     "startDate" TIMESTAMP(3) NOT NULL,
     "endDate" TIMESTAMP(3) NOT NULL,
     "packageType" TEXT NOT NULL,
+    "packageName" TEXT DEFAULT '',
     "totalAmount" DOUBLE PRECISION NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'ACTIVE',
     "notifiedBefore" BOOLEAN NOT NULL DEFAULT false,
+    "contractNumber" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "marketerId" TEXT,
@@ -89,19 +98,22 @@ CREATE TABLE "public"."Contract" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "NationalitySalary_nationality_key" ON "public"."NationalitySalary"("nationality");
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "public"."User"("email");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Worker_code_key" ON "public"."Worker"("code");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Worker_residencyNumber_key" ON "public"."Worker"("residencyNumber");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "NationalitySalary_nationality_key" ON "public"."NationalitySalary"("nationality");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_residencyNumber_key" ON "public"."User"("residencyNumber");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Client_idNumber_key" ON "public"."Client"("idNumber");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Contract_contractNumber_key" ON "public"."Contract"("contractNumber");
 
 -- AddForeignKey
 ALTER TABLE "public"."Worker" ADD CONSTRAINT "Worker_nationalitySalaryId_fkey" FOREIGN KEY ("nationalitySalaryId") REFERENCES "public"."NationalitySalary"("id") ON DELETE SET NULL ON UPDATE CASCADE;

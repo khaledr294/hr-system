@@ -65,9 +65,14 @@ export async function POST(req: NextRequest) {
       return new Response('Client ID number already exists', { status: 400 });
     }
 
+    // تحويل تاريخ الميلاد من نص إلى Date إذا كان موجودًا
+    const clientData = { ...data };
+    if (clientData.dateOfBirth) {
+      clientData.dateOfBirth = new Date(clientData.dateOfBirth);
+    }
     // Create client
     const client = await prisma.client.create({
-      data,
+      data: clientData,
     });
 
     return new Response(JSON.stringify(client), {

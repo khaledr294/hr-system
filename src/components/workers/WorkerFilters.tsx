@@ -1,10 +1,10 @@
 import React from 'react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import Select from '@/components/ui/Select';
 
 interface WorkerFilterProps {
-    onFilterChange: (filters: any) => void;
+    onFilterChange: (filters: Record<string, string>) => void;
     filters: {
         status: string;
         nationality: string;
@@ -22,34 +22,24 @@ export function WorkerFilters({ onFilterChange, filters }: WorkerFilterProps) {
             <Input
                 placeholder="Search by name or code..."
                 value={filters.search}
-                onChange={(e) => handleChange('search', e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('search', e.target.value)}
                 className="max-w-xs"
             />
             <Select
                 value={filters.status}
-                onChange={(e) => handleChange('status', e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleChange('status', e.target.value)}
+                options={[{label: 'All Statuses', value: ''}, {label: 'Available', value: 'AVAILABLE'}, {label: 'Rented', value: 'RENTED'}, {label: 'On Leave', value: 'ON_LEAVE'}, {label: 'Unavailable', value: 'UNAVAILABLE'}]}
                 className="max-w-xs"
-            >
-                <option value="">All Statuses</option>
-                <option value="AVAILABLE">Available</option>
-                <option value="RENTED">Rented</option>
-                <option value="ON_LEAVE">On Leave</option>
-                <option value="UNAVAILABLE">Unavailable</option>
-            </Select>
+            />
             <Select
                 value={filters.nationality}
-                onChange={(e) => handleChange('nationality', e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleChange('nationality', e.target.value)}
+                options={[{label: 'All Nationalities', value: ''}, {label: 'Filipino', value: 'Filipino'}, {label: 'Indonesian', value: 'Indonesian'}, {label: 'Indian', value: 'Indian'}, {label: 'Bangladeshi', value: 'Bangladeshi'}]}
                 className="max-w-xs"
-            >
-                <option value="">All Nationalities</option>
-                <option value="Filipino">Filipino</option>
-                <option value="Indonesian">Indonesian</option>
-                <option value="Indian">Indian</option>
-                <option value="Bangladeshi">Bangladeshi</option>
-            </Select>
+            />
             <Button
                 onClick={() => onFilterChange({ status: '', nationality: '', search: '' })}
-                variant="outline"
+                variant="secondary"
             >
                 Clear Filters
             </Button>

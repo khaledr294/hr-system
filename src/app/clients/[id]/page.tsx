@@ -122,9 +122,7 @@ export default async function ClientDetailsPage({
                       {new Date(contract.endDate).toLocaleDateString('ar-SA')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {contract.packageType === 'MONTHLY' ? 'شهري' 
-                       : contract.packageType === 'QUARTERLY' ? 'ربع سنوي'
-                       : 'سنوي'}
+                      {contract.packageName || contract.packageType}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span

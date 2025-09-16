@@ -5,14 +5,14 @@ import { authOptions } from '@/lib/auth';
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions);
         if (!session) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
-
+        const params = await context.params;
         const worker = await prisma.worker.findUnique({
             where: { id: params.id },
             include: {
@@ -43,30 +43,65 @@ export async function GET(
 
 export async function PUT(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session || session.user.role !== 'ADMIN') {
+        if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'HR')) {
             return NextResponse.json(
-                { error: 'Unauthorized - Admin access required' },
+                { error: 'Unauthorized - Admin or HR access required' },
                 { status: 401 }
             );
         }
-
+        const params = await context.params;
         const data = await req.json();
+        // Check for unique residency number if it's being updated
+        if (data.residencyNumber) {
+            const existingWorker = await prisma.worker.findFirst({
+                where: {
+                    residencyNumber: data.residencyNumber,
+                    id: { not: params.id }
+                }
+            });
+            
+            if (existingWorker) {
+                return NextResponse.json(
+                    { error: 'Worker with this residency number already exists' },
+                    { status: 400 }
+                );
+            }
+        }
+        
         let nationalitySalaryId = undefined;
         if (data.nationality) {
           const ns = await prisma.nationalitySalary.findFirst({ where: { nationality: data.nationality } });
           if (ns) nationalitySalaryId = ns.id;
         }
+        
+        const updateData: {
+          name?: string;
+          nationality?: string;
+          residencyNumber?: string;
+          phone?: string;
+          status?: string;
+          dateOfBirth?: Date;
+          nationalitySalaryId?: string;
+        } = {
+            name: data.name,
+            nationality: data.nationality,
+            residencyNumber: data.residencyNumber,
+            phone: data.phone,
+            nationalitySalaryId,
+        };
+        
+        // Convert dateOfBirth to Date object if provided
+        if (data.dateOfBirth) {
+            updateData.dateOfBirth = new Date(data.dateOfBirth);
+        }
+        
         const worker = await prisma.worker.update({
             where: { id: params.id },
-            data: {
-                ...data,
-                nationality: data.nationality,
-                nationalitySalaryId,
-            },
+            data: updateData,
         });
 
         return NextResponse.json(worker);
@@ -81,17 +116,17 @@ export async function PUT(
 
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session || session.user.role !== 'ADMIN') {
+        if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'HR')) {
             return NextResponse.json(
-                { error: 'Unauthorized - Admin access required' },
+                { error: 'Unauthorized - Admin or HR access required' },
                 { status: 401 }
             );
         }
-
+        const params = await context.params;
         // Check if worker has any active contracts
         const worker = await prisma.worker.findUnique({
             where: { id: params.id },

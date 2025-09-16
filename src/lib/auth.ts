@@ -24,40 +24,33 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/auth/login",
   },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.role = user.role;
-      }
-      return token;
-    },
-    async session({ session, token }: any) {
-      if (token && session.user) {
-        session.user.role = token.role;
-      }
-      return session;
-    },
-  },
   providers: [
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "البريد الإلكتروني", type: "email" },
+        identifier: { label: "اسم المستخدم أو البريد الإلكتروني", type: "text" },
         password: { label: "كلمة المرور", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("يرجى إدخال البريد الإلكتروني وكلمة المرور");
+        if (!credentials?.identifier || !credentials?.password) {
+          throw new Error("يرجى إدخال اسم المستخدم أو البريد الإلكتروني وكلمة المرور");
         }
 
-        const user = await prisma.user.findUnique({
+        const user = await prisma.user.findFirst({
           where: {
-            email: credentials.email
+            OR: [
+              { email: credentials.identifier },
+              { name: credentials.identifier }
+            ]
           }
         });
 
         if (!user) {
-          throw new Error("البريد الإلكتروني أو كلمة المرور غير صحيحة");
+          throw new Error("اسم المستخدم أو البريد الإلكتروني أو كلمة المرور غير صحيحة");
+        }
+
+        if (!user.password) {
+          throw new Error("كلمة المرور غير محددة للمستخدم");
         }
 
         const isPasswordValid = await compare(credentials.password, user.password);
@@ -68,9 +61,9 @@ export const authOptions: NextAuthOptions = {
 
         return {
           id: user.id,
-          email: user.email,
+          email: user.email || "",
           name: user.name,
-          role: user.role
+          role: user.role || "STAFF"
         };
       }
     })
@@ -78,15 +71,21 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        token.id = user.id;
         token.role = user.role;
+        token.email = user.email;
+        token.name = user.name;
       }
       return token;
     },
-    async session({ session, token }: { session: Session; token: JWT }) {
-      if (session?.user) {
-        (session.user as any).role = token.role;
+    async session({ session, token }) {
+      if (session?.user && token) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as string;
+        session.user.email = token.email as string;
+        session.user.name = token.name as string;
       }
       return session;
-    }
-  }
+    },
+  },
 };

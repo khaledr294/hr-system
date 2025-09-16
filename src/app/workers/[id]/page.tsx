@@ -19,6 +19,9 @@ export default async function WorkerDetailsPage({
     where: {
       id: params.id,
     },
+    include: {
+      nationalitySalary: true,
+    },
   });
 
   if (!worker) {
@@ -45,7 +48,37 @@ export default async function WorkerDetailsPage({
                 <dt className="text-sm font-medium text-gray-500">الجنسية</dt>
                 <dd className="mt-1 text-sm text-gray-900">{worker.nationality}</dd>
               </div>
-              {/* specialization removed */}
+              <div>
+                <dt className="text-sm font-medium text-gray-500">رقم الإقامة</dt>
+                <dd className="mt-1 text-sm text-gray-900">{worker.residencyNumber}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">تاريخ الميلاد</dt>
+                <dd className="mt-1 text-sm text-gray-900">{worker.dateOfBirth ? new Date(worker.dateOfBirth).toLocaleDateString('en-US') : '-'}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">رقم الجوال</dt>
+                <dd className="mt-1 text-sm text-gray-900">{worker.phone}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">الراتب الأساسي</dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  <span className="font-bold text-green-700 text-lg">
+                    {worker.salary
+                      ? `${Math.round(worker.salary)} ريال`
+                      : worker.nationalitySalary?.salary
+                        ? `${Math.round(worker.nationalitySalary.salary)} ريال`
+                        : '-'}
+                  </span>
+                  <span className="ml-2 text-xs text-gray-500">
+                    {worker.salary
+                      ? '(راتب فردي محدد)' 
+                      : worker.nationalitySalary?.salary
+                        ? `(راتب ${worker.nationality} حسب جدول الجنسيات)`
+                        : '(لا يوجد راتب محدد)'}
+                  </span>
+                </dd>
+              </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">الحالة</dt>
                 <dd className="mt-1">

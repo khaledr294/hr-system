@@ -7,9 +7,9 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variants = {
-  primary: 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500',
-  secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500',
-  danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+  primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 font-bold border-2 border-slate-900',
+  secondary: 'bg-slate-200 text-slate-900 hover:bg-slate-300 focus:ring-slate-500 font-bold border-2 border-slate-900',
+  danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 font-bold border-2 border-slate-900',
 };
 
 const sizes = {
@@ -27,7 +27,7 @@ export default function Button({
   return (
     <button
       className={twMerge(
-        'inline-flex justify-center items-center border border-transparent font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed',
+        'inline-flex justify-center items-center font-bold focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200',
         variants[variant],
         sizes[size],
         className

@@ -8,7 +8,7 @@ interface ClientWorkerListProps {
 }
 
 const DynamicWorkerList = dynamic<ClientWorkerListProps>(
-  () => import('./WorkerList').then((mod) => mod.WorkerList),
+  () => import('./WorkerList.js').then((mod) => mod.WorkerList),
   {
     ssr: false,
   }

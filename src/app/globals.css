@@ -1,26 +1,186 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
+@import "../styles/sharp-theme.css";
+@import "../styles/modern-theme.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Default Theme Classes (to prevent hydration mismatch) */
+html {
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Apply sharp theme styles as default when no theme class is present */
+html:not([class*="theme-"]) body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, 'Cairo', sans-serif;
+  line-height: 1.6;
+  font-weight: 700;
+  color: #1e293b;
+  background: #f1f5f9;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Default Sharp Design - No Gradients, No Rounded Corners, No Shadows */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, 'Cairo', sans-serif;
+  line-height: 1.6;
+  font-weight: 700;
+  color: #1e293b;
+  background: #f1f5f9;
+}
+
+/* Sharp Headers - No Shadows */
+h1, h2, h3, h4, h5, h6 {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+/* Sharp Cards - No Blur, No Shadows */
+.card-modern {
+  background: white;
+  border: 2px solid #1e293b;
+}
+
+/* Sharp Navigation - No Gradients */
+.modern-gradient {
+  background: #475569;
+}
+
+/* Sharp Interactive Elements - No Animations */
+.interactive-hover {
+  transition: all 0.2s ease;
+}
+
+.interactive-hover:hover {
+  transform: none;
+}
+
+/* Sharp Effects - No Glass */
+.glass-effect {
+  background: transparent;
+  border: 2px solid transparent;
+}
+
+/* Sharp Cards - No Float */
+.floating-card {
+  transform: none;
+}
+
+.hover-lift:hover {
+  transform: none;
+}
+
+/* Sharp Animation - Simple */
+.animate-scale-in {
+  animation: simpleAppear 0.3s ease forwards;
+}
+
+@keyframes simpleAppear {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Sharp Pulse - Simple Color Change */
+.pulse-blue, .pulse-green, .pulse-orange {
+  animation: colorPulse 2s infinite;
+}
+
+@keyframes colorPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.9; }
+}
+
+/* Sharp Buttons - No Shadows */
+button {
+  font-weight: 700 !important;
+  border: 2px solid;
+}
+
+/* Button Links with Background - Force White Text */
+.bg-blue-600, .bg-blue-700, .bg-green-600, .bg-red-600 {
+  color: white !important;
+}
+
+.bg-blue-600 a, .bg-blue-700 a, .bg-green-600 a, .bg-red-600 a {
+  color: white !important;
+}
+
+/* Button-style Links - Override default link colors */
+a.inline-flex, a.inline-block {
+  text-decoration: none !important;
+}
+
+a.bg-blue-600, a.bg-blue-700, a.bg-green-600, a.bg-red-600 {
+  color: white !important;
+}
+
+/* Sharp Inputs - No Shadows */
+input, select, textarea {
+  color: #1e293b !important;
+  font-weight: 600 !important;
+  border: 2px solid #cbd5e1 !important;
+  background: white;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #3b82f6 !important;
+  outline: none !important;
+}
+
+/* Sharp Tables */
+table {
+  background: white;
+  border: 2px solid #1e293b;
+}
+
+th {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  background: #e2e8f0;
+  border-bottom: 2px solid #1e293b;
+}
+
+td {
+  color: #1e293b !important;
+  font-weight: 600 !important;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+/* Sharp Links - Only for text links */
+a:not(.inline-flex):not(.inline-block) {
+  color: #2563eb !important;
+  font-weight: 600;
+}
+
+a:not(.inline-flex):not(.inline-block):hover {
+  color: #1d4ed8 !important;
+}
+
+/* Sharp Text Colors */
+.text-slate-900 {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+.text-slate-800 {
+  color: #1e293b !important;
+  font-weight: 600 !important;
+}
+
+/* Remove All Shadows and Effects */
+* {
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+/* Sharp Fade Animation */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Arabic Text Support */
+[dir="rtl"], .arabic-text {
+  text-rendering: optimizeLegibility;
+  font-weight: 700;
 }

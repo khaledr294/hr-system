@@ -26,6 +26,17 @@ export default async function MarketerDetailsPage({ params }: { params: { id: st
         <h1 className="text-2xl font-bold text-gray-900 mb-2">{marketer.name}</h1>
         <p className="text-sm text-gray-500 mb-4">رقم الجوال: {marketer.phone}</p>
         <p className="text-sm text-gray-500 mb-4">البريد الإلكتروني: {marketer.email || '-'}</p>
+
+
+        <div className="flex items-center gap-4 mb-6">
+          <div className="bg-white border-2 border-indigo-700 rounded-lg px-8 py-4 text-center shadow-lg">
+            <div className="text-4xl font-extrabold text-indigo-800 drop-shadow-sm tracking-widest" style={{letterSpacing:'0.1em'}}>{marketer.contracts.length}</div>
+            <div className="text-base font-bold text-indigo-900 mt-2" style={{textShadow:'0 1px 2px #fff,0 0 2px #333'}}>
+              عدد العقود
+            </div>
+          </div>
+        </div>
+
         <h2 className="text-lg font-semibold text-gray-900 mb-4">العقود التي أنشأها هذا المسوق</h2>
         <div className="bg-white shadow rounded-lg overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">

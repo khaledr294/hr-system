@@ -25,6 +25,9 @@ const clientSchema = z.object({
     .string()
     .min(1, 'يجب إدخال رقم الهوية')
     .regex(/^[12]\d{9}$/, 'رقم الهوية يجب أن يتكون من 10 أرقام ويبدأ بـ 1 أو 2'),
+  birthYear: z.string().min(4, 'سنة الميلاد مطلوبة'),
+  birthMonth: z.string().min(1, 'شهر الميلاد مطلوب'),
+  birthDay: z.string().min(1, 'يوم الميلاد مطلوب'),
 });
 
 type ClientFormData = z.infer<typeof clientSchema>;
@@ -44,12 +47,25 @@ export default function NewClientPage() {
   const onSubmit = async (data: ClientFormData) => {
     try {
       setIsSubmitting(true);
+      // Combine birth fields into dateOfBirth
+      const mm = data.birthMonth.padStart(2, '0');
+      const dd = data.birthDay.padStart(2, '0');
+      const dateOfBirth = `${data.birthYear}-${mm}-${dd}`;
+      // Exclude birthYear, birthMonth, birthDay from payload
+      const payload = {
+        name: data.name,
+        phone: data.phone,
+        email: data.email,
+        address: data.address,
+        idNumber: data.idNumber,
+        dateOfBirth,
+      };
       const response = await fetch('/api/clients', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -117,6 +133,59 @@ export default function NewClientPage() {
               {...register('address')}
               error={errors.address?.message}
             />
+          </div>
+
+          <div>
+            <label className="block text-base font-bold text-indigo-900 mb-2">تاريخ الميلاد</label>
+            <div className="flex gap-2">
+              <Input
+                label="سنة"
+                type="number"
+                min={1900}
+                max={new Date().getFullYear()}
+                required
+                placeholder="YYYY"
+                maxLength={4}
+                {...register('birthYear')}
+                error={errors.birthYear?.message}
+                onInput={e => {
+                  const input = e.target as HTMLInputElement;
+                  if (input.value.length === 4) {
+                    const next = document.querySelector<HTMLInputElement>('[name="birthMonth"]');
+                    next?.focus();
+                  }
+                }}
+              />
+              <Input
+                label="شهر"
+                type="number"
+                min={1}
+                max={12}
+                required
+                placeholder="MM"
+                maxLength={2}
+                {...register('birthMonth')}
+                error={errors.birthMonth?.message}
+                onInput={e => {
+                  const input = e.target as HTMLInputElement;
+                  if (input.value.length === 2) {
+                    const next = document.querySelector<HTMLInputElement>('[name="birthDay"]');
+                    next?.focus();
+                  }
+                }}
+              />
+              <Input
+                label="يوم"
+                type="number"
+                min={1}
+                max={31}
+                required
+                placeholder="DD"
+                maxLength={2}
+                {...register('birthDay')}
+                error={errors.birthDay?.message}
+              />
+            </div>
           </div>
 
           <div className="flex justify-end space-x-4">

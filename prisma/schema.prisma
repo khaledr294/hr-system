@@ -1,3 +1,37 @@
+model Log {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String?
+  entityId  String?
+  message   String?
+  createdAt DateTime @default(now())
+  user      User?    @relation("UserLogs", fields: [userId], references: [id])
+}
+model Package {
+  id        String   @id @default(cuid())
+  name      String
+  duration  Int      // days
+  price     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+model Worker {
+  id             String   @id @default(cuid())
+  name           String
+  code           Int      @unique
+  nationality    String
+  residencyNumber String  @unique
+  dateOfBirth    DateTime
+  phone          String
+  status         String   @default("AVAILABLE")
+  salary         Float?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  contracts      Contract[]
+  nationalitySalary   NationalitySalary? @relation("NationalityWorkers", fields: [nationalitySalaryId], references: [id])
+  nationalitySalaryId String?
+}
 generator client {
   provider = "prisma-client-js"
 }
@@ -15,30 +49,21 @@ model NationalitySalary {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  role      Role     @default(STAFF)
-}
-
-model Worker {
-  id                String           @id @default(cuid())
-  code              Int             @unique @default(autoincrement())
-  name              String
-  nationality       String
+  id           String   @id @default(cuid())
+  name         String    @default("")
+  email        String?
+  password     String?
+  role         String?   @default("STAFF")
+  nationality  String?   @default("")
   nationalitySalaryId String?
-  nationalitySalary NationalitySalary? @relation(fields: [nationalitySalaryId], references: [id], name: "NationalityWorkers")
-  residencyNumber   String           @unique
-  dateOfBirth      DateTime
-  phone            String
-  status           String           @default("AVAILABLE")  // AVAILABLE, RENTED, UNAVAILABLE
-  salary           Float?
-  contracts        Contract[]
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  residencyNumber     String?  @unique
+  dateOfBirth         DateTime? @default(now())
+  phone               String?  @default("")
+  status              String             @default("AVAILABLE")
+  salary              Float?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  logs      Log[]    @relation("UserLogs")
 }
 
 model Client {
@@ -48,6 +73,7 @@ model Client {
   email     String?
   address   String
   idNumber  String     @unique
+  dateOfBirth DateTime?
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   contracts Contract[]
@@ -70,9 +96,12 @@ model Contract {
   startDate      DateTime
   endDate        DateTime
   packageType    String
+  packageName    String?   @default("")
   totalAmount    Float
   status         String    @default("ACTIVE")
   notifiedBefore Boolean   @default(false)
+  contractNumber String?   @unique
+  notes          String?   @default("")
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   marketerId     String?
@@ -83,7 +112,9 @@ model Contract {
 
 enum Role {
   ADMIN
-  MANAGER
+  HR
+  GENERAL_MANAGER
+  MARKETER
   STAFF
 }
 

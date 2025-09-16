@@ -1,25 +1,42 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 
-// specialization removed
-
-const nationalities = [
-  { value: 'PHILIPPINES', label: 'الفلبين' },
-  { value: 'INDONESIA', label: 'إندونيسيا' },
-  { value: 'BANGLADESH', label: 'بنغلاديش' },
-  { value: 'SRI_LANKA', label: 'سريلانكا' },
-];
+interface NationalitySalary {
+  id: string;
+  nationality: string;
+  salary: number;
+}
 
 export default function NewWorkerPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [nationalities, setNationalities] = useState<NationalitySalary[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Load nationalities from NationalitySalary table
+    const loadNationalities = async () => {
+      try {
+        const response = await fetch('/api/nationality-salary');
+        if (response.ok) {
+          const data = await response.json();
+          setNationalities(data);
+        }
+      } catch (err) {
+        console.error('Failed to load nationalities:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadNationalities();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -27,14 +44,55 @@ export default function NewWorkerPage() {
     setError('');
 
     const formData = new FormData(e.currentTarget);
+    
+
+    // Combine birth date fields
+    const name = (formData.get('name') as string)?.trim();
+    const codeStr = (formData.get('code') as string)?.trim();
+    const nationality = (formData.get('nationality') as string)?.trim();
+    const residencyNumber = (formData.get('residencyNumber') as string)?.trim();
+    const birthYear = (formData.get('birthYear') as string)?.trim();
+    const birthMonth = (formData.get('birthMonth') as string)?.trim();
+    const birthDay = (formData.get('birthDay') as string)?.trim();
+    const phone = (formData.get('phone') as string)?.trim();
+
+    let dateOfBirthStr = '';
+    if (birthYear && birthMonth && birthDay) {
+      // Pad month and day to 2 digits
+      const mm = birthMonth.padStart(2, '0');
+      const dd = birthDay.padStart(2, '0');
+      dateOfBirthStr = `${birthYear}-${mm}-${dd}`;
+    }
+
+    if (!name || !codeStr || !nationality || !residencyNumber || !birthYear || !birthMonth || !birthDay) {
+      setError('جميع الحقول المطلوبة يجب ملؤها');
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Validate and convert code
+    const code = parseInt(codeStr);
+    if (isNaN(code) || code <= 0) {
+      setError('رقم العاملة يجب أن يكون رقماً صحيحاً أكبر من صفر');
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Validate and convert date
+    const dateOfBirth = new Date(dateOfBirthStr);
+    if (isNaN(dateOfBirth.getTime())) {
+      setError('تاريخ الميلاد غير صحيح');
+      setIsSubmitting(false);
+      return;
+    }
+
     const data = {
-      code: formData.get('code'),
-      name: formData.get('name'),
-      nationality: formData.get('nationality'),
-      passportNumber: formData.get('passportNumber'),
-      dateOfBirth: formData.get('dateOfBirth'),
-  // specialization removed
-      salary: parseFloat(formData.get('salary') as string),
+      name,
+      code,
+      nationality,
+      residencyNumber,
+      dateOfBirth,
+      phone: phone || null,
     };
 
     try {
@@ -47,74 +105,142 @@ export default function NewWorkerPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create worker');
+        const errorText = await response.text();
+        console.error('API Error:', errorText);
+        
+        if (errorText.includes('residency number already exists')) {
+          setError('رقم الإقامة مستخدم بالفعل. يرجى إدخال رقم إقامة آخر.');
+        } else if (errorText.includes('code already exists')) {
+          setError('رقم العاملة مستخدم بالفعل. يرجى إدخال رقم آخر.');
+        } else if (errorText.includes('Missing required field')) {
+          setError('جميع الحقول مطلوبة. يرجى التأكد من ملء جميع البيانات.');
+        } else if (errorText.includes('Invalid worker code')) {
+          setError('رقم العاملة غير صحيح. يرجى إدخال رقم صحيح.');
+        } else if (errorText.includes('Invalid date of birth')) {
+          setError('تاريخ الميلاد غير صحيح. يرجى إدخال تاريخ صحيح.');
+        } else if (errorText.includes('Unauthorized')) {
+          setError('ليس لديك صلاحية لإضافة عاملة جديدة.');
+        } else {
+          setError(`حدث خطأ: ${errorText}`);
+        }
+        return;
       }
 
       router.push('/workers');
       router.refresh();
-    } catch (error) {
-      setError('حدث خطأ أثناء إضافة العامل. يرجى المحاولة مرة أخرى.');
+    } catch (err) {
+      console.error('Error creating worker:', err);
+      setError('حدث خطأ أثناء إضافة العاملة. يرجى المحاولة مرة أخرى.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="bg-white shadow rounded-lg p-6">
+          <div className="text-center">جاري التحميل...</div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="bg-white shadow rounded-lg p-6">
         <h1 className="text-2xl font-semibold text-gray-900 mb-6">
-          إضافة عامل جديد
+          إضافة عاملة جديدة
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
-          <Input
-            label="الكود"
-            name="code"
-            type="text"
-            required
-            placeholder="أدخل كود العامل"
-          />
-
           <Input
             label="الاسم"
             name="name"
             type="text"
             required
-            placeholder="أدخل اسم العامل"
+            placeholder="أدخل اسم العاملة"
+          />
+
+          <Input
+            label="رقم العاملة"
+            name="code"
+            type="number"
+            required
+            placeholder="أدخل رقم العاملة (مثال: 1001)"
           />
 
           <Select
             label="الجنسية"
             name="nationality"
-            options={nationalities}
+            options={nationalities.map(nat => ({
+              value: nat.nationality,
+              label: nat.nationality
+            }))}
             required
           />
 
           <Input
-            label="رقم جواز السفر"
-            name="passportNumber"
+            label="رقم الإقامة"
+            name="residencyNumber"
             type="text"
             required
-            placeholder="أدخل رقم جواز السفر"
+            placeholder="أدخل رقم الإقامة"
           />
 
-          <Input
-            label="تاريخ الميلاد"
-            name="dateOfBirth"
-            type="date"
-            required
-          />
+          <div className="flex gap-2">
+            <Input
+              label="تاريخ الميلاد (سنة)"
+              name="birthYear"
+              type="number"
+              min={1900}
+              max={new Date().getFullYear()}
+              required
+              placeholder="YYYY"
+              maxLength={4}
+              onInput={e => {
+                const input = e.target as HTMLInputElement;
+                if (input.value.length === 4) {
+                  const next = document.querySelector<HTMLInputElement>('[name="birthMonth"]');
+                  next?.focus();
+                }
+              }}
+            />
+            <Input
+              label="شهر"
+              name="birthMonth"
+              type="number"
+              min={1}
+              max={12}
+              required
+              placeholder="MM"
+              maxLength={2}
+              onInput={e => {
+                const input = e.target as HTMLInputElement;
+                if (input.value.length === 2) {
+                  const next = document.querySelector<HTMLInputElement>('[name="birthDay"]');
+                  next?.focus();
+                }
+              }}
+            />
+            <Input
+              label="يوم"
+              name="birthDay"
+              type="number"
+              min={1}
+              max={31}
+              required
+              placeholder="DD"
+              maxLength={2}
+            />
+          </div>
 
-          {/* specialization removed */}
-
           <Input
-            label="الراتب الشهري"
-            name="salary"
-            type="number"
+            label="رقم الجوال"
+            name="phone"
+            type="tel"
             required
-            min="0"
-            step="0.01"
-            placeholder="أدخل الراتب الشهري"
+            placeholder="أدخل رقم الجوال"
           />
 
           {error && (
@@ -123,7 +249,7 @@ export default function NewWorkerPage() {
 
           <div className="flex items-center space-x-4 space-x-reverse">
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'جاري الإضافة...' : 'إضافة العامل'}
+              {isSubmitting ? 'جاري الإضافة...' : 'إضافة العاملة'}
             </Button>
             <Button
               type="button"

@@ -1,0 +1,237 @@
+/* Sharp Theme - Current Design */
+
+/* Root Variables for Sharp Theme */
+.theme-sharp {
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-secondary: #64748b;
+  --color-success: #059669;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+  --color-gray-1: #f1f5f9;
+  --color-gray-2: #e2e8f0;
+  --color-gray-3: #cbd5e1;
+  --color-gray-4: #94a3b8;
+  --color-gray-5: #64748b;
+  --color-gray-6: #475569;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #1e293b;
+  --color-text-tertiary: #64748b;
+  --color-background: #f1f5f9;
+  --color-card: #ffffff;
+  --border-radius: 0px;
+  --border-width: 2px;
+  --shadow: none;
+}
+
+/* Sharp Theme Styles */
+.theme-sharp body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, 'Cairo', sans-serif;
+  line-height: 1.6;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  background: var(--color-background);
+}
+
+/* Sharp Headers - No Shadows */
+.theme-sharp h1,
+.theme-sharp h2,
+.theme-sharp h3,
+.theme-sharp h4,
+.theme-sharp h5,
+.theme-sharp h6 {
+  color: var(--color-text-primary) !important;
+  font-weight: 700 !important;
+}
+
+/* Sharp Cards - No Blur, No Shadows */
+.theme-sharp .card-modern {
+  background: var(--color-card);
+  border: var(--border-width) solid var(--color-text-primary);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+}
+
+/* Sharp Navigation - No Gradients */
+.theme-sharp .modern-gradient {
+  background: var(--color-gray-6);
+}
+
+/* Navigation Text Clarity */
+.theme-sharp nav a {
+  color: white !important;
+  font-weight: 700 !important;
+}
+
+.theme-sharp nav a:hover {
+  color: white !important;
+}
+
+.theme-sharp nav a.bg-white {
+  color: #0f172a !important;
+}
+
+/* Sharp Interactive Elements - No Animations */
+.theme-sharp .interactive-hover {
+  transition: all 0.2s ease;
+}
+
+.theme-sharp .interactive-hover:hover {
+  transform: none;
+}
+
+/* Sharp Effects - No Glass */
+.theme-sharp .glass-effect {
+  background: transparent;
+  border: var(--border-width) solid transparent;
+}
+
+/* Sharp Cards - No Float */
+.theme-sharp .floating-card {
+  transform: none;
+}
+
+.theme-sharp .hover-lift:hover {
+  transform: none;
+}
+
+/* Sharp Animation - Simple */
+.theme-sharp .animate-scale-in {
+  animation: sharpAppear 0.3s ease forwards;
+}
+
+@keyframes sharpAppear {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Sharp Pulse - Simple Color Change */
+.theme-sharp .pulse-blue,
+.theme-sharp .pulse-green,
+.theme-sharp .pulse-orange {
+  animation: sharpPulse 2s infinite;
+}
+
+@keyframes sharpPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.9; }
+}
+
+/* Sharp Buttons - No Shadows */
+.theme-sharp button,
+.theme-sharp .btn {
+  font-weight: 700 !important;
+  border: var(--border-width) solid;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+}
+
+/* Button Links with Background - Force White Text */
+.theme-sharp .bg-blue-600,
+.theme-sharp .bg-blue-700,
+.theme-sharp .bg-green-600,
+.theme-sharp .bg-red-600 {
+  color: white !important;
+  border: var(--border-width) solid var(--color-text-primary);
+}
+
+.theme-sharp .bg-blue-600 a,
+.theme-sharp .bg-blue-700 a,
+.theme-sharp .bg-green-600 a,
+.theme-sharp .bg-red-600 a {
+  color: white !important;
+}
+
+/* Button-style Links - Override default link colors */
+.theme-sharp a.inline-flex,
+.theme-sharp a.inline-block {
+  text-decoration: none !important;
+}
+
+.theme-sharp a.bg-blue-600,
+.theme-sharp a.bg-blue-700,
+.theme-sharp a.bg-green-600,
+.theme-sharp a.bg-red-600 {
+  color: white !important;
+}
+
+/* Sharp Inputs - No Shadows */
+.theme-sharp input,
+.theme-sharp select,
+.theme-sharp textarea {
+  color: var(--color-text-primary) !important;
+  font-weight: 600 !important;
+  border: var(--border-width) solid var(--color-gray-3) !important;
+  background: var(--color-card);
+  border-radius: var(--border-radius);
+}
+
+.theme-sharp input:focus,
+.theme-sharp select:focus,
+.theme-sharp textarea:focus {
+  border-color: var(--color-primary) !important;
+  outline: none !important;
+}
+
+/* Sharp Tables */
+.theme-sharp table {
+  background: var(--color-card);
+  border: var(--border-width) solid var(--color-text-primary);
+}
+
+.theme-sharp th {
+  color: var(--color-text-primary) !important;
+  font-weight: 700 !important;
+  background: var(--color-gray-2);
+  border-bottom: var(--border-width) solid var(--color-text-primary);
+}
+
+.theme-sharp td {
+  color: var(--color-text-primary) !important;
+  font-weight: 600 !important;
+  border-bottom: 1px solid var(--color-gray-3);
+}
+
+/* Sharp Links */
+.theme-sharp a:not(.inline-flex):not(.inline-block) {
+  color: var(--color-primary) !important;
+  font-weight: 600;
+}
+
+.theme-sharp a:not(.inline-flex):not(.inline-block):hover {
+  color: var(--color-primary-dark) !important;
+}
+
+/* Sharp Text Colors */
+.theme-sharp .text-slate-900 {
+  color: var(--color-text-primary) !important;
+  font-weight: 700 !important;
+}
+
+.theme-sharp .text-slate-800 {
+  color: var(--color-text-secondary) !important;
+  font-weight: 600 !important;
+}
+
+/* Remove All Shadows and Effects */
+.theme-sharp * {
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+/* Sharp Fade Animation */
+.theme-sharp .animate-fade-in {
+  animation: sharpFadeIn 0.3s ease-out forwards;
+}
+
+@keyframes sharpFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Arabic Text Support */
+.theme-sharp [dir="rtl"],
+.theme-sharp .arabic-text {
+  text-rendering: optimizeLegibility;
+  font-weight: 700;
+}

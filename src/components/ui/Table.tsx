@@ -16,32 +16,32 @@ export default function Table<T>({
   onRowClick,
 }: TableProps<T>) {
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-300">
-        <thead>
+    <div className="overflow-x-auto bg-white border-2 border-slate-900">
+      <table className="min-w-full">
+        <thead className="bg-slate-200">
           <tr>
             {columns.map((column) => (
               <th
                 key={String(column.accessor)}
                 scope="col"
-                className="py-3.5 pr-3 text-right text-sm font-semibold text-gray-900"
+                className="py-4 pr-4 text-right text-sm font-bold text-slate-900 border-b-2 border-slate-900"
               >
                 {column.header}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200">
+        <tbody className="bg-white">
           {data.map((item, index) => (
             <tr
               key={index}
               onClick={() => onRowClick?.(item)}
-              className={onRowClick ? 'cursor-pointer hover:bg-gray-50' : ''}
+              className={onRowClick ? 'cursor-pointer hover:bg-slate-100 transition-colors duration-200 border-b border-slate-300' : 'hover:bg-slate-50 transition-colors duration-200 border-b border-slate-300'}
             >
               {columns.map((column) => (
                 <td
                   key={String(column.accessor)}
-                  className="whitespace-nowrap py-4 pr-3 text-sm text-gray-900"
+                  className="whitespace-nowrap py-4 pr-4 text-sm text-slate-900 font-bold"
                 >
                   {column.render
                     ? column.render(item[column.accessor], item)

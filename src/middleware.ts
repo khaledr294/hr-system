@@ -1,0 +1,54 @@
+﻿import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
+
+export async function middleware(request: NextRequest) {
+  const token = await getToken({ req: request });
+  const path = request.nextUrl.pathname;
+
+  const isPublicPath = path === '/auth/login' ||
+    path.startsWith('/_next') ||
+    path.startsWith('/api/auth') ||
+    path === '/favicon.ico';
+
+  if (!token && !isPublicPath) {
+    return NextResponse.redirect(new URL('/auth/login', request.url));
+  }
+
+  if (token && path === '/auth/login') {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  // حماية صفحات إدارة المستخدمين للـ HR فقط
+  if (path.startsWith('/users') && token?.role !== 'HR') {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  // حماية صفحات العاملات والرواتب للـ HR فقط
+  if ((path.startsWith('/workers') || path.startsWith('/nationality-salary') || path.startsWith('/payroll')) && token?.role !== 'HR') {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  // المدير العام: فقط لوحة المعلومات الرئيسية
+  if (token?.role === 'GENERAL_MANAGER' && path !== '/' && !path.startsWith('/dashboard')) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  // المسوق: فقط إضافة العملاء والعقود
+  if (token?.role === 'MARKETER' && !(path.startsWith('/clients') || path.startsWith('/contracts'))) {
+    return NextResponse.redirect(new URL('/clients', request.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [
+    '/',
+    '/workers/:path*',
+    '/clients/:path*',
+    '/contracts/:path*',
+    '/nationality-salary/:path*',
+    '/((?!auth|api|_next/static|_next/image|favicon.ico).*)',
+  ],
+};
