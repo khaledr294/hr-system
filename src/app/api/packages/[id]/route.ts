@@ -2,11 +2,11 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const session = await getSession();
   if (!session) return new Response('Unauthorized', { status: 401 });
   try {
-    const { id } = params;
+    const { id } = await context.params;
     const data = await req.json();
     const allowed = ['name', 'duration', 'price'];
     const updateData: Partial<{ name: string; duration: number; price: number }> = {};
@@ -24,11 +24,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const session = await getSession();
   if (!session) return new Response('Unauthorized', { status: 401 });
   try {
-    const { id } = params;
+    const { id } = await context.params;
     await prisma.package.delete({ where: { id } });
     return new Response('Deleted', { status: 200 });
   } catch {

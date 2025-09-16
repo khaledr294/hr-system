@@ -1,19 +1,12 @@
-'use client';
+﻿'use client';
 
-import dynamic from 'next/dynamic';
+import { WorkerList } from './WorkerList';
 import { type Worker } from '@/types/worker';
 
 interface ClientWorkerListProps {
   workers: Worker[];
 }
 
-const DynamicWorkerList = dynamic<ClientWorkerListProps>(
-  () => import('./WorkerList.js').then((mod) => mod.WorkerList),
-  {
-    ssr: false,
-  }
-);
-
-export default function ClientWorkerList({ workers }: ClientWorkerListProps) {
-  return <DynamicWorkerList workers={workers} />;
+export function ClientWorkerList({ workers }: ClientWorkerListProps) {
+  return <WorkerList workers={workers} />;
 }

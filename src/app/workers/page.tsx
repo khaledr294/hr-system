@@ -2,7 +2,7 @@ import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
-import ClientWorkerList from '@/components/workers/ClientWorkerList';
+import { ClientWorkerList } from '@/components/workers/ClientWorkerList';
 import Link from 'next/link';
 
 export default async function WorkersPage() {
