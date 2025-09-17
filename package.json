@@ -15,6 +15,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:reset": "prisma migrate reset --force",
+    "db:create-users": "ts-node scripts/create-default-users.ts",
     "postinstall": "prisma generate",
     "deploy:vercel": "vercel --prod",
     "deploy:build": "npm run build && npm run db:deploy",

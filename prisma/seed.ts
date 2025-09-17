@@ -1,17 +1,22 @@
 import { PrismaClient } from '@prisma/client'
+import { hash } from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
 async function main() {
   // Create admin user if not exists
   const existingAdmin = await prisma.user.findFirst({
-    where: { name: 'مدير النظام' }
+    where: { email: 'admin@hr-system.com' }
   })
 
   if (!existingAdmin) {
+    const hashedPassword = await hash('123456', 12)
     const admin = await prisma.user.create({
       data: {
         name: 'مدير النظام',
+        email: 'admin@hr-system.com',
+        password: hashedPassword,
+        role: 'ADMIN',
         status: 'AVAILABLE',
         nationality: 'سعودي',
         phone: '0500000000',
@@ -20,19 +25,25 @@ async function main() {
       }
     })
     console.log('Created admin user:', admin)
+    console.log('Email: admin@hr-system.com')
+    console.log('Password: 123456')
   } else {
     console.log('Admin user already exists')
   }
 
   // Create HR manager user if not exists
   const existingHR = await prisma.user.findFirst({
-    where: { name: 'مدير الموارد البشرية' }
+    where: { email: 'hr@hr-system.com' }
   })
 
   if (!existingHR) {
+    const hashedPassword = await hash('123456', 12)
     const hrManager = await prisma.user.create({
       data: {
         name: 'مدير الموارد البشرية',
+        email: 'hr@hr-system.com',
+        password: hashedPassword,
+        role: 'HR_MANAGER',
         status: 'AVAILABLE',
         nationality: 'سعودي',
         phone: '0500000001',
@@ -41,6 +52,8 @@ async function main() {
       }
     })
     console.log('Created HR manager user:', hrManager)
+    console.log('Email: hr@hr-system.com')
+    console.log('Password: 123456')
   } else {
     console.log('HR manager user already exists')
   }
