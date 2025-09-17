@@ -88,9 +88,7 @@ async function createDefaultUsers() {
   }
 }
 
-// تشغيل الـ script
-if (require.main === module) {
-  createDefaultUsers();
-}
+// تشغيل الـ script عند الاستدعاء المباشر
+createDefaultUsers().catch(console.error);
 
 export default createDefaultUsers;
