@@ -1,15 +1,12 @@
 name: Build and Deploy
 
-# Temporarily disabled - uncomment when GitHub secrets are configured
-# on:
-#   push:
-#     branches: [ main ]
-#   pull_request:
-#     branches: [ main ]
-
-# Manual trigger only for now
+# GitHub secrets are now configured - enabling automatic deployments
 on:
-  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: # Keep manual trigger as well
 
 jobs:
   build:
@@ -46,6 +43,7 @@ jobs:
       env:
         NEXTAUTH_SECRET: "${{ secrets.NEXTAUTH_SECRET }}"
         NEXTAUTH_URL: "${{ secrets.NEXTAUTH_URL }}"
+        DATABASE_URL: "${{ secrets.DATABASE_URL }}"
 
     - name: Run security audit
       run: npm audit --audit-level high
