@@ -182,11 +182,11 @@ function NewContractForm() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-2xl mx-auto">
+      <div dir="rtl" className="max-w-2xl mx-auto text-right">
         <h1 className="text-2xl font-semibold text-gray-900 mb-6">إضافة عقد جديد</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {selectedClient ? (
-            <div className="bg-gray-50 p-4 rounded-md mb-6">
+            <div className="bg-gray-50 p-4 rounded-md mb-6 text-right">
               <h2 className="font-medium text-gray-900">العميل</h2>
               <p className="text-gray-600">{selectedClient.name}</p>
             </div>
@@ -197,7 +197,7 @@ function NewContractForm() {
             <label className="block text-base font-bold text-indigo-900 mb-2">بحث عن العاملة بالاسم</label>
             <input
               type="text"
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-700 focus:ring-indigo-700 text-lg font-semibold text-gray-900 bg-white mb-2"
+              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-700 focus:ring-indigo-700 text-lg font-semibold text-gray-900 bg-white mb-2 text-right"
               placeholder="اكتب اسم العاملة..."
               value={workerSearch}
               onChange={e => setWorkerSearch(e.target.value)}
@@ -205,6 +205,7 @@ function NewContractForm() {
             <label className="block text-base font-bold text-indigo-900 mb-2">العاملة</label>
             <Select
               label="العاملة"
+              className="text-right"
               {...register('workerId')}
               error={errors.workerId?.message}
               options={availableWorkers
@@ -219,6 +220,7 @@ function NewContractForm() {
             <label className="block text-base font-bold text-indigo-900 mb-2">اسم المسوق</label>
             <Select
               label="اسم المسوق"
+              className="text-right"
               {...register('marketerId')}
               error={errors.marketerId?.message}
               options={marketers.map(marketer => ({
@@ -233,9 +235,9 @@ function NewContractForm() {
               type="date"
               label="تاريخ بداية العقد"
               min={new Date().toISOString().split('T')[0]}
+              className="text-right"
               {...register('startDate')}
               error={errors.startDate?.message}
-              className="text-lg font-semibold text-gray-900"
             />
           </div>
           <div>
@@ -245,6 +247,7 @@ function NewContractForm() {
             ) : (
               <Select
                 label="نوع الباقة"
+                className="text-right"
                 {...register('packageType')}
                 error={errors.packageType?.message}
                 options={packages.map((pkg: Package) => ({ value: pkg.id, label: pkg.name }))}
@@ -262,6 +265,7 @@ function NewContractForm() {
             <Input
               type="number"
               label="المبلغ الإجمالي"
+              className="text-right"
               {...register('totalAmount', { valueAsNumber: true })}
               error={errors.totalAmount?.message}
               value={contractPrice}
@@ -269,20 +273,19 @@ function NewContractForm() {
                 setContractPrice(Number(e.target.value));
                 setValue('totalAmount', Number(e.target.value));
               }}
-              className="text-lg font-semibold text-gray-900"
             />
           </div>
           <div>
             <label className="block text-base font-bold text-indigo-900 mb-2">ملاحظات (اختياري)</label>
             <textarea
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-700 focus:ring-indigo-700 text-lg text-gray-900 bg-white"
+              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-700 focus:ring-indigo-700 text-lg text-gray-900 bg-white text-right"
               rows={3}
               {...register('notes')}
               placeholder="أدخل أي ملاحظات إضافية للعقد (اختياري)"
             />
           </div>
 
-          <div className="flex justify-end space-x-4">
+          <div className="flex justify-end flex-row-reverse gap-3">
             <Button
               type="button"
               variant="secondary"
@@ -310,4 +313,3 @@ export default function NewContractPage() {
     </Suspense>
   );
 }
-  

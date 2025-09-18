@@ -166,8 +166,8 @@ export function generateSampleData() {
     
     // بيانات العقد
     contractNumber: 'HR-2024-001',
-    startDate: new Date().toLocaleDateString('ar-SA'),
-    endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString('ar-SA'),
+  startDate: new Date().toLocaleDateString('ar-SA-u-ca-gregory'),
+  endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString('ar-SA-u-ca-gregory'),
     duration: '12 شهر',
     totalAmount: '24000',
     monthlyAmount: '2000',

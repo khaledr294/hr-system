@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 import { ClientWorkerList } from '@/components/workers/ClientWorkerList';
 import Link from 'next/link';
+import Button from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 
 export default async function WorkersPage() {
   const session = await getSession();
@@ -43,15 +45,17 @@ export default async function WorkersPage() {
 
   return (
     <DashboardLayout>
-      <div className="mb-6 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-slate-900">قائمة العمالة المنزلية</h1>
-        <Link 
-          href="/workers/new" 
-          className="inline-flex items-center px-4 py-2 border-2 border-slate-900 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
-        >
-          إضافة عاملة جديدة
-        </Link>
-      </div>
+      <section dir="rtl" className="mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-extrabold text-slate-900">قائمة العمالة المنزلية</h1>
+            <Badge className="hidden sm:inline-flex">{workers.length.toLocaleString('ar-SA')}</Badge>
+          </div>
+          <Link href="/workers/new">
+            <Button className="font-extrabold">إضافة عاملة جديدة</Button>
+          </Link>
+        </div>
+      </section>
       <ClientWorkerList workers={workers} />
     </DashboardLayout>
   );

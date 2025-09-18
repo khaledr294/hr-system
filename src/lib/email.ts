@@ -38,7 +38,7 @@ export function generateContractExpirationEmail(
   workerName: string,
   expiryDate: Date
 ) {
-  const date = new Intl.DateTimeFormat('ar-SA').format(expiryDate);
+  const date = new Intl.DateTimeFormat('ar-SA-u-ca-gregory').format(expiryDate);
 
   return `
     <div dir="rtl" style="font-family: Arial, sans-serif;">

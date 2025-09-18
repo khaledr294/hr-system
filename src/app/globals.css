@@ -1,6 +1,6 @@
 ﻿@import "tailwindcss";
 @import "../styles/sharp-theme.css";
-@import "../styles/modern-theme.css";
+@import "../styles/premium-theme.css";
 
 /* Default Theme Classes (to prevent hydration mismatch) */
 html {

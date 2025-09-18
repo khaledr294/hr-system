@@ -83,8 +83,8 @@ export function generateSampleData() {
     
     // بيانات العقد (Contract)
     contractNumber: 'HR-2025-001',
-    startDate: new Date().toLocaleDateString('ar-SA'),
-    endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString('ar-SA'),
+  startDate: new Date().toLocaleDateString('ar-SA-u-ca-gregory'),
+  endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString('ar-SA-u-ca-gregory'),
     totalAmount: '24,000',
     packageType: 'FULL_TIME',
     packageName: 'باقة دوام كامل',
@@ -112,8 +112,8 @@ export function generateSampleData() {
     companyPhone: '+966 11 234 5678',
     
     // التواريخ (Dates)
-    contractDate: new Date().toLocaleDateString('ar-SA'),
-    today: new Date().toLocaleDateString('ar-SA'),
+  contractDate: new Date().toLocaleDateString('ar-SA-u-ca-gregory'),
+  today: new Date().toLocaleDateString('ar-SA-u-ca-gregory'),
     
     // الشروط والأحكام (Terms)
     terms: 'تلتزم العاملة بأداء واجباتها وفقاً للقوانين المعمول بها في المملكة العربية السعودية.',

@@ -2,6 +2,8 @@
 
 import React from 'react';
 import Table from '@/components/ui/Table';
+import Input from '@/components/ui/Input';
+import Select from '@/components/ui/Select';
 import Link from 'next/link';
 import { type Worker } from '@/types/worker';
 
@@ -86,36 +88,35 @@ export function WorkerList({ workers }: WorkerListProps) {
 
   return (
     <div className="mt-8">
-      <div className="flex flex-col md:flex-row gap-4 mb-6 items-center">
-        <input
-          type="text"
-          placeholder="🔍 بحث في جميع الأعمدة..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="px-4 py-2 border-2 border-slate-900 w-full md:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 font-bold placeholder-slate-600"
-        />
-        <select
-          value={filterNationality}
-          onChange={e => setFilterNationality(e.target.value)}
-          className="px-4 py-2 border-2 border-slate-900 w-full md:w-1/4 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 font-bold"
-        >
-          <option value="" className="text-slate-700">كل الجنسيات</option>
-          {nationalities.map(nat => (
-            <option key={nat} value={nat} className="text-slate-700">{nat}</option>
-          ))}
-        </select>
-        <select
-          value={filterStatus}
-          onChange={e => setFilterStatus(e.target.value)}
-          className="px-4 py-2 border-2 border-slate-900 w-full md:w-1/4 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 font-bold"
-        >
-          <option value="" className="text-gray-700">كل الحالات</option>
-          <option value="AVAILABLE" className="text-green-700">متاحة</option>
-          <option value="RENTED" className="text-blue-700">مؤجرة</option>
-          <option value="UNAVAILABLE" className="text-gray-700">غير متاحة</option>
-        </select>
+      <div className="flex flex-col md:flex-row gap-4 mb-6 items-center w-full">
+        <div className="w-full md:w-1/3">
+          <Input
+            placeholder="🔍 بحث في جميع الأعمدة..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+        <div className="w-full md:w-1/4">
+          <Select
+            value={filterNationality}
+            onChange={e => setFilterNationality(e.target.value)}
+            options={[{ value: '', label: 'كل الجنسيات' }, ...nationalities.map(n => ({ value: n, label: n }))]}
+          />
+        </div>
+        <div className="w-full md:w-1/4">
+          <Select
+            value={filterStatus}
+            onChange={e => setFilterStatus(e.target.value)}
+            options={[
+              { value: '', label: 'كل الحالات' },
+              { value: 'AVAILABLE', label: 'متاحة' },
+              { value: 'RENTED', label: 'مؤجرة' },
+              { value: 'UNAVAILABLE', label: 'غير متاحة' },
+            ]}
+          />
+        </div>
       </div>
-      <Table data={filteredWorkers} columns={columns} />
+      <Table data={filteredWorkers} columns={columns} compact stickyHeader />
       {filteredWorkers.length === 0 && (
         <div className="text-center text-gray-500 mt-8">لا توجد نتائج مطابقة للبحث أو الفلترة.</div>
       )}

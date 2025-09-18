@@ -4,18 +4,18 @@ import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import NoSSR from '@/components/NoSSR';
 
-type ThemeType = 'sharp' | 'modern';
+type ThemeType = 'sharp' | 'premium';
 
-const themes = {
+const themes: Record<ThemeType, { name: string; description: string; preview: string }> = {
   sharp: {
     name: 'حاد',
     description: 'تصميم حاد بحواف مربعة وألوان قوية',
     preview: 'bg-slate-900 text-white border-2 border-slate-900',
   },
-  modern: {
-    name: 'عصري',
-    description: 'تصميم عصري مستوحى من iOS بزوايا دائرية وألوان ناعمة',
-    preview: 'bg-blue-500 text-white rounded-xl shadow-lg',
+  premium: {
+    name: 'بريميوم',
+    description: 'تصميم راقٍ مستوحى من أفضل SaaS مع زجاجية وتدرجات ناعمة',
+    preview: 'bg-gradient-to-br from-indigo-500 via-sky-400 to-pink-400 text-white rounded-2xl shadow-lg',
   },
 };
 
@@ -132,6 +132,11 @@ export default function ThemeSettingsPage() {
             <h4 className="font-bold text-blue-900 mb-2">ملاحظة:</h4>
             <p className="text-blue-800 text-sm">
               سيتم تطبيق التصميم المحدد على جميع صفحات النظام. قد يحتاج المتصفح إلى إعادة تحميل لتطبيق جميع التغييرات.
+            </p>
+            <p className="text-blue-800 text-sm mt-2">
+              خيار إضافي: جرّب لوحة &quot;بريميوم&quot; التجريبية من الرابط
+              <a href="/dashboard" className="text-blue-700 underline mx-1">/dashboard</a>
+              لعرض نمط واجهة متقدم بتأثيرات حديثة.
             </p>
           </div>
         </div>

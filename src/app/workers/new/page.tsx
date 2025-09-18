@@ -148,18 +148,19 @@ export default function NewWorkerPage() {
 
   return (
     <DashboardLayout>
-      <div className="bg-white shadow rounded-lg p-6">
+      <div dir="rtl" className="bg-white shadow rounded-lg p-6 text-right">
         <h1 className="text-2xl font-semibold text-gray-900 mb-6">
           إضافة عاملة جديدة
         </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
+        <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mr-auto">
           <Input
             label="الاسم"
             name="name"
             type="text"
             required
             placeholder="أدخل اسم العاملة"
+            className="text-right"
           />
 
           <Input
@@ -168,6 +169,9 @@ export default function NewWorkerPage() {
             type="number"
             required
             placeholder="أدخل رقم العاملة (مثال: 1001)"
+            className="text-right"
+            inputMode="numeric"
+            pattern="[0-9]*"
           />
 
           <Select
@@ -178,6 +182,7 @@ export default function NewWorkerPage() {
               label: nat.nationality
             }))}
             required
+            className="text-right"
           />
 
           <Input
@@ -186,6 +191,7 @@ export default function NewWorkerPage() {
             type="text"
             required
             placeholder="أدخل رقم الإقامة"
+            className="text-right"
           />
 
           <div className="flex gap-2">
@@ -198,6 +204,9 @@ export default function NewWorkerPage() {
               required
               placeholder="YYYY"
               maxLength={4}
+              className="text-right"
+              inputMode="numeric"
+              pattern="[0-9]*"
               onInput={e => {
                 const input = e.target as HTMLInputElement;
                 if (input.value.length === 4) {
@@ -215,6 +224,9 @@ export default function NewWorkerPage() {
               required
               placeholder="MM"
               maxLength={2}
+              className="text-right"
+              inputMode="numeric"
+              pattern="[0-9]*"
               onInput={e => {
                 const input = e.target as HTMLInputElement;
                 if (input.value.length === 2) {
@@ -232,6 +244,9 @@ export default function NewWorkerPage() {
               required
               placeholder="DD"
               maxLength={2}
+              className="text-right"
+              inputMode="numeric"
+              pattern="[0-9]*"
             />
           </div>
 
@@ -241,22 +256,25 @@ export default function NewWorkerPage() {
             type="tel"
             required
             placeholder="أدخل رقم الجوال"
+            className="text-right"
+            inputMode="numeric"
+            pattern="[0-9]*"
           />
 
           {error && (
             <div className="text-red-600 text-sm">{error}</div>
           )}
 
-          <div className="flex items-center space-x-4 space-x-reverse">
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'جاري الإضافة...' : 'إضافة العاملة'}
-            </Button>
+          <div className="flex justify-end flex-row-reverse gap-3">
             <Button
               type="button"
               variant="secondary"
               onClick={() => router.back()}
             >
               إلغاء
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'جاري الإضافة...' : 'إضافة العاملة'}
             </Button>
           </div>
         </form>

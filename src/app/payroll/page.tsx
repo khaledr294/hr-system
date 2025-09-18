@@ -128,8 +128,8 @@ export default function PayrollPage() {
       const monthStart = new Date(year, month - 1, 1);
       const monthEnd = new Date(year, month, 0); // Last day of the month
       console.log(`📅 حساب الأيام للشهر ${month}/${year}`);
-      console.log(`📊 بداية الشهر: ${monthStart.toLocaleDateString('ar-SA')}`);
-      console.log(`📊 نهاية الشهر: ${monthEnd.toLocaleDateString('ar-SA')}`);
+  console.log(`📊 بداية الشهر: ${monthStart.toLocaleDateString('ar-SA-u-ca-gregory')}`);
+  console.log(`📊 نهاية الشهر: ${monthEnd.toLocaleDateString('ar-SA-u-ca-gregory')}`);
       
       let totalWorkingDays = 0;
       
@@ -140,8 +140,8 @@ export default function PayrollPage() {
         const contractEnd = new Date(contract.endDate);
         
         console.log(`📋 تواريخ العقد:`, {
-          start: contractStart.toLocaleDateString('ar-SA'),
-          end: contractEnd.toLocaleDateString('ar-SA')
+          start: contractStart.toLocaleDateString('ar-SA-u-ca-gregory'),
+          end: contractEnd.toLocaleDateString('ar-SA-u-ca-gregory')
         });
         
         // Find the overlap between contract period and the selected month
@@ -149,8 +149,8 @@ export default function PayrollPage() {
         const periodEnd = contractEnd < monthEnd ? contractEnd : monthEnd;
 
         console.log(`⏰ الفترة المحسوبة:`, {
-          periodStart: periodStart.toLocaleDateString('ar-SA'),
-          periodEnd: periodEnd.toLocaleDateString('ar-SA'),
+          periodStart: periodStart.toLocaleDateString('ar-SA-u-ca-gregory'),
+          periodEnd: periodEnd.toLocaleDateString('ar-SA-u-ca-gregory'),
           validPeriod: periodStart < periodEnd
         });
 

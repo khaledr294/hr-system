@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
-type ThemeType = 'sharp' | 'modern';
+type ThemeType = 'sharp' | 'premium';
 
 interface ThemeContextType {
   theme: ThemeType;
@@ -24,7 +24,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     // Load theme from localStorage after mounting
     try {
       const savedTheme = localStorage.getItem('selectedTheme') as ThemeType;
-      if (savedTheme && (savedTheme === 'sharp' || savedTheme === 'modern')) {
+      if (savedTheme && (savedTheme === 'sharp' || savedTheme === 'premium')) {
         setThemeState(savedTheme);
         document.documentElement.className = `theme-${savedTheme}`;
       } else {
@@ -46,24 +46,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     } catch {
       console.warn('Unable to save theme to localStorage');
     }
-    document.documentElement.className = `theme-${newTheme}`;
+  document.documentElement.className = `theme-${newTheme}`;
     
     // Reset loading state
     setTimeout(() => setIsLoading(false), 300);
   };
 
-  // Don't render until mounted to prevent hydration mismatch
-  if (!mounted) {
-    return (
-      <div className="theme-sharp">
-        {children}
-      </div>
-    );
-  }
-
+  // Always provide context; add a default theme wrapper before mount to avoid flash
   return (
     <ThemeContext.Provider value={{ theme, setTheme, isLoading, mounted }}>
-      {children}
+      <div className={!mounted ? 'theme-sharp' : undefined}>
+        {children}
+      </div>
     </ThemeContext.Provider>
   );
 }

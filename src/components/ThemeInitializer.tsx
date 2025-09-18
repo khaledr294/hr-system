@@ -7,8 +7,8 @@ export default function ThemeInitializer() {
     // Initialize theme on client side only
     const initTheme = () => {
       try {
-        const savedTheme = localStorage.getItem('selectedTheme') || 'sharp';
-        const validTheme = savedTheme === 'modern' ? 'modern' : 'sharp';
+  const savedTheme = localStorage.getItem('selectedTheme') || 'sharp';
+  const validTheme = ['premium'].includes(savedTheme) ? savedTheme : 'sharp';
         document.documentElement.className = `theme-${validTheme}`;
         
         // Save valid theme back to localStorage

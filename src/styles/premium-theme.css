@@ -1,0 +1,91 @@
+/* Premium Theme - Elegant SaaS aesthetic */
+.theme-premium {
+  --bg: 245 245 255;
+  --card: 255 255 255 / 0.6;
+  --border: 255 255 255 / 0.6;
+  --text: 15 23 42;
+  --muted: 71 85 105;
+  --primary: 79 70 229; /* indigo-600 */
+  --primary-2: 14 165 233; /* sky-500 */
+  --accent: 236 72 153;  /* pink-500 */
+}
+
+.theme-premium body {
+  background: radial-gradient(1200px 700px at 80% -10%, rgba(99,102,241,0.15), transparent 60%),
+              radial-gradient(900px 500px at 0% 10%, rgba(56,189,248,0.15), transparent 60%),
+              rgb(var(--bg));
+  color: rgb(var(--text));
+}
+
+.theme-premium .glass {
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: saturate(140%) blur(12px);
+  -webkit-backdrop-filter: saturate(140%) blur(12px);
+  border: 1px solid rgba(255,255,255,0.6);
+}
+
+.theme-premium .card-premium {
+  background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.6));
+  border: 1px solid rgba(255,255,255,0.6);
+  backdrop-filter: blur(10px);
+}
+
+.theme-premium .shadow-soft { box-shadow: 0 10px 30px rgba(2,6,23,0.08), 0 2px 6px rgba(2,6,23,0.04); }
+.theme-premium .shadow-hover:hover { box-shadow: 0 14px 40px rgba(2,6,23,0.12), 0 4px 10px rgba(2,6,23,0.06); }
+
+.theme-premium .gradient-brand { background: linear-gradient(135deg, rgb(var(--primary)) 0%, rgb(var(--primary-2)) 50%, rgb(var(--accent)) 100%);} 
+.theme-premium .text-gradient { background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 40%, #ec4899 90%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+.theme-premium .ring-soft { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.8), 0 1px 0 rgba(255,255,255,0.6); }
+
+.theme-premium .kpi {
+  border-radius: 1rem;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+/* Override common sharp classes to premium look without changing pages */
+.theme-premium table { color: rgb(15 23 42); }
+.theme-premium thead { background-color: rgba(255,255,255,0.7); }
+.theme-premium tbody { background-color: rgba(255,255,255,0.7); }
+.theme-premium .divide-y > :not([hidden]) ~ :not([hidden]) { border-top-width: 1px; border-color: rgba(255,255,255,0.5); }
+.theme-premium .divide-indigo-200 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(255,255,255,0.5); }
+.theme-premium .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(255,255,255,0.5); }
+.theme-premium .border, .theme-premium .border-2 { border-color: rgba(255,255,255,0.6); }
+.theme-premium tr:hover { background-color: rgba(255,255,255,0.8); }
+.theme-premium .bg-white { background-color: rgba(255,255,255,0.7) !important; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.theme-premium .border-slate-900 { border-color: rgba(255,255,255,0.5) !important; }
+.theme-premium .text-slate-900 { color: rgb(15 23 42) !important; }
+.theme-premium .shadow, 
+.theme-premium .shadow-sm, 
+.theme-premium .shadow-md, 
+.theme-premium .shadow-lg, 
+.theme-premium .shadow-xl, 
+.theme-premium .shadow-2xl { box-shadow: 0 10px 30px rgba(2,6,23,0.08), 0 2px 6px rgba(2,6,23,0.04) !important; }
+.theme-premium .hover\:bg-slate-200:hover { background-color: rgba(255,255,255,0.8) !important; }
+.theme-premium .hover\:bg-slate-50:hover { background-color: rgba(255,255,255,0.85) !important; }
+.theme-premium .bg-slate-800 { background: linear-gradient(135deg, rgba(2,6,23,0.85), rgba(30,41,59,0.85)) !important; }
+.theme-premium .border-2.border-slate-900 { border-width: 1px !important; }
+.theme-premium .glass-effect, 
+.theme-premium .rounded, 
+.theme-premium .rounded-lg, 
+.theme-premium .rounded-xl, 
+.theme-premium .rounded-2xl { border: 1px solid rgba(255,255,255,0.6); }
+.theme-premium table tbody.bg-white { background: rgba(255,255,255,0.7) !important; }
+.theme-premium .card-premium, 
+.theme-premium .glass, 
+.theme-premium .ring-soft { color: rgb(15 23 42); }
+.theme-premium .kpi:hover { transform: translateY(-2px) scale(1.01); }
+
+.theme-premium .hover-scale { transition: transform .2s ease; }
+.theme-premium .hover-scale:hover { transform: scale(1.02); }
+
+.theme-premium .border-gradient {
+  position: relative;
+}
+.theme-premium .border-gradient::before {
+  content: "";
+  position: absolute; inset: 0; border-radius: 1rem; padding: 1px; background: linear-gradient(135deg,#e5e7eb 0%, #c7d2fe 40%, #bae6fd 80%);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+}

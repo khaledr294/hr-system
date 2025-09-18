@@ -47,11 +47,9 @@ export default function NewClientPage() {
   const onSubmit = async (data: ClientFormData) => {
     try {
       setIsSubmitting(true);
-      // Combine birth fields into dateOfBirth
       const mm = data.birthMonth.padStart(2, '0');
       const dd = data.birthDay.padStart(2, '0');
       const dateOfBirth = `${data.birthYear}-${mm}-${dd}`;
-      // Exclude birthYear, birthMonth, birthDay from payload
       const payload = {
         name: data.name,
         phone: data.phone,
@@ -77,7 +75,6 @@ export default function NewClientPage() {
       router.refresh();
     } catch (error) {
       console.error('Error creating client:', error);
-      // Handle error (show error message to user)
     } finally {
       setIsSubmitting(false);
     }
@@ -85,7 +82,7 @@ export default function NewClientPage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-2xl mx-auto">
+      <div dir="rtl" className="max-w-2xl mx-auto text-right">
         <h1 className="text-2xl font-semibold text-gray-900 mb-6">إضافة عميل جديد</h1>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -93,6 +90,7 @@ export default function NewClientPage() {
             <Input
               label="الاسم"
               placeholder="أدخل اسم العميل"
+              className="text-right"
               {...register('name')}
               error={errors.name?.message}
             />
@@ -102,6 +100,9 @@ export default function NewClientPage() {
             <Input
               label="رقم الهوية"
               placeholder="أدخل رقم الهوية"
+              className="text-right"
+              inputMode="numeric"
+              pattern="[0-9]*"
               {...register('idNumber')}
               error={errors.idNumber?.message}
             />
@@ -111,6 +112,9 @@ export default function NewClientPage() {
             <Input
               label="رقم الجوال"
               placeholder="05xxxxxxxx"
+              className="text-right"
+              inputMode="numeric"
+              pattern="[0-9]*"
               {...register('phone')}
               error={errors.phone?.message}
             />
@@ -121,6 +125,7 @@ export default function NewClientPage() {
               label="البريد الإلكتروني (اختياري)"
               placeholder="email@example.com"
               type="email"
+              className="text-right"
               {...register('email')}
               error={errors.email?.message}
             />
@@ -130,6 +135,7 @@ export default function NewClientPage() {
             <Input
               label="العنوان"
               placeholder="أدخل العنوان"
+              className="text-right"
               {...register('address')}
               error={errors.address?.message}
             />
@@ -146,9 +152,12 @@ export default function NewClientPage() {
                 required
                 placeholder="YYYY"
                 maxLength={4}
+                className="text-right"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 {...register('birthYear')}
                 error={errors.birthYear?.message}
-                onInput={e => {
+                onInput={(e) => {
                   const input = e.target as HTMLInputElement;
                   if (input.value.length === 4) {
                     const next = document.querySelector<HTMLInputElement>('[name="birthMonth"]');
@@ -164,9 +173,12 @@ export default function NewClientPage() {
                 required
                 placeholder="MM"
                 maxLength={2}
+                className="text-right"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 {...register('birthMonth')}
                 error={errors.birthMonth?.message}
-                onInput={e => {
+                onInput={(e) => {
                   const input = e.target as HTMLInputElement;
                   if (input.value.length === 2) {
                     const next = document.querySelector<HTMLInputElement>('[name="birthDay"]');
@@ -182,13 +194,16 @@ export default function NewClientPage() {
                 required
                 placeholder="DD"
                 maxLength={2}
+                className="text-right"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 {...register('birthDay')}
                 error={errors.birthDay?.message}
               />
             </div>
           </div>
 
-          <div className="flex justify-end space-x-4">
+          <div className="flex justify-end flex-row-reverse gap-3">
             <Button
               type="button"
               variant="secondary"
@@ -196,10 +211,7 @@ export default function NewClientPage() {
             >
               إلغاء
             </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-            >
+            <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'جاري الحفظ...' : 'حفظ'}
             </Button>
           </div>

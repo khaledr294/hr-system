@@ -54,8 +54,8 @@ export default async function MarketerDetailsPage({ params }: { params: Promise<
               {marketer.contracts.map(contract => (
                 <tr key={contract.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{contract.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(contract.startDate).toLocaleDateString('ar-SA')}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(contract.endDate).toLocaleDateString('ar-SA')}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(contract.startDate).toLocaleDateString('ar-SA-u-ca-gregory')}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(contract.endDate).toLocaleDateString('ar-SA-u-ca-gregory')}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{contract.totalAmount.toLocaleString('ar-SA')} ريال</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{contract.status === 'ACTIVE' ? 'نشط' : contract.status === 'COMPLETED' ? 'منتهي' : 'ملغي'}</td>
                 </tr>

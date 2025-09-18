@@ -55,7 +55,7 @@ export default async function WorkerDetailsPage({
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">تاريخ الميلاد</dt>
-                <dd className="mt-1 text-sm text-gray-900">{worker.dateOfBirth ? new Date(worker.dateOfBirth).toLocaleDateString('en-US') : '-'}</dd>
+                <dd className="mt-1 text-sm text-gray-900">{worker.dateOfBirth ? new Date(worker.dateOfBirth).toLocaleDateString('ar-SA-u-ca-gregory') : '-'}</dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">رقم الجوال</dt>
@@ -107,13 +107,13 @@ export default async function WorkerDetailsPage({
               <div>
                 <dt className="text-sm font-medium text-gray-500">تاريخ الإضافة</dt>
                 <dd className="mt-1 text-sm text-gray-900">
-                  {new Date(worker.createdAt).toLocaleDateString('ar-SA')}
+                  {new Date(worker.createdAt).toLocaleDateString('ar-SA-u-ca-gregory')}
                 </dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">آخر تحديث</dt>
                 <dd className="mt-1 text-sm text-gray-900">
-                  {new Date(worker.updatedAt).toLocaleDateString('ar-SA')}
+                  {new Date(worker.updatedAt).toLocaleDateString('ar-SA-u-ca-gregory')}
                 </dd>
               </div>
             </dl>

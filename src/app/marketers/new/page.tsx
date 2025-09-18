@@ -32,13 +32,31 @@ export default function NewMarketerPage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-xl mx-auto">
+      <div dir="rtl" className="max-w-xl mx-auto text-right">
         <h1 className="text-2xl font-semibold text-gray-900 mb-6">إضافة مسوق جديد</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <Input label="الاسم" {...register('name', { required: 'الاسم مطلوب' })} error={errors.name?.message as string} />
-          <Input label="رقم الجوال" {...register('phone', { required: 'رقم الجوال مطلوب' })} error={errors.phone?.message as string} />
-          <Input label="البريد الإلكتروني (اختياري)" type="email" {...register('email')} error={errors.email?.message as string} />
-          <div className="flex justify-end space-x-4">
+          <Input
+            label="الاسم"
+            className="text-right"
+            {...register('name', { required: 'الاسم مطلوب' })}
+            error={errors.name?.message as string}
+          />
+          <Input
+            label="رقم الجوال"
+            className="text-right"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            {...register('phone', { required: 'رقم الجوال مطلوب' })}
+            error={errors.phone?.message as string}
+          />
+          <Input
+            label="البريد الإلكتروني (اختياري)"
+            type="email"
+            className="text-right"
+            {...register('email')}
+            error={errors.email?.message as string}
+          />
+          <div className="flex justify-end flex-row-reverse gap-3">
             <Button type="button" variant="secondary" onClick={() => router.back()}>إلغاء</Button>
             <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'جاري الحفظ...' : 'حفظ'}</Button>
           </div>

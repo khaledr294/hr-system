@@ -5,6 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { Session } from "next-auth";
+import { useTheme } from "./ThemeProvider";
+import ThemeToggle from "./ThemeToggle";
+import PremiumPageShell from "./premium/PremiumPageShell";
 
 const navigation = [
   { name: "الرئيسية", href: "/" },
@@ -201,6 +204,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
   const { data: session, status } = useSession();
+  const { theme } = useTheme();
+  const isPremium = theme === "premium";
 
   // إذا كانت الجلسة قيد التحميل، أظهر شاشة تحميل
   if (status === "loading") {
@@ -214,16 +219,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
+  // Premium theme applies styles globally, but the premium shell is used only on the root page now.
+
+  if (isPremium) {
+    return (
+      <PremiumPageShell>
+        {children}
+      </PremiumPageShell>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-100">
-      <nav className="bg-slate-800 shadow-xl border-b-4 border-slate-900">
+    <div className={`min-h-screen bg-slate-100`}>
+      <nav className={classNames(
+        "bg-slate-800 shadow-xl border-b-4 border-slate-900"
+      )}>
         <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
           <div className="flex h-20 justify-between items-center">
             <div className="flex items-center min-w-0 flex-1">
               <div className="flex items-center md:hidden">
                 <button
                   type="button"
-                  className="text-white hover:text-slate-300 p-2.5 hover:bg-slate-700 transition-all duration-200"
+                  className={classNames(
+                    "text-white p-2.5 transition-all duration-200",
+                    isPremium ? "hover:opacity-90" : "hover:text-slate-300 hover:bg-slate-700"
+                  )}
                   onClick={() => setSidebarOpen(!sidebarOpen)}
                 >
                   <span className="sr-only">افتح القائمة</span>
@@ -233,7 +253,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </button>
               </div>
               <div className="flex items-center ml-2 min-w-0">
-                <div className="bg-white p-2 flex-shrink-0 border-2 border-slate-900">
+                <div className={classNames(
+                  "p-2 flex-shrink-0",
+                  isPremium ? "glass ring-soft" : "bg-white border-2 border-slate-900"
+                )}>
                   <svg className="h-7 w-7 text-slate-900" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                   </svg>
@@ -251,7 +274,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <NavLinks session={session} pathname={pathname} />
               </div>
             </div>
-            <div className="flex items-center flex-shrink-0">
+            <div className="flex items-center flex-shrink-0 gap-3">
+              <ThemeToggle />
               {session ? (
                 <div className="flex items-center space-x-4 space-x-reverse">
                   <div className="text-right ml-3 hidden sm:block">
@@ -264,14 +288,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                        session.user?.role === 'MARKETER' ? 'مسوق' : 'موظف'}
                     </div>
                   </div>
-                  <div className="w-10 h-10 bg-white border-2 border-slate-900 flex items-center justify-center">
+                  <div className={classNames(
+                    "w-10 h-10 flex items-center justify-center",
+                    isPremium ? "glass ring-soft" : "bg-white border-2 border-slate-900"
+                  )}>
                     <svg className="w-5 h-5 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
                   <button
                     onClick={() => signOut()}
-                    className="inline-flex items-center text-slate-900 bg-white hover:bg-slate-200 px-4 py-2.5 font-bold text-sm transition-all duration-200 border-2 border-slate-900"
+                    className={classNames(
+                      "inline-flex items-center text-slate-900 px-4 py-2.5 font-bold text-sm transition-all duration-200",
+                      isPremium ? "glass hover-scale" : "bg-white hover:bg-slate-200 border-2 border-slate-900"
+                    )}
                   >
                     <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -284,7 +314,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <span className="text-slate-200 text-sm font-medium hidden sm:block">غير مسجل</span>
                   <Link
                     href="/auth/login"
-                    className="inline-flex items-center text-slate-900 bg-white hover:bg-slate-200 px-4 py-2.5 font-bold text-sm transition-all duration-200 border-2 border-slate-900"
+                    className={classNames(
+                      "inline-flex items-center text-slate-900 px-4 py-2.5 font-bold text-sm transition-all duration-200",
+                      isPremium ? "glass hover-scale" : "bg-white hover:bg-slate-200 border-2 border-slate-900"
+                    )}
                   >
                     <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
@@ -309,7 +342,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </nav>
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white border-2 border-slate-900 min-h-[calc(100vh-140px)] p-8">
+        <div className={classNames(
+          isPremium ? "glass rounded-2xl shadow-soft border-gradient" : "bg-white border-2 border-slate-900",
+          "min-h-[calc(100vh-140px)] p-8"
+        )}>
           {children}
         </div>
       </main>

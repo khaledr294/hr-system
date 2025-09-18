@@ -117,10 +117,10 @@ export default async function ClientDetailsPage({
                       {contract.worker.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(contract.startDate).toLocaleDateString('ar-SA')}
+                      {new Date(contract.startDate).toLocaleDateString('ar-SA-u-ca-gregory')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(contract.endDate).toLocaleDateString('ar-SA')}
+                      {new Date(contract.endDate).toLocaleDateString('ar-SA-u-ca-gregory')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {contract.packageName || contract.packageType}

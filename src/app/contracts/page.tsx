@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 import Link from 'next/link';
+import Button from '@/components/ui/Button';
 
 interface Contract {
   id: string;
@@ -81,10 +82,10 @@ export default async function ContractsPage() {
                     {contract.worker?.name || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Date(contract.startDate).toLocaleDateString('ar-SA')}
+                    {new Date(contract.startDate).toLocaleDateString('ar-SA-u-ca-gregory')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Date(contract.endDate).toLocaleDateString('ar-SA')}
+                    {new Date(contract.endDate).toLocaleDateString('ar-SA-u-ca-gregory')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {contract.packageName || contract.packageType}
@@ -130,22 +131,19 @@ export default async function ContractsPage() {
 
   return (
     <DashboardLayout>
-      <div className="mb-6">
+      <section dir="rtl" className="mb-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-semibold text-gray-900">جميع العقود</h1>
-          <div className="flex gap-3">
-            <Link
-              href="/contracts/templates"
-              className="inline-flex items-center px-4 py-2 border border-blue-600 rounded-md shadow-sm text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              📄 إدارة قوالب العقود
-            </Link>
-          </div>
+          <h1 className="text-2xl font-extrabold text-slate-900">جميع العقود</h1>
+          <Link href="/contracts/templates">
+            <Button className="font-extrabold">📄 إدارة قوالب العقود</Button>
+          </Link>
         </div>
-      </div>
-      {renderTable(expiringSoon, 'عقود على وشك الانتهاء (متبقي 3 أيام أو أقل)')}
-      {renderTable(active, 'العقود النشطة')}
-      {renderTable(completed, 'العقود المنتهية')}
+      </section>
+      <section dir="rtl">
+        {renderTable(expiringSoon, 'عقود على وشك الانتهاء (متبقي 3 أيام أو أقل)')}
+        {renderTable(active, 'العقود النشطة')}
+        {renderTable(completed, 'العقود المنتهية')}
+      </section>
     </DashboardLayout>
   );
 }
