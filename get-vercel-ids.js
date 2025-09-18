@@ -1,6 +1,7 @@
 // تشغيل هذا الملف للحصول على معرفات Vercel
 // node get-vercel-ids.js
 
+/* eslint-disable @typescript-eslint/no-require-imports */
 const { execSync } = require('child_process');
 
 try {
@@ -11,7 +12,7 @@ try {
     const orgId = execSync('vercel org list --token YOUR_VERCEL_TOKEN', { encoding: 'utf8' });
     console.log('📋 معرف المؤسسة (ORG_ID):');
     console.log(orgId);
-  } catch (e) {
+  } catch {
     console.log('⚠️  لم يتم العثور على Vercel CLI');
   }
   

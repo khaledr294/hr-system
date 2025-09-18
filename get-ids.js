@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const https = require('https');
 
 async function getVercelIds(token) {
@@ -66,7 +67,7 @@ function makeRequest(url, token) {
                     } else {
                         resolve(parsed);
                     }
-                } catch (e) {
+                } catch {
                     reject(new Error('Invalid JSON response'));
                 }
             });
