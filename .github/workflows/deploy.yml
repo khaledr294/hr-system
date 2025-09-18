@@ -1,10 +1,15 @@
 name: Build and Deploy
 
+# Temporarily disabled - uncomment when GitHub secrets are configured
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+#     branches: [ main ]
+
+# Manual trigger only for now
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
