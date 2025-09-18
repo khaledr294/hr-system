@@ -20,8 +20,11 @@
     "deploy:vercel": "vercel --prod",
     "deploy:build": "npm run build && npm run db:deploy",
     "deploy:check": "node scripts/check-deployment.js",
+    "deploy:improve": "powershell -ExecutionPolicy Bypass -File scripts/improve-deployment.ps1",
     "setup:github": "powershell -ExecutionPolicy Bypass -File scripts/setup-github.ps1",
-    "security:audit": "npm audit && prisma validate"
+    "security:audit": "npm audit && prisma validate",
+    "clean": "npm cache clean --force && rm -rf .next node_modules/.cache",
+    "precommit": "npm run lint && npm run type-check && npm run security:audit"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

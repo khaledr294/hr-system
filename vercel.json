@@ -1,0 +1,58 @@
+{
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm ci",
+  "framework": "nextjs",
+  "crons": [],
+  "env": {
+    "NEXTAUTH_URL": "@nextauth_url",
+    "NEXTAUTH_SECRET": "@nextauth_secret",
+    "DATABASE_URL": "@database_url"
+  },
+  "build": {
+    "env": {
+      "NEXTAUTH_URL": "@nextauth_url", 
+      "NEXTAUTH_SECRET": "@nextauth_secret",
+      "DATABASE_URL": "@database_url"
+    }
+  },
+  "functions": {
+    "pages/api/**/*.ts": {
+      "maxDuration": 10
+    },
+    "pages/api/auth/**/*.ts": {
+      "maxDuration": 5
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "s-maxage=300, stale-while-revalidate=59"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "header",
+          "key": "host",
+          "value": "(?<host>.*)"
+        }
+      ],
+      "destination": "/auth/login",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/healthz",
+      "destination": "/api/health"
+    }
+  ]
+}
