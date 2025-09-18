@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
-import { notoVfs, notoFonts } from '@/lib/pdfmake-noto-arabic';
-// دمج خطوط pdfmake الافتراضية مع خط نوتو العربي
-pdfMake.vfs = { ...pdfFonts.vfs, ...notoVfs };
-pdfMake.fonts = { ...pdfMake.fonts, ...notoFonts };
+
+// Initialize pdfMake with default fonts
+pdfMake.vfs = pdfFonts.vfs;
+pdfMake.fonts = {
+  Roboto: {
+    normal: 'Roboto-Regular.ttf',
+    bold: 'Roboto-Medium.ttf',
+    italics: 'Roboto-Italic.ttf',
+    bolditalics: 'Roboto-MediumItalic.ttf'
+  }
+};
 import type { TDocumentDefinitions, Content } from 'pdfmake/interfaces';
 // @ts-expect-error: html-to-pdfmake has no types
 import htmlToPdfmake from 'html-to-pdfmake';
@@ -38,16 +45,16 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ error: errMsg }, { status: 500 });
     }
 
-    // محاولة توليد PDF مع الخط العربي، وإذا فشل جرب Roboto
+    // توليد PDF باستخدام خط Roboto (سيتم إضافة دعم العربية لاحقاً)
     let buffer: Buffer | null = null;
-    let usedFont = 'NotoSansArabic';
+    const usedFont = 'Roboto';
     let errorMsg = '';
     try {
-  console.log('PDF API: Trying to generate PDF with NotoSansArabic');
+  console.log('PDF API: Generating PDF with Roboto font');
   const docDefinition: TDocumentDefinitions = {
         content: Array.isArray(pdfContent) ? pdfContent : [pdfContent],
         defaultStyle: {
-          font: 'NotoSansArabic',
+          font: 'Roboto',
           alignment: 'right',
         },
         styles: {
@@ -66,42 +73,12 @@ export async function POST(req: NextRequest) {
       });
     } catch (err) {
   if (err && typeof err === 'object' && 'message' in err && typeof (err as { message?: unknown }).message === 'string') {
-    errorMsg = 'خطأ في توليد PDF مع الخط العربي: ' + (err as { message: string }).message;
+    errorMsg = 'خطأ في توليد PDF: ' + (err as { message: string }).message;
   } else {
-    errorMsg = 'خطأ في توليد PDF مع الخط العربي: ' + String(err);
+    errorMsg = 'خطأ في توليد PDF: ' + String(err);
   }
-  console.error('PDF API: Error with NotoSansArabic', errorMsg);
-      console.error(errorMsg);
-      usedFont = 'Roboto';
-      // جرب Roboto
-      try {
-  console.log('PDF API: Trying to generate PDF with Roboto fallback');
-  const docDefinition: TDocumentDefinitions = {
-          content: [
-            { text: '⚠️ حدث خطأ في الخط العربي، تم استخدام Roboto مؤقتاً', color: 'red', fontSize: 10 },
-            ...(Array.isArray(pdfContent) ? pdfContent : [pdfContent])
-          ],
-          defaultStyle: {
-            font: 'Roboto',
-            alignment: 'right',
-          },
-        };
-  buffer = await new Promise((resolve, reject) => {
-          pdfMake.createPdf(docDefinition).getBuffer((buf: Buffer) => {
-            if (!buf || buf.length === 0) reject(new Error('Buffer فارغ Roboto'));
-            else resolve(buf);
-          });
-        });
-      } catch (err2) {
-  if (err2 && typeof err2 === 'object' && 'message' in err2 && typeof (err2 as { message?: unknown }).message === 'string') {
-    errorMsg += '\nثم فشل Roboto: ' + (err2 as { message: string }).message;
-  } else {
-    errorMsg += '\nثم فشل Roboto: ' + String(err2);
-  }
-  console.error('PDF API: Error with Roboto fallback', errorMsg);
-        console.error(errorMsg);
-        return NextResponse.json({ error: errorMsg }, { status: 500 });
-      }
+  console.error('PDF API: Error generating PDF', errorMsg);
+      return NextResponse.json({ error: errorMsg }, { status: 500 });
     }
 
     // إذا نجح التوليد
