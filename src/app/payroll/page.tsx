@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import * as XLSX from 'xlsx';
+import * as ExcelJS from 'exceljs';
 
 type Worker = {
   id: string;
@@ -273,86 +273,105 @@ export default function PayrollPage() {
     alert(`تم تصدير ملف CSV بنجاح!\nاسم الملف: ${fileName}\nعدد العاملات: ${payrollData.length}\nإجمالي المبلغ: ${Math.round(calculateTotalPayroll()).toLocaleString()} ريال`);
   };
 
-  const exportToExcel = () => {
-    // إنشاء ورقة عمل جديدة
-    const ws = XLSX.utils.aoa_to_sheet([]);
-    
-    // معلومات التقرير في أعلى الملف (بالتقويم الميلادي)
-    const reportDate = new Date(selectedMonth + '-01').toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long',
-      calendar: 'gregory'
-    });
-    const currentDate = new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      calendar: 'gregory'
-    });
-    const totalWorkers = payrollData.length;
-    const totalPayroll = Math.round(calculateTotalPayroll());
-    
-    // إضافة معلومات التقرير
-    XLSX.utils.sheet_add_aoa(ws, [
-      ['تقرير الرواتب الشهرية'],
-      ['الشهر:', reportDate],
-      ['تاريخ التقرير:', currentDate],
-      ['إجمالي العاملات:', totalWorkers],
-      ['إجمالي المبلغ:', `${totalPayroll.toLocaleString()} ريال`],
-      [''], // سطر فارغ
+  const exportToExcel = async () => {
+    try {
+      // إنشاء مصنف جديد
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('تقرير الرواتب');
+      
+      // معلومات التقرير في أعلى الملف (بالتقويم الميلادي)
+      const reportDate = new Date(selectedMonth + '-01').toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long',
+        calendar: 'gregory'
+      });
+      const currentDate = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        calendar: 'gregory'
+      });
+      const totalWorkers = payrollData.length;
+      const totalPayroll = Math.round(calculateTotalPayroll());
+      
+      // إضافة معلومات التقرير
+      worksheet.addRow(['تقرير الرواتب الشهرية']);
+      worksheet.addRow(['الشهر:', reportDate]);
+      worksheet.addRow(['تاريخ التقرير:', currentDate]);
+      worksheet.addRow(['إجمالي العاملات:', totalWorkers]);
+      worksheet.addRow(['إجمالي المبلغ:', `${totalPayroll.toLocaleString()} ريال`]);
+      worksheet.addRow([]); // سطر فارغ
+      
       // رؤوس الجدول
-      ['كود العاملة', 'الاسم', 'الجنسية', 'الراتب الأساسي', 'أيام العمل', 'الخصومات', 'المكافآت', 'إجمالي الراتب']
-    ], { origin: 'A1' });
-    
-    // إضافة بيانات العاملات مع التأكد من دقة البيانات
-    const employeeData = payrollData.map(item => [
-      item.worker.code.toString().padStart(4, '0'),
-      item.worker.name || 'غير محدد',
-      item.worker.nationality || 'غير محدد',
-      Math.round(item.baseSalary) || 0,
-      item.workingDays || 0,
-      Math.round(item.deductions) || 0,
-      Math.round(item.bonuses) || 0,
-      Math.round(item.totalSalary) || 0
-    ]);
-    
-    XLSX.utils.sheet_add_aoa(ws, employeeData, { origin: 'A8' });
-    
-    // إضافة سطر الإجمالي
-    const totalRow = [
-      '', '', 'الإجمالي:', 
-      Math.round(payrollData.reduce((sum, item) => sum + item.baseSalary, 0)),
-      payrollData.reduce((sum, item) => sum + item.workingDays, 0),
-      Math.round(payrollData.reduce((sum, item) => sum + item.deductions, 0)),
-      Math.round(payrollData.reduce((sum, item) => sum + item.bonuses, 0)),
-      Math.round(totalPayroll)
-    ];
-    
-    const nextRow = 8 + employeeData.length;
-    XLSX.utils.sheet_add_aoa(ws, [totalRow], { origin: `A${nextRow}` });
-    
-    // تعيين عرض الأعمدة
-    ws['!cols'] = [
-      { width: 12 }, // كود العاملة
-      { width: 25 }, // الاسم
-      { width: 15 }, // الجنسية
-      { width: 15 }, // الراتب الأساسي
-      { width: 12 }, // أيام العمل
-      { width: 12 }, // الخصومات
-      { width: 12 }, // المكافآت
-      { width: 15 }  // إجمالي الراتب
-    ];
-    
-    // إنشاء المصنف
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'تقرير الرواتب');
-    
-    // تصدير الملف
-    const fileName = `تقرير_الرواتب_${selectedMonth}.xlsx`;
-    XLSX.writeFile(wb, fileName);
-    
-    // رسالة تأكيد
-    alert(`تم تصدير تقرير الرواتب بنجاح!\nاسم الملف: ${fileName}\nعدد العاملات: ${payrollData.length}\nإجمالي المبلغ: ${totalPayroll.toLocaleString()} ريال`);
+      const headers = ['كود العاملة', 'الاسم', 'الجنسية', 'الراتب الأساسي', 'أيام العمل', 'الخصومات', 'المكافآت', 'إجمالي الراتب'];
+      worksheet.addRow(headers);
+      
+      // إضافة بيانات العاملات
+      payrollData.forEach(item => {
+        worksheet.addRow([
+          item.worker.code.toString().padStart(4, '0'),
+          item.worker.name || 'غير محدد',
+          item.worker.nationality || 'غير محدد',
+          Math.round(item.baseSalary) || 0,
+          item.workingDays || 0,
+          Math.round(item.deductions) || 0,
+          Math.round(item.bonuses) || 0,
+          Math.round(item.totalSalary) || 0
+        ]);
+      });
+      
+      // إضافة سطر الإجمالي
+      worksheet.addRow([
+        '', '', 'الإجمالي:', 
+        Math.round(payrollData.reduce((sum, item) => sum + item.baseSalary, 0)),
+        payrollData.reduce((sum, item) => sum + item.workingDays, 0),
+        Math.round(payrollData.reduce((sum, item) => sum + item.deductions, 0)),
+        Math.round(payrollData.reduce((sum, item) => sum + item.bonuses, 0)),
+        Math.round(totalPayroll)
+      ]);
+      
+      // تعيين عرض الأعمدة
+      worksheet.columns = [
+        { width: 12 }, // كود العاملة
+        { width: 25 }, // الاسم
+        { width: 15 }, // الجنسية
+        { width: 15 }, // الراتب الأساسي
+        { width: 12 }, // أيام العمل
+        { width: 12 }, // الخصومات
+        { width: 12 }, // المكافآت
+        { width: 15 }  // إجمالي الراتب
+      ];
+      
+      // تنسيق الرأس
+      const headerRow = worksheet.getRow(7);
+      headerRow.font = { bold: true };
+      headerRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFCCCCCC' }
+      };
+      
+      // تصدير الملف
+      const fileName = `تقرير_الرواتب_${selectedMonth}.xlsx`;
+      const buffer = await workbook.xlsx.writeBuffer();
+      
+      // إنشاء رابط التحميل
+      const blob = new Blob([buffer], { 
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      link.click();
+      window.URL.revokeObjectURL(url);
+      
+      // رسالة تأكيد
+      alert(`تم تصدير تقرير الرواتب بنجاح!\nاسم الملف: ${fileName}\nعدد العاملات: ${payrollData.length}\nإجمالي المبلغ: ${totalPayroll.toLocaleString()} ريال`);
+    } catch (error) {
+      console.error('Error exporting to Excel:', error);
+      alert('حدث خطأ أثناء تصدير ملف Excel');
+    }
   };
 
   if (loading) {
