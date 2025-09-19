@@ -59,11 +59,21 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Set Vercel Environment Variables
+      run: |
+        npx vercel env add NEXTAUTH_SECRET production "${{ secrets.NEXTAUTH_SECRET }}" --token "${{ secrets.VERCEL_TOKEN }}" --scope "${{ secrets.ORG_ID }}" --yes || true
+        npx vercel env add NEXTAUTH_URL production "${{ secrets.NEXTAUTH_URL }}" --token "${{ secrets.VERCEL_TOKEN }}" --scope "${{ secrets.ORG_ID }}" --yes || true
+        npx vercel env add DATABASE_URL production "${{ secrets.DATABASE_URL }}" --token "${{ secrets.VERCEL_TOKEN }}" --scope "${{ secrets.ORG_ID }}" --yes || true
+
     - name: Deploy to Vercel
       uses: amondnet/vercel-action@v25
       with:
         vercel-token: ${{ secrets.VERCEL_TOKEN }}
-        vercel-args: '--prod --build-env NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}" --build-env NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}" --build-env DATABASE_URL="${{ secrets.DATABASE_URL }}"'
+        vercel-args: '--prod'
         vercel-org-id: ${{ secrets.ORG_ID }}
         vercel-project-id: ${{ secrets.PROJECT_ID }}
         scope: ${{ secrets.ORG_ID }}
+      env:
+        NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+        NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
