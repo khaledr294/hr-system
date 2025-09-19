@@ -31,8 +31,11 @@ export default function LoginPage() {
       console.log("SignIn result:", res); // Debug log
 
       if (res?.ok && !res?.error) {
-        // Successful login, manually redirect
-        window.location.href = "/";
+        // Successful login, wait a moment for session to establish then redirect
+        console.log("Login successful, redirecting...");
+        setTimeout(() => {
+          window.location.replace("/");
+        }, 1000);
       } else {
         // Handle error
         setError(res?.error || "فشل تسجيل الدخول");
