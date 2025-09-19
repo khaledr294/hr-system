@@ -11,7 +11,11 @@ export async function middleware(request: NextRequest) {
     path.startsWith('/api/auth') ||
     path === '/favicon.ico';
 
+  // Debug logging
+  console.log('Middleware - Path:', path, 'Has token:', !!token, 'Token role:', token?.role);
+
   if (!token && !isPublicPath) {
+    console.log('Redirecting to login - no token for protected path:', path);
     return NextResponse.redirect(new URL('/auth/login', request.url));
   }
 
