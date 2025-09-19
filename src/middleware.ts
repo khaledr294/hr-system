@@ -12,7 +12,9 @@ export async function middleware(request: NextRequest) {
     path === '/favicon.ico';
 
   // Debug logging
-  console.log('Middleware - Path:', path, 'Has token:', !!token, 'Token role:', token?.role);
+  console.log('🔍 Middleware - Path:', path, 'Has token:', !!token, 'Token role:', token?.role);
+  console.log('🔍 Token details:', token);
+  console.log('🔍 Is public path:', isPublicPath);
 
   if (!token && !isPublicPath) {
     console.log('Redirecting to login - no token for protected path:', path);
