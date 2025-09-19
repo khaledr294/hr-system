@@ -1,21 +1,5 @@
 {
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm ci",
   "framework": "nextjs",
-  "crons": [],
-  "env": {
-    "NEXTAUTH_URL": "@nextauth_url",
-    "NEXTAUTH_SECRET": "@nextauth_secret",
-    "DATABASE_URL": "@database_url"
-  },
-  "build": {
-    "env": {
-      "NEXTAUTH_URL": "@nextauth_url", 
-      "NEXTAUTH_SECRET": "@nextauth_secret",
-      "DATABASE_URL": "@database_url"
-    }
-  },
   "functions": {
     "pages/api/**/*.ts": {
       "maxDuration": 10

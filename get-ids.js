@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-const https = require('https');
+import https from 'https';
 
 async function getVercelIds(token) {
     console.log('🔍 Fetching Vercel projects and teams...');
@@ -76,14 +75,12 @@ function makeRequest(url, token) {
 }
 
 // Run if called directly
-if (require.main === module) {
+if (process.argv[1] && process.argv[1].endsWith('get-ids.js')) {
     const token = process.argv[2];
     if (!token) {
         console.log('Usage: node get-ids.js <vercel-token>');
         process.exit(1);
     }
-    
     getVercelIds(token);
 }
-
-module.exports = { getVercelIds };
+export { getVercelIds };
