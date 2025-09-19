@@ -1,13 +1,18 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    console.log("Login page loaded successfully");
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    console.log("Form submission started");
     e.preventDefault();
     setIsLoading(true);
     setError("");
@@ -108,6 +113,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isLoading}
+                onClick={() => console.log("Login button clicked")}
                 className="flex w-full justify-center rounded-lg border border-transparent bg-gradient-to-r from-indigo-600 to-blue-600 px-4 py-3 text-sm font-bold text-white shadow-lg hover:from-indigo-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:from-indigo-400 disabled:to-blue-400 transition-all duration-200"
                 style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}
               >
