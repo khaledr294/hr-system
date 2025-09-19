@@ -111,9 +111,17 @@ export default function LoginPage() {
 
             <div>
               <button
-                type="submit"
+                type="button"
                 disabled={isLoading}
-                onClick={() => console.log("Login button clicked")}
+                onClick={(e) => {
+                  console.log("Login button clicked");
+                  const form = e.currentTarget.closest('form');
+                  if (form) {
+                    const formData = new FormData(form);
+                    const fakeEvent = { preventDefault: () => {}, currentTarget: form };
+                    handleSubmit(fakeEvent as any);
+                  }
+                }}
                 className="flex w-full justify-center rounded-lg border border-transparent bg-gradient-to-r from-indigo-600 to-blue-600 px-4 py-3 text-sm font-bold text-white shadow-lg hover:from-indigo-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:from-indigo-400 disabled:to-blue-400 transition-all duration-200"
                 style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}
               >
