@@ -20,15 +20,20 @@ export default function LoginPage() {
       const res = await signIn("credentials", {
         identifier,
         password,
-        redirect: true,
-        callbackUrl: "/"
+        redirect: false, // Change to false to handle redirect manually
       });
 
-      // إذا وصلنا هنا، فهناك خطأ
-      if (res?.error) {
-        setError(res.error);
+      console.log("SignIn result:", res); // Debug log
+
+      if (res?.ok && !res?.error) {
+        // Successful login, manually redirect
+        window.location.href = "/";
+      } else {
+        // Handle error
+        setError(res?.error || "فشل تسجيل الدخول");
       }
-    } catch {
+    } catch (err) {
+      console.error("Login error:", err); // Debug log
       setError("حدث خطأ في النظام");
     } finally {
       setIsLoading(false);
