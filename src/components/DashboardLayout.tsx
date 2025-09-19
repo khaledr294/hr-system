@@ -64,6 +64,7 @@ function NavLinks({ session, pathname }: { session: Session | null; pathname: st
       {navigation.map((item) => (
         <div key={item.name} className="relative group">
           <Link
+            prefetch={item.href === '/' ? false : undefined}
             href={item.href}
             className={classNames(
               "inline-flex items-center px-4 py-2.5 mx-1 text-sm font-bold whitespace-nowrap transition-all duration-200",
@@ -144,6 +145,7 @@ function MobileNavLinks({ session, pathname }: { session: Session | null; pathna
       {navigation.map((item) => (
         <div key={item.name}>
           <Link
+            prefetch={item.href === '/' ? false : undefined}
             href={item.href}
             className={classNames(
               "block border-r-4 py-3 pr-4 pl-6 text-lg font-semibold",

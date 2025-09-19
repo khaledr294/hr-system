@@ -8,6 +8,9 @@ import ActivityLog from "@/components/premium/ActivityLog";
 import LastUpdated from "@/components/LastUpdated";
 import { useTheme } from "@/components/ThemeProvider";
 
+// منع التخزين المؤقت للصفحة الرئيسية حتى لا يتم حفظ إعادة التوجيه القديمة بدون توكن
+export const dynamic = 'force-dynamic';
+
 export default function Home() {
   const { theme, mounted } = useTheme();
   if (!mounted) return null;

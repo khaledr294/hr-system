@@ -45,7 +45,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/clients', request.url));
   }
 
-  return NextResponse.next();
+  const res = NextResponse.next();
+  // منع التخزين المؤقت للاستجابة للمسارات المحمية خاصة الصفحة الرئيسية
+  if (path === '/' || !isPublicPath) {
+    res.headers.set('Cache-Control', 'no-store');
+  }
+  return res;
 }
 
 export const config = {
