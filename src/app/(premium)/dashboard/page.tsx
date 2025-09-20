@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-
-export default function LegacyDashboardRedirect() {
-  redirect("/");
+export default function RemovedPremiumDashboardPlaceholder() {
+  return null;
 }
