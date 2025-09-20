@@ -10,7 +10,7 @@ import ThemeToggle from "./ThemeToggle";
 import PremiumPageShell from "./premium/PremiumPageShell";
 
 const navigation = [
-  { name: "الرئيسية", href: "/" },
+  { name: "الرئيسية", href: "/dashboard" },
   {
     name: "العمالة",
     children: [

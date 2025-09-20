@@ -25,7 +25,7 @@ export default function LoginPage() {
       const res = await signIn("credentials", {
         identifier,
         password,
-        callbackUrl: '/',
+        callbackUrl: '/dashboard',
         redirect: true,
       });
       if (!res) {
