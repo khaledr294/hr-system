@@ -1,19 +1,15 @@
-import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 import WorkerActions from '../../../components/workers/WorkerActions';
+import { requireSession } from '@/lib/require';
 
 export default async function WorkerDetailsPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await getSession();
-
-  if (!session) {
-    redirect('/auth/login');
-  }
+  await requireSession(); // This will redirect if not authenticated
 
   const { id } = await params;
   const worker = await prisma.worker.findUnique({

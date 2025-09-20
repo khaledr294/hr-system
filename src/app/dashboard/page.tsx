@@ -1,12 +1,10 @@
-import { getSession } from '@/lib/session';
-import { redirect } from 'next/navigation';
+import { requireSession } from '@/lib/require';
 import HomeClient from '../home-client';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function DashboardPage() {
-  const session = await getSession();
-  if (!session) redirect('/auth/login');
+  await requireSession(); // This will redirect if not authenticated
   return <HomeClient />;
 }

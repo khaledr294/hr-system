@@ -1,18 +1,13 @@
-import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
-import { redirect } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 import { ClientWorkerList } from '@/components/workers/ClientWorkerList';
 import Link from 'next/link';
 import Button from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { requireSession } from '@/lib/require';
 
 export default async function WorkersPage() {
-  const session = await getSession();
-
-  if (!session) {
-    redirect('/auth/login');
-  }
+  await requireSession(); // This will redirect if not authenticated
 
 
   // جلب العمالة مع العقود
