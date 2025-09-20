@@ -65,49 +65,82 @@ export default function Charts() {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <div className="h-72 card-premium rounded-2xl shadow-soft animate-pulse" />
-        <div className="h-72 card-premium rounded-2xl shadow-soft animate-pulse" />
-        <div className="h-72 card-premium rounded-2xl shadow-soft animate-pulse" />
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+        <div className="h-64 sm:h-72 card-premium rounded-xl sm:rounded-2xl shadow-soft animate-pulse" />
+        <div className="h-64 sm:h-72 card-premium rounded-xl sm:rounded-2xl shadow-soft animate-pulse" />
+        <div className="h-64 sm:h-72 card-premium rounded-xl sm:rounded-2xl shadow-soft animate-pulse col-span-1 md:col-span-2 xl:col-span-1" />
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
       {/* Line */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card-premium rounded-2xl shadow-soft p-4">
+      <motion.div 
+        initial={{ opacity: 0, y: 8 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        className="card-premium rounded-xl sm:rounded-2xl shadow-soft p-3 sm:p-4"
+      >
         <div className="flex items-center justify-between mb-3">
-          <div className="text-slate-900 font-extrabold">تطور العقود</div>
+          <div className="text-slate-900 font-extrabold text-sm sm:text-base">تطور العقود</div>
           <div className="text-slate-500 text-xs font-semibold">شهر جاري</div>
         </div>
-        <div className="h-64">
+        <div className="h-52 sm:h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={lineData} margin={{ left: 8, right: 8, bottom: 8 }}>
+            <LineChart data={lineData} margin={{ left: 4, right: 4, bottom: 4, top: 4 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="label" stroke="#64748b" />
-              <YAxis stroke="#64748b" />
+              <XAxis 
+                dataKey="label" 
+                stroke="#64748b" 
+                fontSize={12} 
+                tick={{ fontSize: 12 }}
+              />
+              <YAxis 
+                stroke="#64748b" 
+                fontSize={12}
+                tick={{ fontSize: 12 }}
+              />
               <Tooltip />
-              <Line type="monotone" dataKey="العقود" stroke="#6366f1" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+              <Line 
+                type="monotone" 
+                dataKey="العقود" 
+                stroke="#6366f1" 
+                strokeWidth={2} 
+                dot={{ r: 2 }} 
+                activeDot={{ r: 4 }} 
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>
       </motion.div>
 
       {/* Bar */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card-premium rounded-2xl shadow-soft p-4">
+      <motion.div 
+        initial={{ opacity: 0, y: 8 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        className="card-premium rounded-xl sm:rounded-2xl shadow-soft p-3 sm:p-4"
+      >
         <div className="flex items-center justify-between mb-3">
-          <div className="text-slate-900 font-extrabold">حالة العقود</div>
+          <div className="text-slate-900 font-extrabold text-sm sm:text-base">حالة العقود</div>
           <div className="text-slate-500 text-xs font-semibold">حسب النوع</div>
         </div>
-        <div className="h-64">
+        <div className="h-52 sm:h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={statusData} margin={{ left: 8, right: 8, bottom: 8 }}>
+            <BarChart data={statusData} margin={{ left: 4, right: 4, bottom: 4, top: 4 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="name" stroke="#64748b" />
-              <YAxis stroke="#64748b" />
+              <XAxis 
+                dataKey="name" 
+                stroke="#64748b" 
+                fontSize={12}
+                tick={{ fontSize: 12 }}
+              />
+              <YAxis 
+                stroke="#64748b" 
+                fontSize={12}
+                tick={{ fontSize: 12 }}
+              />
               <Tooltip />
-              <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+              <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                 {statusData.map((_, i) => (
                   <Cell key={`c-${i}`} fill={COLORS[i % COLORS.length]} />
                 ))}
@@ -118,15 +151,26 @@ export default function Charts() {
       </motion.div>
 
       {/* Pie */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card-premium rounded-2xl shadow-soft p-4">
+      <motion.div 
+        initial={{ opacity: 0, y: 8 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        className="card-premium rounded-xl sm:rounded-2xl shadow-soft p-3 sm:p-4 col-span-1 md:col-span-2 xl:col-span-1"
+      >
         <div className="flex items-center justify-between mb-3">
-          <div className="text-slate-900 font-extrabold">توزيع الحالات</div>
+          <div className="text-slate-900 font-extrabold text-sm sm:text-base">توزيع الحالات</div>
           <div className="text-slate-500 text-xs font-semibold">نسبة مئوية</div>
         </div>
-        <div className="h-64">
+        <div className="h-52 sm:h-64">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              <Pie data={statusData} dataKey="value" nameKey="name" outerRadius={90} innerRadius={50} paddingAngle={2}>
+              <Pie 
+                data={statusData} 
+                dataKey="value" 
+                nameKey="name" 
+                outerRadius={window.innerWidth < 640 ? 70 : 90} 
+                innerRadius={window.innerWidth < 640 ? 40 : 50} 
+                paddingAngle={2}
+              >
                 {statusData.map((_, i) => (
                   <Cell key={`p-${i}`} fill={COLORS[i % COLORS.length]} />
                 ))}

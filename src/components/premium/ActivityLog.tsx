@@ -32,32 +32,46 @@ export default function ActivityLog() {
   if (role !== 'GENERAL_MANAGER' && role !== 'HR') return null;
 
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card-premium rounded-2xl shadow-soft p-4">
+    <motion.div 
+      initial={{ opacity: 0, y: 8 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      className="card-premium rounded-xl sm:rounded-2xl shadow-soft p-3 sm:p-4"
+    >
       <div className="flex items-center justify-between mb-3">
-        <div className="text-slate-900 font-extrabold">سجل العمليات</div>
+        <div className="text-slate-900 font-extrabold text-sm sm:text-base">سجل العمليات</div>
         <div className="text-slate-500 text-xs font-semibold">آخر الأنشطة</div>
       </div>
 
       {loading ? (
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-10 rounded-xl bg-slate-100 animate-pulse" />
+            <div key={i} className="h-8 sm:h-10 rounded-lg sm:rounded-xl bg-slate-100 animate-pulse" />
           ))}
         </div>
       ) : logs.length === 0 ? (
         <div className="text-slate-500 text-sm">لا توجد عمليات حديثة</div>
       ) : (
-        <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+        <div className="space-y-2 sm:space-y-3 max-h-64 sm:max-h-80 overflow-y-auto pr-1">
           {logs.map((log, i) => (
-            <div key={log.id || i} className="rounded-xl bg-slate-50 hover:bg-slate-100 transition p-3">
-              <div className="flex items-start justify-between">
-                <div className="font-semibold text-slate-800">
-                  {log.action}
-                  {log.entity && <span className="ml-2 text-xs bg-slate-900 text-white px-2 py-1 rounded">{log.entity}</span>}
+            <div key={log.id || i} className="rounded-lg sm:rounded-xl bg-slate-50 hover:bg-slate-100 transition p-2 sm:p-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="font-semibold text-slate-800 text-sm sm:text-base flex-1 min-w-0">
+                  <span className="truncate block">{log.action}</span>
+                  {log.entity && (
+                    <span className="inline-block mt-1 text-xs bg-slate-900 text-white px-2 py-0.5 rounded">
+                      {log.entity}
+                    </span>
+                  )}
                 </div>
-                <div className="text-xs text-slate-500">{formatDateTime(log.createdAt)}</div>
+                <div className="text-xs text-slate-500 whitespace-nowrap">
+                  {formatDateTime(log.createdAt)}
+                </div>
               </div>
-              {log.message && <div className="text-slate-600 text-sm mt-1">{log.message}</div>}
+              {log.message && (
+                <div className="text-slate-600 text-xs sm:text-sm mt-1 line-clamp-2">
+                  {log.message}
+                </div>
+              )}
             </div>
           ))}
         </div>

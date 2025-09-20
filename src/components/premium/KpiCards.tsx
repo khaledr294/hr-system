@@ -40,29 +40,31 @@ export default function KpiCards() {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-28 card-premium shadow-soft rounded-2xl animate-pulse" />
+          <div key={i} className="h-24 sm:h-28 card-premium shadow-soft rounded-xl sm:rounded-2xl animate-pulse" />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
       {kpis.map((kpi, i) => (
         <motion.div
           key={kpi.label}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.05 }}
-          className="kpi card-premium shadow-soft hover:shadow-hover border-gradient p-4"
+          className="kpi card-premium shadow-soft hover:shadow-hover border-gradient p-3 sm:p-4"
         >
-          <div className={`rounded-2xl p-3 text-white bg-gradient-to-tr ${kpi.color} inline-flex min-w-[3rem] justify-center items-center mb-3`}>
-            {kpi.hint && <div className="text-xs font-bold">{kpi.hint}</div>}
+          <div className={`rounded-xl sm:rounded-2xl p-2 sm:p-3 text-white bg-gradient-to-tr ${kpi.color} inline-flex min-w-[2.5rem] sm:min-w-[3rem] justify-center items-center mb-2 sm:mb-3`}>
+            {kpi.hint && <div className="text-xs font-bold text-center">{kpi.hint}</div>}
           </div>
-          <div className="text-2xl font-extrabold tracking-tight text-slate-900">{kpi.value.toLocaleString('ar-SA')}</div>
-          <div className="text-sm text-slate-500 font-semibold">{kpi.label}</div>
+          <div className="text-lg sm:text-2xl font-extrabold tracking-tight text-slate-900">
+            {kpi.value.toLocaleString('ar-SA')}
+          </div>
+          <div className="text-xs sm:text-sm text-slate-500 font-semibold">{kpi.label}</div>
         </motion.div>
       ))}
     </div>
