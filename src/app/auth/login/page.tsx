@@ -25,17 +25,11 @@ export default function LoginPage() {
       const res = await signIn("credentials", {
         identifier,
         password,
-        redirect: false, // Change to false to handle redirect manually
+        callbackUrl: '/',
+        redirect: true,
       });
-
-      console.log("SignIn result:", res); // Debug log
-
-      if (res?.ok && !res?.error) {
-        console.log("Login successful, redirecting to / ...");
-        window.location.href = "/";
-      } else {
-        // Handle error
-        setError(res?.error || "فشل تسجيل الدخول");
+      if (!res) {
+        setError("فشل تسجيل الدخول");
       }
     } catch (err) {
       console.error("Login error:", err); // Debug log
@@ -111,19 +105,8 @@ export default function LoginPage() {
 
             <div>
               <button
-                type="button"
+                type="submit"
                 disabled={isLoading}
-                onClick={(e) => {
-                  console.log("Login button clicked");
-                  const form = e.currentTarget.closest('form');
-                  if (form) {
-                    const fakeEvent = { 
-                      preventDefault: () => {}, 
-                      currentTarget: form 
-                    } as React.FormEvent<HTMLFormElement>;
-                    handleSubmit(fakeEvent);
-                  }
-                }}
                 className="flex w-full justify-center rounded-lg border border-transparent bg-gradient-to-r from-indigo-600 to-blue-600 px-4 py-3 text-sm font-bold text-white shadow-lg hover:from-indigo-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:from-indigo-400 disabled:to-blue-400 transition-all duration-200"
                 style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}
               >
