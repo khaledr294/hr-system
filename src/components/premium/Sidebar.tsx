@@ -14,7 +14,7 @@ export const sections: Section[] = [
   {
     title: "عام",
     items: [
-      { href: "/", label: "الرئيسية", icon: Home },
+      { href: "/dashboard", label: "الرئيسية", icon: Home },
     ],
   },
   {
