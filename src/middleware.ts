@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
 export async function middleware(request: NextRequest) {
-  const token = await getToken({ req: request });
+  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
   const path = request.nextUrl.pathname;
 
   const isPublicPath = path === '/auth/login' ||
@@ -17,8 +17,12 @@ export async function middleware(request: NextRequest) {
   console.log('🔍 Is public path:', isPublicPath);
 
   if (!token && !isPublicPath) {
-    console.log('Redirecting to login - no token for protected path:', path);
-    return NextResponse.redirect(new URL('/auth/login', request.url));
+    // fallback: إذا وُجد كوكي جلسة نسمح بالعبور (يحدث أحياناً سباق قبل فك الـ JWT)
+    const hasSessionCookie = Array.from(request.cookies.getAll()).some(c => c.name.includes('next-auth.session-token'));
+    if (!hasSessionCookie) {
+      console.log('Redirecting to login - no token & no session cookie for protected path:', path);
+      return NextResponse.redirect(new URL('/auth/login', request.url));
+    }
   }
 
   if (token && path === '/auth/login') {

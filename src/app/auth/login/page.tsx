@@ -31,9 +31,8 @@ export default function LoginPage() {
       console.log("SignIn result:", res); // Debug log
 
       if (res?.ok && !res?.error) {
-        // Successful login - force reload entire page to establish session properly
-        console.log("Login successful, reloading page...");
-        window.location.href = "/workers";
+        console.log("Login successful, navigating to home page...");
+        window.location.href = "/";
       } else {
         // Handle error
         setError(res?.error || "فشل تسجيل الدخول");
