@@ -20,7 +20,6 @@ export default withAuth(
 );
 
 export const config = { matcher: [
-  '/',
   '/workers/:path*',
   '/clients/:path*',
   '/contracts/:path*',
