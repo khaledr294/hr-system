@@ -15,6 +15,7 @@ const navigation = [
     name: "العمالة",
     children: [
       { name: "إضافة و عرض العاملات", href: "/workers" },
+      { name: "حجز العاملات", href: "/workers/reserve" },
       {
         name: "الرواتب",
         children: [

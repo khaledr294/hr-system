@@ -22,7 +22,10 @@ const contractSchema = z.object({
   workerId: z.string().min(1, 'يجب اختيار العاملة'),
   clientId: z.string().min(1, 'يجب اختيار العميل'),
   marketerId: z.string().min(1, 'يجب اختيار المسوق'),
-  startDate: z.string().min(1, 'يجب تحديد تاريخ بداية العقد'),
+  startDate: z.string()
+    .min(1, 'يجب تحديد تاريخ بداية العقد')
+    .regex(/^\d{2}\/\d{2}\/\d{4}$/, 'يجب أن يكون التاريخ بصيغة يوم/شهر/سنة (مثال: 15/03/2024)'),
+  endDate: z.string().optional(),
   packageType: z.string().min(1, 'يجب اختيار الباقة'),
   totalAmount: z.number().min(1, 'يجب إدخال المبلغ'),
   notes: z.string().optional(),
@@ -42,6 +45,8 @@ function NewContractForm() {
   const [selectedPackage, setSelectedPackage] = useState<string>('');
   const [contractDuration, setContractDuration] = useState<number>(30);
   const [contractPrice, setContractPrice] = useState<number>(1000);
+  const [customEndDate, setCustomEndDate] = useState<boolean>(false);
+  const [endDateValue, setEndDateValue] = useState<string>('');
 
   const clientId = searchParams.get('clientId');
 
@@ -135,12 +140,53 @@ function NewContractForm() {
   const onSubmit = async (data: ContractFormData) => {
     try {
       setIsSubmitting(true);
-      const startDate = new Date(data.startDate);
-      const endDate = new Date(startDate);
-      // جلب مدة الباقة المختارة
-      const pkg = packages.find((p: Package) => p.id === data.packageType);
-      if (pkg) {
-        endDate.setDate(startDate.getDate() + pkg.duration);
+      // تحويل التاريخ من نمط dd/mm/yyyy إلى Date
+      const dateMatch = data.startDate.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (!dateMatch) {
+        alert('يرجى إدخال التاريخ بالصيغة الصحيحة: يوم/شهر/سنة');
+        setIsSubmitting(false);
+        return;
+      }
+      const [, day, month, year] = dateMatch;
+      const startDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      
+      if (isNaN(startDate.getTime())) {
+        alert('التاريخ المدخل غير صحيح');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      let endDate: Date;
+      
+      if (customEndDate && data.endDate) {
+        // استخدام تاريخ النهاية المخصص
+        const endDateMatch = data.endDate.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        if (!endDateMatch) {
+          alert('يرجى إدخال تاريخ النهاية بالصيغة الصحيحة: يوم/شهر/سنة');
+          setIsSubmitting(false);
+          return;
+        }
+        const [, endDay, endMonth, endYear] = endDateMatch;
+        endDate = new Date(parseInt(endYear), parseInt(endMonth) - 1, parseInt(endDay));
+        
+        if (isNaN(endDate.getTime())) {
+          alert('تاريخ النهاية المدخل غير صحيح');
+          setIsSubmitting(false);
+          return;
+        }
+        
+        if (endDate <= startDate) {
+          alert('تاريخ النهاية يجب أن يكون بعد تاريخ البداية');
+          setIsSubmitting(false);
+          return;
+        }
+      } else {
+        // حساب تاريخ النهاية من مدة الباقة
+        endDate = new Date(startDate);
+        const pkg = packages.find((p: Package) => p.id === data.packageType);
+        if (pkg) {
+          endDate.setDate(startDate.getDate() + pkg.duration);
+        }
       }
       const response = await fetch('/api/contracts', {
         method: 'POST',
@@ -152,7 +198,7 @@ function NewContractForm() {
           startDate: startDate.toISOString(),
           endDate: endDate.toISOString(),
           status: 'ACTIVE',
-          packageName: pkg ? pkg.name : data.packageType,
+          packageName: packages.find((p: Package) => p.id === data.packageType)?.name || data.packageType,
           notes: data.notes || '',
         }),
       });
@@ -232,13 +278,81 @@ function NewContractForm() {
           <div>
             <label className="block text-base font-bold text-indigo-900 mb-2">تاريخ بداية العقد</label>
             <Input
-              type="date"
+              type="text"
               label="تاريخ بداية العقد"
-              min={new Date().toISOString().split('T')[0]}
+              placeholder="يوم/شهر/سنة (مثال: 15/03/2024)"
+              pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}"
+              maxLength={10}
               className="text-right"
               {...register('startDate')}
               error={errors.startDate?.message}
+              onInput={(e) => {
+                const input = e.target as HTMLInputElement;
+                let value = input.value.replace(/\D/g, ''); // إزالة غير الأرقام
+                if (value.length >= 2) {
+                  value = value.slice(0, 2) + '/' + value.slice(2);
+                }
+                if (value.length >= 5) {
+                  value = value.slice(0, 5) + '/' + value.slice(5, 9);
+                }
+                input.value = value;
+              }}
             />
+            <div className="text-sm text-gray-600 mt-1">
+              أدخل التاريخ بصيغة يوم/شهر/سنة (مثال: 15/03/2024)
+            </div>
+          </div>
+
+          {/* خيار تحديد تاريخ النهاية */}
+          <div>
+            <label className="flex items-center gap-2 text-base font-bold text-indigo-900 mb-4">
+              <input
+                type="checkbox"
+                checked={customEndDate}
+                onChange={(e) => {
+                  setCustomEndDate(e.target.checked);
+                  if (!e.target.checked) {
+                    setEndDateValue('');
+                    setValue('endDate', '');
+                  }
+                }}
+                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              />
+              تحديد تاريخ نهاية مخصص للعقد
+            </label>
+            
+            {customEndDate && (
+              <div>
+                <label className="block text-base font-bold text-indigo-900 mb-2">تاريخ نهاية العقد</label>
+                <Input
+                  type="text"
+                  label="تاريخ نهاية العقد"
+                  placeholder="يوم/شهر/سنة (مثال: 15/06/2025)"
+                  pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}"
+                  maxLength={10}
+                  className="text-right"
+                  {...register('endDate')}
+                  value={endDateValue}
+                  onChange={(e) => setEndDateValue(e.target.value)}
+                  onInput={(e) => {
+                    const input = e.target as HTMLInputElement;
+                    let value = input.value.replace(/\D/g, '');
+                    if (value.length >= 2) {
+                      value = value.slice(0, 2) + '/' + value.slice(2);
+                    }
+                    if (value.length >= 5) {
+                      value = value.slice(0, 5) + '/' + value.slice(5, 9);
+                    }
+                    input.value = value;
+                    setEndDateValue(value);
+                    setValue('endDate', value);
+                  }}
+                />
+                <div className="text-sm text-gray-600 mt-1">
+                  أدخل التاريخ بصيغة يوم/شهر/سنة (مثال: 15/06/2025)
+                </div>
+              </div>
+            )}
           </div>
           <div>
             <label className="block text-base font-bold text-indigo-900 mb-2">نوع الباقة</label>
@@ -256,7 +370,10 @@ function NewContractForm() {
               />
             )}
             <div className="mt-2 text-lg text-gray-800">
-              مدة الباقة: <span className="font-bold">{contractDuration}</span> يوم<br />
+              مدة الباقة: <span className="font-bold">{contractDuration}</span> يوم
+              {customEndDate && (
+                <span className="text-amber-600 text-sm"> (سيتم تجاهلها لصالح التاريخ المخصص)</span>
+              )}<br />
               السعر الافتراضي: <span className="font-bold">{contractPrice}</span> ريال
             </div>
           </div>

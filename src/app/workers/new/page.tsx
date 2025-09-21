@@ -86,6 +86,26 @@ export default function NewWorkerPage() {
       return;
     }
 
+    // حقول إضافية جديدة
+    const borderNumber = (formData.get('borderNumber') as string)?.trim();
+    const officeName = (formData.get('officeName') as string)?.trim();
+    const arrivalDateStr = (formData.get('arrivalDate') as string)?.trim();
+    const passportNumber = (formData.get('passportNumber') as string)?.trim();
+    const religion = (formData.get('religion') as string)?.trim();
+    const iban = (formData.get('iban') as string)?.trim();
+    const residenceBranch = (formData.get('residenceBranch') as string)?.trim();
+
+    // تحويل تاريخ الوصول إلى Date إذا كان موجوداً
+    let arrivalDate = null;
+    if (arrivalDateStr) {
+      arrivalDate = new Date(arrivalDateStr);
+      if (isNaN(arrivalDate.getTime())) {
+        setError('تاريخ الوصول غير صحيح');
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     const data = {
       name,
       code,
@@ -93,6 +113,13 @@ export default function NewWorkerPage() {
       residencyNumber,
       dateOfBirth,
       phone: phone || null,
+      borderNumber: borderNumber || null,
+      officeName: officeName || null,
+      arrivalDate: arrivalDate,
+      passportNumber: passportNumber || null,
+      religion: religion || null,
+      iban: iban || null,
+      residenceBranch: residenceBranch || null,
     };
 
     try {
@@ -260,6 +287,69 @@ export default function NewWorkerPage() {
             inputMode="numeric"
             pattern="[0-9]*"
           />
+
+          {/* حقول إضافية جديدة */}
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">بيانات إضافية</h3>
+            
+            <div className="space-y-6">
+              <Input
+                label="رقم الحدود"
+                name="borderNumber"
+                type="text"
+                placeholder="أدخل رقم الحدود (اختياري)"
+                className="text-right"
+              />
+
+              <Input
+                label="اسم المكتب"
+                name="officeName"
+                type="text"
+                placeholder="أدخل اسم المكتب (اختياري)"
+                className="text-right"
+              />
+
+              <Input
+                label="تاريخ الوصول"
+                name="arrivalDate"
+                type="date"
+                placeholder="أدخل تاريخ الوصول (اختياري)"
+                className="text-right"
+              />
+
+              <Input
+                label="رقم الجواز"
+                name="passportNumber"
+                type="text"
+                placeholder="أدخل رقم الجواز (اختياري)"
+                className="text-right"
+              />
+
+              <Input
+                label="الديانة"
+                name="religion"
+                type="text"
+                placeholder="أدخل الديانة (اختياري)"
+                className="text-right"
+              />
+
+              <Input
+                label="IBAN"
+                name="iban"
+                type="text"
+                placeholder="أدخل رقم الحساب البنكي IBAN (اختياري)"
+                className="text-right"
+              />
+
+              <Input
+                label="فرع السكن"
+                name="residenceBranch"
+                type="text"
+                placeholder="أدخل فرع السكن (اختياري)"
+                className="text-right"
+              />
+            </div>
+          </div>
 
           {error && (
             <div className="text-red-600 text-sm">{error}</div>

@@ -35,6 +35,7 @@ type ClientFormData = z.infer<typeof clientSchema>;
 export default function NewClientPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const {
     register,
@@ -47,17 +48,21 @@ export default function NewClientPage() {
   const onSubmit = async (data: ClientFormData) => {
     try {
       setIsSubmitting(true);
+      setError(null);
+      
       const mm = data.birthMonth.padStart(2, '0');
       const dd = data.birthDay.padStart(2, '0');
       const dateOfBirth = `${data.birthYear}-${mm}-${dd}`;
+      
       const payload = {
         name: data.name,
         phone: data.phone,
-        email: data.email,
+        email: data.email || null,
         address: data.address,
         idNumber: data.idNumber,
         dateOfBirth,
       };
+      
       const response = await fetch('/api/clients', {
         method: 'POST',
         headers: {
@@ -67,14 +72,18 @@ export default function NewClientPage() {
       });
 
       if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error);
+        const errorText = await response.text();
+        throw new Error(errorText || 'حدث خطأ في إضافة العميل');
       }
 
+      const result = await response.json();
+      console.log('Client created:', result);
+      
       router.push('/clients');
       router.refresh();
     } catch (error) {
       console.error('Error creating client:', error);
+      setError(error instanceof Error ? error.message : 'حدث خطأ غير متوقع');
     } finally {
       setIsSubmitting(false);
     }
@@ -84,6 +93,12 @@ export default function NewClientPage() {
     <DashboardLayout>
       <div dir="rtl" className="max-w-2xl mx-auto text-right">
         <h1 className="text-2xl font-semibold text-gray-900 mb-6">إضافة عميل جديد</h1>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-lg">
+            <p className="text-red-800 font-semibold">{error}</p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>

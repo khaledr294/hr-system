@@ -6,6 +6,7 @@ import Link from 'next/link';
 import TerminateContractButton from '@/components/contracts/TerminateContractButton';
 import DeleteContractButton from '@/components/contracts/DeleteContractButton';
 import GenerateWordButton from '@/components/contracts/GenerateWordButton';
+import PenaltyCalculator from '@/components/contracts/PenaltyCalculator';
 import React from 'react';
 
 export default async function ContractDetailsPage({
@@ -146,6 +147,55 @@ export default async function ContractDetailsPage({
               </dd>
             </div>
           </dl>
+        </div>
+
+        {/* قسم الملاحظات */}
+        {contract.notes && (
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">ملاحظات العقد</h2>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
+                {contract.notes}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* قسم غرامة التأخير */}
+        {(contract.delayDays && contract.delayDays > 0) || contract.penaltyAmount ? (
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">غرامة التأخير</h2>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <dt className="text-sm font-medium text-red-700">عدد أيام التأخير</dt>
+                  <dd className="mt-1 text-lg font-bold text-red-900">{contract.delayDays || 0} يوم</dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-red-700">إجمالي الغرامة</dt>
+                  <dd className="mt-1 text-lg font-bold text-red-900">
+                    {(contract.penaltyAmount || 0).toLocaleString('ar-SA')} ريال
+                  </dd>
+                </div>
+              </div>
+              {contract.delayDays && contract.delayDays > 0 && (
+                <div className="mt-3 text-sm text-red-700">
+                  معدل الغرامة: {contract.penaltyRate || 120} ريال لكل يوم تأخير
+                </div>
+              )}
+            </div>
+          </div>
+        ) : null}
+
+        {/* حاسبة غرامة التأخير - للعقود النشطة فقط */}
+        <div className="mb-8">
+          <PenaltyCalculator
+            contractId={contract.id}
+            endDate={contract.endDate.toISOString()}
+            currentStatus={contract.status}
+            clientName={contract.client.name}
+            workerName={contract.worker.name}
+          />
         </div>
 
         {/* زر حذف العقد - متاح فقط لمدير الموارد البشرية */}

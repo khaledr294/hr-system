@@ -462,11 +462,7 @@ export default function PayrollPage() {
                       <div className="font-bold text-green-600">
                         {Math.round(item.baseSalary).toLocaleString()} ريال
                       </div>
-                      <div className="text-xs text-gray-500">
-                        {item.worker.nationalitySalary ? 
-                          `(من راتب ${item.worker.nationality})` : 
-                          '(راتب فردي)'}
-                      </div>
+
                     </td>
                     <td className="py-2 px-1">
                       <div className="flex flex-col items-center">

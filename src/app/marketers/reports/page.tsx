@@ -45,28 +45,43 @@ export default function MarketersReportsPage() {
 
     const exportCSV = () => {
       const headers = ['اسم المسوق','الجوال','البريد الإلكتروني','عدد العقود','الشهر'];
-      // صيغة الشهر مثل Sep-25
+      
+      // تنسيق الشهر
       const [yy, mm] = month.split('-').map(Number);
       const d = new Date(yy, (mm || 1) - 1, 1);
       const monthLabel = `${d.toLocaleString('en-US', { month: 'short' })}-${String(yy).slice(-2)}`;
 
-      // إجبار Excel على اعتبار الجوال نصًا لمنع 5.56E+08
+      // إنشاء صفوف البيانات
       const rows = filtered.map(m => [
-        m.name,
-        m.phone ? `="${m.phone}"` : '',
-        m.email || '-',
-        String(m.contractCount),
-        monthLabel,
+        m.name || '',
+        m.phone || '',
+        m.email || '',
+        String(m.contractCount || 0),
+        monthLabel
       ]);
 
-      const csv = [headers, ...rows]
-        .map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(','))
+      // دمج الرؤوس والبيانات
+      const allRows = [headers, ...rows];
+      
+      // تحويل إلى CSV مع التأكد من الفصل الصحيح
+      const csvContent = allRows
+        .map(row => 
+          row.map(cell => {
+            const cellStr = String(cell || '');
+            // إضافة علامات اقتباس إذا كان النص يحتوي على فواصل أو علامات اقتباس
+            if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+              return `"${cellStr.replace(/"/g, '""')}"`;
+            }
+            return cellStr;
+          }).join(',')
+        )
         .join('\n');
 
-      // إضافة BOM ليدعم العربية في Excel
+      // إضافة BOM للدعم العربي في Excel
       const bom = '\uFEFF';
-      const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+      const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
+      
       const a = document.createElement('a');
       a.href = url;
       a.download = `تقارير-المسوقين-${month}.csv`;

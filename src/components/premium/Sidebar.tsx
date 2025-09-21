@@ -40,8 +40,7 @@ export const sections: Section[] = [
   {
     title: "التسويق",
     items: [
-      { href: "/marketers", label: "المسوقون", icon: BarChart3 },
-      { href: "/marketers/new", label: "إضافة مسوق", icon: BarChart3 },
+      { href: "/marketers", label: "المسوقين", icon: BarChart3 },
       { href: "/marketers/reports", label: "تقارير التسويق", icon: ClipboardList },
     ],
   },
