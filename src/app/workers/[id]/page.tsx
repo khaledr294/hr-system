@@ -59,11 +59,11 @@ export default async function WorkerDetailsPage({
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">رقم الجواز</dt>
-                <dd className="mt-1 text-sm text-gray-900">{(worker as any).passportNumber || '-'}</dd>
+                <dd className="mt-1 text-sm text-gray-900">{worker.passportNumber || '-'}</dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">رقم الحدود</dt>
-                <dd className="mt-1 text-sm text-gray-900">{(worker as any).borderNumber || '-'}</dd>
+                <dd className="mt-1 text-sm text-gray-900">{worker.borderNumber || '-'}</dd>
               </div>
             </dl>
           </div>
@@ -92,25 +92,25 @@ export default async function WorkerDetailsPage({
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">اسم المكتب</dt>
-                <dd className="mt-1 text-sm text-gray-900">{(worker as any).officeName || '-'}</dd>
+                <dd className="mt-1 text-sm text-gray-900">{worker.officeName || '-'}</dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">تاريخ الوصول</dt>
                 <dd className="mt-1 text-sm text-gray-900">
-                  {(worker as any).arrivalDate 
-                    ? new Date((worker as any).arrivalDate).toLocaleDateString('ar-SA-u-ca-gregory') 
+                  {worker.arrivalDate
+                    ? new Date(worker.arrivalDate).toLocaleDateString('ar-SA-u-ca-gregory')
                     : '-'}
                 </dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">رقم الآيبان</dt>
-                <dd className="mt-1 text-sm text-gray-900 font-mono">{(worker as any).iban || '-'}</dd>
+                <dd className="mt-1 text-sm text-gray-900 font-mono">{worker.iban || '-'}</dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">الديانة</dt>
                 <dd className="mt-1 text-sm text-gray-900">
                   <select 
-                    value={(worker as any).religion || ''} 
+                    value={worker.religion || ''} 
                     className="text-sm border rounded px-2 py-1"
                     disabled
                   >
@@ -127,7 +127,7 @@ export default async function WorkerDetailsPage({
                 <dt className="text-sm font-medium text-gray-500">فرع الإقامة</dt>
                 <dd className="mt-1 text-sm text-gray-900">
                   <select 
-                    value={(worker as any).residenceBranch || ''} 
+                    value={worker.residenceBranch || ''} 
                     className="text-sm border rounded px-2 py-1"
                     disabled
                   >
@@ -172,19 +172,19 @@ export default async function WorkerDetailsPage({
                      ? 'محجوزة'
                      : 'غير متاحة'}
                   </span>
-                  {worker.status === 'RESERVED' && (worker as any).reservedBy && (
+                  {worker.status === 'RESERVED' && worker.reservedBy && (
                     <div className="mt-1 text-xs text-gray-600">
-                      محجوزة بواسطة: {(worker as any).reservedBy}
+                      محجوزة بواسطة: {worker.reservedBy}
                     </div>
                   )}
-                  {worker.status === 'RESERVED' && (worker as any).reservedAt && (
+                  {worker.status === 'RESERVED' && worker.reservedAt && (
                     <div className="text-xs text-gray-500">
-                      تاريخ الحجز: {new Date((worker as any).reservedAt).toLocaleDateString('ar')}
+                      تاريخ الحجز: {new Date(worker.reservedAt).toLocaleDateString('ar')}
                     </div>
                   )}
-                  {worker.status === 'RESERVED' && (worker as any).reservationNotes && (
+                  {worker.status === 'RESERVED' && worker.reservationNotes && (
                     <div className="text-xs text-gray-600 mt-1">
-                      ملاحظة: {(worker as any).reservationNotes}
+                      ملاحظة: {worker.reservationNotes}
                     </div>
                   )}
                 </dd>
