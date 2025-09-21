@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 
 interface Worker {
@@ -19,7 +18,6 @@ interface Worker {
 }
 
 export default function ReserveWorkerPage() {
-  const router = useRouter();
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [filteredWorkers, setFilteredWorkers] = useState<Worker[]>([]);
   const [loading, setLoading] = useState(true);

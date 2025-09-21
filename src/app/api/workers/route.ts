@@ -131,9 +131,10 @@ export async function GET(req: NextRequest) {
         },
         orderBy: { createdAt: 'desc' },
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // للتعامل مع الحقول المفقودة مؤقتاً
-      if (error.code === 'P2022') {
+      const prismaError = error as { code?: string };
+      if (prismaError.code === 'P2022') {
         workersRaw = await prisma.worker.findMany({
           where: {
             ...(query && {

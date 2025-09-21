@@ -9,6 +9,13 @@ import GenerateWordButton from '@/components/contracts/GenerateWordButton';
 import PenaltyCalculator from '@/components/contracts/PenaltyCalculator';
 import React from 'react';
 
+// نوع مؤقت للعقد مع الحقول الجديدة (اختياري للتوافق مع النسخة القديمة)
+type ContractWithPenalty = {
+  delayDays?: number;
+  penaltyAmount?: number;
+  penaltyRate?: number;
+};
+
 export default async function ContractDetailsPage({
   params,
 }: {
@@ -162,30 +169,33 @@ export default async function ContractDetailsPage({
         )}
 
         {/* قسم غرامة التأخير */}
-        {((contract as any).delayDays && (contract as any).delayDays > 0) || (contract as any).penaltyAmount ? (
-          <div className="mb-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">غرامة التأخير</h2>
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <dt className="text-sm font-medium text-red-700">عدد أيام التأخير</dt>
-                  <dd className="mt-1 text-lg font-bold text-red-900">{(contract as any).delayDays || 0} يوم</dd>
+        {(() => {
+          const contractWithPenalty = contract as typeof contract & ContractWithPenalty;
+          return (contractWithPenalty.delayDays && contractWithPenalty.delayDays > 0) || contractWithPenalty.penaltyAmount ? (
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">غرامة التأخير</h2>
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <dt className="text-sm font-medium text-red-700">عدد أيام التأخير</dt>
+                    <dd className="mt-1 text-lg font-bold text-red-900">{contractWithPenalty.delayDays || 0} يوم</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-red-700">إجمالي الغرامة</dt>
+                    <dd className="mt-1 text-lg font-bold text-red-900">
+                      {(contractWithPenalty.penaltyAmount || 0).toLocaleString('ar-SA')} ريال
+                    </dd>
+                  </div>
                 </div>
-                <div>
-                  <dt className="text-sm font-medium text-red-700">إجمالي الغرامة</dt>
-                  <dd className="mt-1 text-lg font-bold text-red-900">
-                    {((contract as any).penaltyAmount || 0).toLocaleString('ar-SA')} ريال
-                  </dd>
-                </div>
+                {contractWithPenalty.delayDays && contractWithPenalty.delayDays > 0 && (
+                  <div className="mt-3 text-sm text-red-700">
+                    معدل الغرامة: {contractWithPenalty.penaltyRate || 120} ريال لكل يوم تأخير
+                  </div>
+                )}
               </div>
-              {(contract as any).delayDays && (contract as any).delayDays > 0 && (
-                <div className="mt-3 text-sm text-red-700">
-                  معدل الغرامة: {(contract as any).penaltyRate || 120} ريال لكل يوم تأخير
-                </div>
-              )}
             </div>
-          </div>
-        ) : null}
+          ) : null;
+        })()}
 
         {/* حاسبة غرامة التأخير - للعقود النشطة فقط */}
         <div className="mb-8">
