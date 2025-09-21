@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 import Link from 'next/link';
 import Button from '@/components/ui/Button';
-import ContractsWithSearch from '@/components/contracts/ContractsWithSearch';
+// Removed missing ContractsWithSearch import
 
 interface Contract {
   id: string;
@@ -96,7 +96,26 @@ export default async function ContractsPage() {
           </Link>
         </div>
       </section>
-      <ContractsWithSearch contracts={contracts} />
+      <div className="bg-white rounded-lg shadow-sm border p-4 mt-4">
+        <ul className="space-y-2">
+          {contracts.map(contract => (
+            <li
+              key={contract.id}
+              className="flex flex-col sm:flex-row sm:items-center justify-between border-b last:border-b-0 pb-2 gap-1"
+            >
+              <span className="font-semibold text-slate-800">
+                {contract.contractNumber || 'بدون رقم'}
+              </span>
+              <span className="text-sm text-slate-600">
+                {contract.client?.name} - {contract.worker?.name}
+              </span>
+              <span className="text-xs text-slate-500">
+                {new Date(contract.startDate).toLocaleDateString('ar')}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
     </DashboardLayout>
   );
 }

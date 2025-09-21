@@ -2,7 +2,61 @@ import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
-import ExtendContractForm from '@/components/contracts/ExtendContractForm';
+
+// Minimal server component form to extend a contract (replaces missing external component)
+function ExtendContractForm({
+  contract,
+}: {
+  contract: {
+    id: string;
+    client: { name: string };
+    worker: { name: string };
+    startDate: Date | string;
+    endDate: Date | string;
+    packageName?: string | null;
+    packageType?: string | null;
+    totalAmount: number;
+  };
+}) {
+  return (
+    <form
+      action={`/api/contracts/${contract.id}/extend`}
+      method="POST"
+      className="bg-white shadow-sm rounded-lg p-6 space-y-4"
+    >
+      <h2 className="text-lg font-semibold text-gray-900">تمديد العقد</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex flex-col">
+          <label className="text-sm font-medium text-gray-700 mb-1">تاريخ النهاية الجديد</label>
+            <input
+              type="date"
+              name="newEndDate"
+              required
+              className="border rounded px-3 py-2 text-sm focus:outline-none focus:ring focus:border-indigo-500"
+            />
+        </div>
+        <div className="flex flex-col">
+          <label className="text-sm font-medium text-gray-700 mb-1">المبلغ الإضافي (اختياري)</label>
+          <input
+            type="number"
+            name="additionalAmount"
+            min="0"
+            step="0.01"
+            className="border rounded px-3 py-2 text-sm focus:outline-none focus:ring focus:border-indigo-500"
+            placeholder="0"
+          />
+        </div>
+      </div>
+      <input type="hidden" name="contractId" value={contract.id} />
+      <button
+        type="submit"
+        className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded hover:bg-indigo-700 focus:outline-none"
+      >
+        حفظ التمديد
+      </button>
+    </form>
+  );
+}
 
 export default async function ExtendContractPage({
   params,
