@@ -193,7 +193,7 @@ export default function ContractsWithSearch({ contracts }: ContractsWithSearchPr
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
           <h3 className="text-lg font-semibold text-yellow-800 mb-2">لم يتم العثور على نتائج</h3>
           <p className="text-yellow-700">
-            لم يتم العثور على أي عقود تطابق "<strong>{searchQuery}</strong>"
+            لم يتم العثور على أي عقود تطابق &ldquo;<strong>{searchQuery}</strong>&rdquo;
           </p>
           <button
             onClick={() => setSearchQuery('')}

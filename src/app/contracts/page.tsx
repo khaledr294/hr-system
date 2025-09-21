@@ -4,27 +4,7 @@ import { redirect } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 import Link from 'next/link';
 import Button from '@/components/ui/Button';
-// Removed missing ContractsWithSearch import
-
-interface Contract {
-  id: string;
-  status: string;
-  startDate: Date;
-  endDate: Date;
-  packageType: string;
-  packageName?: string | null;
-  contractNumber?: string | null;
-  client: {
-    id: string;
-    name: string;
-    idNumber: string;
-  };
-  worker: {
-    id: string;
-    name: string;
-    residencyNumber: string;
-  };
-}
+import ContractsWithSearch from '@/components/contracts/ContractsWithSearch';
 
 export default async function ContractsPage() {
   const session = await getSession();
@@ -96,26 +76,7 @@ export default async function ContractsPage() {
           </Link>
         </div>
       </section>
-      <div className="bg-white rounded-lg shadow-sm border p-4 mt-4">
-        <ul className="space-y-2">
-          {contracts.map(contract => (
-            <li
-              key={contract.id}
-              className="flex flex-col sm:flex-row sm:items-center justify-between border-b last:border-b-0 pb-2 gap-1"
-            >
-              <span className="font-semibold text-slate-800">
-                {contract.contractNumber || 'بدون رقم'}
-              </span>
-              <span className="text-sm text-slate-600">
-                {contract.client?.name} - {contract.worker?.name}
-              </span>
-              <span className="text-xs text-slate-500">
-                {new Date(contract.startDate).toLocaleDateString('ar')}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <ContractsWithSearch contracts={contracts} />
     </DashboardLayout>
   );
 }
