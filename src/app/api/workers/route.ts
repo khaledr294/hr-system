@@ -115,20 +115,53 @@ export async function GET(req: NextRequest) {
     };
 
     // جلب العاملات مع العقود النشطة
-    const workersRaw = await prisma.worker.findMany({
-      where,
-      include: {
-        nationalitySalary: true,
-        contracts: {
-          where: {
-            status: 'ACTIVE',
-            startDate: { lte: new Date() },
-            endDate: { gte: new Date() },
+    let workersRaw;
+    try {
+      workersRaw = await prisma.worker.findMany({
+        where,
+        include: {
+          nationalitySalary: true,
+          contracts: {
+            where: {
+              status: 'ACTIVE',
+              startDate: { lte: new Date() },
+              endDate: { gte: new Date() },
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+        orderBy: { createdAt: 'desc' },
+      });
+    } catch (error: any) {
+      // للتعامل مع الحقول المفقودة مؤقتاً
+      if (error.code === 'P2022') {
+        workersRaw = await prisma.worker.findMany({
+          where: {
+            ...(query && {
+              OR: [
+                { name: { contains: query } },
+                { nationality: { contains: query } },
+                { residencyNumber: { contains: query } },
+                { phone: { contains: query } },
+              ],
+            }),
+            ...(status && { status }),
+          },
+          include: {
+            nationalitySalary: true,
+            contracts: {
+              where: {
+                status: 'ACTIVE',
+                startDate: { lte: new Date() },
+                endDate: { gte: new Date() },
+              },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+        });
+      } else {
+        throw error;
+      }
+    }
 
     // تحديد الحالة حسب العقود النشطة
     const workers = workersRaw.map(worker => ({

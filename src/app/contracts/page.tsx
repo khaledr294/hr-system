@@ -36,6 +36,33 @@ export default async function ContractsPage() {
     orderBy: {
       startDate: 'desc',
     },
+  }).catch(async () => {
+    // Fallback for missing columns
+    return await prisma.contract.findMany({
+      select: {
+        id: true,
+        status: true,
+        startDate: true,
+        endDate: true,
+        packageType: true,
+        packageName: true,
+        contractNumber: true,
+        totalAmount: true,
+        client: {
+          select: {
+            name: true,
+          }
+        },
+        worker: {
+          select: {
+            name: true,
+          }
+        }
+      },
+      orderBy: {
+        startDate: 'desc',
+      },
+    });
   });
 
   // تقسيم العقود
