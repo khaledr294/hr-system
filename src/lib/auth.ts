@@ -16,7 +16,7 @@ declare module "next-auth" {
 }
 
 export const authOptions: NextAuthOptions = {
-  debug: process.env.NODE_ENV === "development",
+  debug: false, // تعطيل debug في الإنتاج لتقليل التحذيرات
   session: {
     strategy: "jwt",
   },
@@ -32,39 +32,40 @@ export const authOptions: NextAuthOptions = {
         password: { label: "كلمة المرور", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.identifier || !credentials?.password) {
-          throw new Error("يرجى إدخال اسم المستخدم أو البريد الإلكتروني وكلمة المرور");
-        }
-
-        const user = await prisma.user.findFirst({
-          where: {
-            OR: [
-              { email: credentials.identifier },
-              { name: credentials.identifier }
-            ]
+        try {
+          if (!credentials?.identifier || !credentials?.password) {
+            return null; // إرجاع null بدلاً من رفع خطأ
           }
-        });
 
-        if (!user) {
-          throw new Error("اسم المستخدم أو البريد الإلكتروني أو كلمة المرور غير صحيحة");
+          const user = await prisma.user.findFirst({
+            where: {
+              OR: [
+                { email: credentials.identifier },
+                { name: credentials.identifier }
+              ]
+            }
+          });
+
+          if (!user || !user.password) {
+            return null; // إرجاع null للأخطاء
+          }
+
+          const isPasswordValid = await compare(credentials.password, user.password);
+
+          if (!isPasswordValid) {
+            return null;
+          }
+
+          return {
+            id: user.id,
+            email: user.email || "",
+            name: user.name,
+            role: user.role || "STAFF"
+          };
+        } catch (error) {
+          console.error("Auth error:", error);
+          return null;
         }
-
-        if (!user.password) {
-          throw new Error("كلمة المرور غير محددة للمستخدم");
-        }
-
-        const isPasswordValid = await compare(credentials.password, user.password);
-
-        if (!isPasswordValid) {
-          throw new Error("البريد الإلكتروني أو كلمة المرور غير صحيحة");
-        }
-
-        return {
-          id: user.id,
-          email: user.email || "",
-          name: user.name,
-          role: user.role || "STAFF"
-        };
       }
     })
   ],

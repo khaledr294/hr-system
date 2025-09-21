@@ -26,13 +26,17 @@ export default function LoginPage() {
         identifier,
         password,
         callbackUrl: '/dashboard',
-        redirect: true,
+        redirect: false, // تغيير إلى false لمعالجة النتيجة يدوياً
       });
-      if (!res) {
-        setError("فشل تسجيل الدخول");
+      
+      if (res?.error) {
+        setError("بيانات تسجيل الدخول غير صحيحة");
+      } else if (res?.ok) {
+        // إنجاح تسجيل الدخول - إعادة توجيه يدوياً
+        window.location.href = '/dashboard';
       }
     } catch (err) {
-      console.error("Login error:", err); // Debug log
+      console.error("Login error:", err);
       setError("حدث خطأ في النظام");
     } finally {
       setIsLoading(false);
