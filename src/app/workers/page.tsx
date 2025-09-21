@@ -10,7 +10,7 @@ export default async function WorkersPage() {
   await requireSession(); // This will redirect if not authenticated
 
 
-  // جلب العمالة مع العقود
+  // جلب العمالة مع العقود - مع معالجة الحقول المفقودة
   const workersRaw = await prisma.worker.findMany({
     include: {
       contracts: {
@@ -24,6 +24,36 @@ export default async function WorkersPage() {
     orderBy: {
       createdAt: 'desc',
     },
+  }).catch(async () => {
+    // Fallback for missing columns
+    return await prisma.worker.findMany({
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        nationality: true,
+        residencyNumber: true,
+        dateOfBirth: true,
+        phone: true,
+        status: true,
+        createdAt: true,
+        contracts: {
+          select: {
+            status: true,
+            startDate: true,
+            endDate: true,
+          },
+          where: {
+            status: 'ACTIVE',
+            startDate: { lte: new Date() },
+            endDate: { gte: new Date() },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
   });
 
   // تحديد الحالة حسب العقود النشطة

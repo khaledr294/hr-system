@@ -15,6 +15,24 @@ export default async function MarketerDetailsPage({ params }: { params: Promise<
     include: {
       contracts: true,
     },
+  }).catch(async () => {
+    // Fallback for missing columns
+    return await prisma.marketer.findUnique({
+      where: { id },
+      include: {
+        contracts: {
+          select: {
+            id: true,
+            status: true,
+            startDate: true,
+            endDate: true,
+            packageType: true,
+            totalAmount: true,
+            contractNumber: true,
+          }
+        },
+      },
+    });
   });
 
   if (!marketer) {

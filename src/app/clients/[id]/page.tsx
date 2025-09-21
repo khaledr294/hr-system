@@ -28,6 +28,37 @@ export default async function ClientDetailsPage({
         },
       },
     },
+  }).catch(async () => {
+    // Fallback for missing columns
+    return await prisma.client.findUnique({
+      where: { id },
+      include: {
+        contracts: {
+          select: {
+            id: true,
+            status: true,
+            startDate: true,
+            endDate: true,
+            packageType: true,
+            packageName: true,
+            totalAmount: true,
+            contractNumber: true,
+            worker: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+                nationality: true,
+                phone: true,
+              }
+            },
+          },
+          orderBy: {
+            startDate: 'desc',
+          },
+        },
+      },
+    });
   });
 
   if (!client) {
