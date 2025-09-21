@@ -7,6 +7,7 @@ import TerminateContractButton from '@/components/contracts/TerminateContractBut
 import DeleteContractButton from '@/components/contracts/DeleteContractButton';
 import GenerateWordButton from '@/components/contracts/GenerateWordButton';
 import PenaltyCalculator from '@/components/contracts/PenaltyCalculator';
+import ExtendContractButton from '@/components/contracts/ExtendContractButton';
 import React from 'react';
 
 // نوع مؤقت للعقد مع الحقول الجديدة (اختياري للتوافق مع النسخة القديمة)
@@ -46,8 +47,8 @@ export default async function ContractDetailsPage({
         <div className="mb-6 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">تفاصيل العقد</h1>
           <div className="flex gap-2">
-            {/* إظهار زر التعديل وزر الإنهاء فقط إذا لم يكن العقد منتهي */}
-            {new Date(contract.endDate) >= new Date() && (
+            {/* إظهار الأزرار فقط إذا لم يكن العقد منتهي */}
+            {contract.status === 'ACTIVE' && (
               <>
                 <Link
                   href={`/contracts/${contract.id}/edit`}
@@ -55,6 +56,10 @@ export default async function ContractDetailsPage({
                 >
                   تعديل العقد
                 </Link>
+                <ExtendContractButton 
+                  contractId={contract.id} 
+                  isActive={contract.status === 'ACTIVE'} 
+                />
                 <TerminateContractButton contractId={contract.id} />
               </>
             )}
