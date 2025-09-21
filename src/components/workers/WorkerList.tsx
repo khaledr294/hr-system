@@ -22,6 +22,31 @@ export function WorkerList({ workers }: WorkerListProps) {
   const [search, setSearch] = React.useState('');
   const [filterNationality, setFilterNationality] = React.useState('');
   const [filterStatus, setFilterStatus] = React.useState('');
+  const [cancelling, setCancelling] = React.useState<string | null>(null);
+
+  const handleCancelReservation = async (workerId: string) => {
+    if (!confirm('هل تريد إلغاء حجز هذه العاملة؟')) return;
+    
+    try {
+      setCancelling(workerId);
+      const response = await fetch(`/api/workers/reserve?workerId=${workerId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // إعادة تحميل الصفحة لتحديث البيانات
+        window.location.reload();
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || 'فشل في إلغاء حجز العاملة');
+      }
+    } catch (error) {
+      alert('حدث خطأ في إلغاء حجز العاملة');
+      console.error('Error canceling reservation:', error);
+    } finally {
+      setCancelling(null);
+    }
+  };
 
   // استخراج الجنسيات الفريدة
   const nationalities = Array.from(new Set(workers.map(w => w.nationality))).filter(Boolean);
@@ -57,17 +82,25 @@ export function WorkerList({ workers }: WorkerListProps) {
               ? 'bg-green-600 text-white'
               : value === 'RENTED'
               ? 'bg-blue-600 text-white'
+              : value === 'RESERVED'
+              ? 'bg-red-600 text-white'
               : 'bg-slate-600 text-white'
           }`}
         >
-          {value === 'AVAILABLE' ? 'متاحة' : value === 'RENTED' ? 'مؤجرة' : 'غير متاحة'}
+          {value === 'AVAILABLE' 
+            ? 'متاحة' 
+            : value === 'RENTED' 
+            ? 'مؤجرة' 
+            : value === 'RESERVED' 
+            ? 'محجوزة' 
+            : 'غير متاحة'}
         </span>
       ),
     },
     {
       header: 'الإجراءات',
       accessor: 'id' as keyof Worker,
-      render: (value: Worker[keyof Worker]) => (
+      render: (value: Worker[keyof Worker], item: Worker) => (
         <div className="flex space-x-2 space-x-reverse">
           <Link
             href={`/workers/${value}`}
@@ -81,6 +114,15 @@ export function WorkerList({ workers }: WorkerListProps) {
           >
             تعديل
           </Link>
+          {item.status === 'RESERVED' && (
+            <button
+              onClick={() => handleCancelReservation(item.id)}
+              disabled={cancelling === item.id}
+              className="inline-flex items-center px-3 py-1 border-2 border-slate-900 text-white bg-red-600 hover:bg-red-700 text-sm font-bold transition-colors duration-200 mr-2 disabled:opacity-50"
+            >
+              {cancelling === item.id ? 'جارٍ...' : 'إلغاء الحجز'}
+            </button>
+          )}
         </div>
       ),
     },
@@ -111,6 +153,7 @@ export function WorkerList({ workers }: WorkerListProps) {
               { value: '', label: 'كل الحالات' },
               { value: 'AVAILABLE', label: 'متاحة' },
               { value: 'RENTED', label: 'مؤجرة' },
+              { value: 'RESERVED', label: 'محجوزة' },
               { value: 'UNAVAILABLE', label: 'غير متاحة' },
             ]}
           />

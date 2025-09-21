@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 import Link from 'next/link';
+import DeleteMarketerButton from '@/components/marketers/DeleteMarketerButton';
 
 export default async function MarketersPage() {
   const session = await getSession();
@@ -42,7 +43,10 @@ export default async function MarketersPage() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900">{marketer.phone}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900">{marketer.email || '-'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900">
-                  <Link href={`/marketers/${marketer.id}`} className="inline-block text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 border-2 border-slate-900 transition-colors duration-200">عرض التفاصيل</Link>
+                  <div className="flex gap-2">
+                    <Link href={`/marketers/${marketer.id}`} className="inline-block text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 border-2 border-slate-900 transition-colors duration-200">عرض التفاصيل</Link>
+                    <DeleteMarketerButton marketerId={marketer.id} />
+                  </div>
                 </td>
               </tr>
             ))}

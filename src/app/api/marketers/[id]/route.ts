@@ -19,9 +19,35 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
 }
 
 export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
-  const session = await getSession();
-  if (!session) return new Response('Unauthorized', { status: 401 });
-  const params = await context.params;
-  await prisma.marketer.delete({ where: { id: params.id } });
-  return new Response(null, { status: 204 });
+  try {
+    const session = await getSession();
+    if (!session) return new Response('Unauthorized', { status: 401 });
+    
+    const params = await context.params;
+    
+    // التحقق من وجود عقود مرتبطة بالمسوق
+    const contractsCount = await prisma.contract.count({
+      where: { marketerId: params.id }
+    });
+    
+    if (contractsCount > 0) {
+      return new Response(
+        JSON.stringify({ 
+          error: `لا يمكن حذف المسوق لوجود ${contractsCount} عقد مرتبط به. يجب حذف العقود أولاً.` 
+        }),
+        { 
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+    
+    // حذف المسوق إذا لم تكن هناك عقود مرتبطة
+    await prisma.marketer.delete({ where: { id: params.id } });
+    return new Response(null, { status: 204 });
+    
+  } catch (error) {
+    console.error('Error deleting marketer:', error);
+    return new Response('Internal Server Error', { status: 500 });
+  }
 }

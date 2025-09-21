@@ -71,7 +71,7 @@ export async function POST(
         message: `تم تمديد العقد للعميل ${contract.client.name} والعاملة ${contract.worker.name} من ${contract.endDate.toLocaleDateString('ar')} إلى ${newEndDateObj.toLocaleDateString('ar')}${additionalAmount > 0 ? ` بمبلغ إضافي ${additionalAmount.toLocaleString('ar-SA')} ريال` : ''}`,
         entity: 'Contract',
         entityId: contract.id,
-        userId: session.user.id,
+        userId: session.user?.id || null,
       }
     });
 

@@ -22,10 +22,10 @@ export const sections: Section[] = [
     items: [
       { href: "/workers", label: "العمالة", icon: Users },
       { href: "/workers/new", label: "إضافة عاملة", icon: Users },
+      { href: "/workers/reserve", label: "حجز العاملات", icon: Users },
       { href: "/clients", label: "العملاء", icon: LayoutGrid },
       { href: "/clients/new", label: "إضافة عميل", icon: LayoutGrid },
       { href: "/contracts", label: "العقود", icon: FileText },
-      { href: "/contracts/new", label: "عقد جديد", icon: FileText },
       { href: "/contracts/templates", label: "قوالب العقود", icon: FolderKanban },
       { href: "/contracts/packages", label: "الباقات والخدمات", icon: Briefcase },
     ],
