@@ -92,9 +92,24 @@ const config: NextAuthConfig = {
   ],
   callbacks: {
     async redirect({ url, baseUrl }) {
-      console.log("🔄 NextAuth redirect:", { url, baseUrl });
-      if (url.startsWith(baseUrl)) return url;
-      else if (url.startsWith("/")) return `${baseUrl}${url}`;
+      console.log("🔄 NextAuth redirect:", { url, baseUrl, fullUrl: `${baseUrl}/dashboard` });
+      
+      // دائماً توجه إلى dashboard بعد تسجيل الدخول الناجح
+      if (url === "/dashboard" || url.includes("/dashboard")) {
+        return `${baseUrl}/dashboard`;
+      }
+      
+      // إذا كان URL يبدأ بـ baseUrl، استخدمه
+      if (url.startsWith(baseUrl)) {
+        return url;
+      }
+      
+      // إذا كان URL محلي، أضف baseUrl
+      if (url.startsWith("/")) {
+        return `${baseUrl}${url}`;
+      }
+      
+      // الافتراضي: dashboard
       return `${baseUrl}/dashboard`;
     },
     async jwt({ token, user }) {

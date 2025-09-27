@@ -14,10 +14,6 @@ export default function LoginPage() {
     setError("");
     
     try {
-      // Clear any existing session first
-      const { signOut } = await import("next-auth/react");
-      await signOut({ redirect: false });
-      
       // Get form data
       const formData = new FormData(e.target as HTMLFormElement);
       const identifier = formData.get("username") as string;
@@ -32,13 +28,16 @@ export default function LoginPage() {
         redirect: false
       });
       
+      console.log("🔍 نتيجة تسجيل الدخول:", result);
+      
       if (result?.error) {
         console.log("❌ فشل تسجيل الدخول:", result.error);
         setError("فشل في تسجيل الدخول. تحقق من البيانات المدخلة.");
       } else if (result?.ok) {
         console.log("✅ تم تسجيل الدخول بنجاح!");
-        // Force a complete page reload to ensure fresh session
-        window.location.href = "/dashboard";
+        
+        // إعادة تحميل كامل للصفحة للذهاب إلى dashboard
+        window.location.replace("/dashboard");
       }
     } catch (error) {
       console.error("💥 خطأ في تسجيل الدخول:", error);
