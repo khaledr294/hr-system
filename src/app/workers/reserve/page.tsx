@@ -52,16 +52,32 @@ export default function ReserveWorkerPage() {
   const fetchWorkers = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/workers');
+      setError(''); // مسح أي أخطاء سابقة
+      
+      // إضافة timestamp لمنع الـ caching
+      const timestamp = new Date().getTime();
+      const response = await fetch(`/api/workers?_t=${timestamp}`, {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Fetched workers data:', data.length, 'workers');
+        
         // عرض العاملات المتاحة والمحجوزة فقط
         const availableAndReserved = data.filter((worker: Worker) => 
           worker.status === 'AVAILABLE' || worker.status === 'RESERVED'
         );
+        
+        console.log('Available and Reserved workers:', availableAndReserved.length);
         setWorkers(availableAndReserved);
       } else {
         setError('فشل في جلب بيانات العاملات');
+        console.error('Failed to fetch workers:', response.status);
       }
     } catch (error) {
       setError('حدث خطأ في جلب البيانات');
@@ -83,10 +99,13 @@ export default function ReserveWorkerPage() {
 
     try {
       setReserving(selectedWorker.id);
+      setError(''); // مسح أي أخطاء سابقة
+      
       const response = await fetch('/api/workers/reserve', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
         },
         body: JSON.stringify({
           workerId: selectedWorker.id,
@@ -95,13 +114,31 @@ export default function ReserveWorkerPage() {
       });
 
       if (response.ok) {
+        console.log('Worker reserved successfully, refreshing data...');
         setShowReserveModal(false);
         setSelectedWorker(null);
         setReservationNotes('');
-        await fetchWorkers(); // إعادة جلب البيانات
+        
+        // تحديث الحالة محلياً فوراً
+        setWorkers(prev => 
+          prev.map(worker => 
+            worker.id === selectedWorker.id 
+              ? { 
+                  ...worker, 
+                  status: 'RESERVED' as const, 
+                  reservationNotes,
+                  reservedAt: new Date().toISOString()
+                } 
+              : worker
+          )
+        );
+        
+        // ثم جلب البيانات من الخادم للتأكد
+        await fetchWorkers();
       } else {
         const errorData = await response.json();
         setError(errorData.error || 'فشل في حجز العاملة');
+        console.error('Failed to reserve worker:', errorData);
       }
     } catch (error) {
       setError('حدث خطأ في حجز العاملة');
@@ -114,15 +151,40 @@ export default function ReserveWorkerPage() {
   const handleCancelReservation = async (workerId: string) => {
     try {
       setReserving(workerId);
+      setError(''); // مسح أي أخطاء سابقة
+      
       const response = await fetch(`/api/workers/reserve?workerId=${workerId}`, {
         method: 'DELETE',
+        headers: {
+          'Cache-Control': 'no-cache',
+        }
       });
 
       if (response.ok) {
-        await fetchWorkers(); // إعادة جلب البيانات
+        console.log('Reservation cancelled successfully, refreshing data...');
+        
+        // تحديث الحالة محلياً فوراً للحصول على ردة فعل سريعة
+        setWorkers(prev => 
+          prev.map(worker => 
+            worker.id === workerId 
+              ? { 
+                  ...worker, 
+                  status: 'AVAILABLE' as const, 
+                  reservedBy: undefined, 
+                  reservedByUserName: undefined,
+                  reservedAt: undefined,
+                  reservationNotes: undefined
+                } 
+              : worker
+          )
+        );
+        
+        // ثم جلب البيانات من الخادم للتأكد
+        await fetchWorkers();
       } else {
         const errorData = await response.json();
         setError(errorData.error || 'فشل في إلغاء حجز العاملة');
+        console.error('Failed to cancel reservation:', errorData);
       }
     } catch (error) {
       setError('حدث خطأ في إلغاء حجز العاملة');

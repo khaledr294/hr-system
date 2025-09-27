@@ -75,6 +75,8 @@ export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const workerId = searchParams.get('workerId');
 
+    console.log('DELETE reservation request for worker:', workerId);
+
     if (!workerId) {
       return NextResponse.json({ error: 'معرف العاملة مطلوب' }, { status: 400 });
     }
@@ -84,11 +86,20 @@ export async function DELETE(request: NextRequest) {
       where: { id: workerId }
     });
 
+    console.log('Worker found for cancellation:', worker ? {
+      id: worker.id,
+      name: worker.name,
+      status: worker.status,
+      reservedBy: worker.reservedBy,
+      reservedAt: worker.reservedAt
+    } : 'NOT FOUND');
+
     if (!worker) {
       return NextResponse.json({ error: 'العاملة غير موجودة' }, { status: 404 });
     }
 
     if (worker.status !== 'RESERVED') {
+      console.log('Worker is not reserved, current status:', worker.status);
       return NextResponse.json({ error: 'العاملة غير محجوزة' }, { status: 400 });
     }
 
@@ -101,6 +112,13 @@ export async function DELETE(request: NextRequest) {
         reservedAt: null,
         reservedBy: null,
       }
+    });
+
+    console.log('Worker reservation cancelled successfully:', {
+      id: updatedWorker.id,
+      name: updatedWorker.name,
+      newStatus: updatedWorker.status,
+      reservedBy: updatedWorker.reservedBy
     });
 
     // تسجيل العملية في السجل
