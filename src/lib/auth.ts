@@ -18,7 +18,7 @@ declare module "next-auth" {
 }
 
 const config: NextAuthConfig = {
-  debug: false,
+  debug: process.env.NODE_ENV === 'development',
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: "jwt",
@@ -27,7 +27,10 @@ const config: NextAuthConfig = {
   pages: {
     signIn: "/auth/login",
     signOut: "/auth/login",
+    error: "/auth/login",
   },
+  trustHost: true, // مهم للـ Vercel
+  useSecureCookies: process.env.NODE_ENV === 'production',
   providers: [
     Credentials({
       name: "credentials",
@@ -55,8 +58,6 @@ const config: NextAuthConfig = {
               ]
             }
           });
-
-          console.log("User found:", user ? { id: user.id, name: user.name, email: user.email } : "No user found");
 
           console.log("User found:", user ? { id: user.id, name: user.name, email: user.email } : "No user found");
 
