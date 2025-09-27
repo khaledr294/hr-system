@@ -31,37 +31,11 @@ export default function LoginPage() {
       const { signIn } = await import("next-auth/react");
       console.log("⚡ بدء عملية تسجيل الدخول...");
       
-      // أولاً: تجربة تسجيل الدخول بدون redirect
-      const result = await signIn("credentials", {
+      await signIn("credentials", {
         identifier,
         password,
-        redirect: false
+        redirectTo: "/dashboard"
       });
-      
-      console.log("🔍 نتيجة تسجيل الدخول:", result);
-      
-      if (result?.error) {
-        console.log("❌ فشل تسجيل الدخول:", result.error);
-        setError(`فشل في تسجيل الدخول: ${result.error}`);
-      } else if (result?.ok) {
-        console.log("✅ تم تسجيل الدخول بنجاح!");
-        
-        // التحقق من الجلسة بعد تسجيل الدخول
-        const { getSession } = await import("next-auth/react");
-        const session = await getSession();
-        console.log("🔍 التحقق من الجلسة:", session);
-        
-        if (session) {
-          console.log("✅ الجلسة موجودة، التوجه للـ Dashboard");
-          window.location.href = "/dashboard";
-        } else {
-          console.log("❌ لا توجد جلسة رغم نجاح تسجيل الدخول");
-          setError("مشكلة في إنشاء الجلسة");
-        }
-      } else {
-        console.log("⚠️ نتيجة غير متوقعة:", result);
-        setError("حدث خطأ غير متوقع");
-      }
     } catch (error) {
       console.error("💥 خطأ في تسجيل الدخول:", error);
       setError("حدث خطأ أثناء تسجيل الدخول. حاول مرة أخرى.");
