@@ -173,7 +173,52 @@ export default function ReserveWorkerPage() {
       <div className="max-w-7xl mx-auto py-6 px-4">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">حجز العاملات</h1>
-          <p className="text-gray-600">يمكنك حجز العاملات المتاحة أو إدارة حجوزاتك الحالية</p>
+          <p className="text-gray-600 mb-6">يمكنك حجز العاملات المتاحة أو إدارة حجوزاتك الحالية</p>
+          
+          {/* إحصائيات سريعة */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex items-center">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <div className="w-6 h-6 bg-green-600 rounded"></div>
+                </div>
+                <div className="mr-4">
+                  <div className="text-2xl font-bold text-green-600">
+                    {workers.filter(w => w.status === 'AVAILABLE').length}
+                  </div>
+                  <div className="text-gray-600 text-sm">عاملات متاحة</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex items-center">
+                <div className="p-2 bg-yellow-100 rounded-lg">
+                  <div className="w-6 h-6 bg-yellow-600 rounded"></div>
+                </div>
+                <div className="mr-4">
+                  <div className="text-2xl font-bold text-yellow-600">
+                    {workers.filter(w => w.status === 'RESERVED').length}
+                  </div>
+                  <div className="text-gray-600 text-sm">عاملات محجوزة</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex items-center">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <div className="w-6 h-6 bg-blue-600 rounded"></div>
+                </div>
+                <div className="mr-4">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {workers.length}
+                  </div>
+                  <div className="text-gray-600 text-sm">إجمالي العاملات</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {error && (
@@ -218,6 +263,9 @@ export default function ReserveWorkerPage() {
                     الحالة
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    محجوزة بواسطة
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     الإجراءات
                   </th>
                 </tr>
@@ -245,7 +293,29 @@ export default function ReserveWorkerPage() {
                         {getStatusText(worker.status)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {worker.status === 'RESERVED' && worker.reservedByUserName ? (
+                        <div className="space-y-1">
+                          <div className="font-medium text-blue-600">
+                            {worker.reservedByUserName}
+                          </div>
+                          {worker.reservedAt && (
+                            <div className="text-xs text-gray-500">
+                              {new Date(worker.reservedAt).toLocaleDateString('ar-SA', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-y-2">
                       {worker.status === 'AVAILABLE' ? (
                         <button
                           onClick={() => handleReserve(worker)}
@@ -259,22 +329,20 @@ export default function ReserveWorkerPage() {
                           <button
                             onClick={() => handleCancelReservation(worker.id)}
                             disabled={reserving === worker.id}
-                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm disabled:opacity-50"
+                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm disabled:opacity-50 w-full"
                           >
                             {reserving === worker.id ? 'جارٍ الإلغاء...' : 'إلغاء الحجز'}
                           </button>
                           {worker.reservationNotes && (
-                            <div className="text-xs text-gray-600">
-                              <strong>ملاحظة:</strong> {worker.reservationNotes}
-                            </div>
-                          )}
-                          {worker.reservedAt && (
-                            <div className="text-xs text-gray-500">
-                              محجوزة في: {new Date(worker.reservedAt).toLocaleDateString('ar')}
+                            <div className="bg-amber-50 border border-amber-200 rounded p-2 text-xs">
+                              <div className="font-medium text-amber-800 mb-1">ملاحظة الحجز:</div>
+                              <div className="text-amber-700">{worker.reservationNotes}</div>
                             </div>
                           )}
                         </div>
-                      ) : null}
+                      ) : (
+                        <span className="text-gray-400 text-sm">غير متاحة</span>
+                      )}
                     </td>
                   </tr>
                 ))}
