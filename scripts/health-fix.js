@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * إصلاح مشاكل صحة النظام تلقائياً
+ * إصلاح مشا    } catch (_error) {
+      console.log('❌ فشل في إنشاء .env:', _error.message); صحة النظام تلقائياً
  */
 
 const fs = require('fs');

@@ -46,11 +46,11 @@ async function deployToProduction() {
     console.log(`📝 ${i + 1}/${steps.length}: ${step.name}...`);
     
     try {
-      const { stdout, stderr } = await execAsync(step.command);
+      const { stderr: _stderr } = await execAsync(step.command);
       console.log('✅ نجح');
       
-      if (stderr && stderr.includes('error')) {
-        console.log('⚠️ تحذيرات:', stderr.substring(0, 100) + '...');
+      if (_stderr && _stderr.includes('error')) {
+        console.log('⚠️ تحذيرات:', _stderr.substring(0, 100) + '...');
       }
     } catch (error) {
       if (step.required) {

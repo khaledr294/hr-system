@@ -6,7 +6,6 @@
 
 const { exec } = require('child_process');
 const fs = require('fs');
-const path = require('path');
 
 // تحميل متغيرات البيئة من .env
 require('dotenv').config();
@@ -70,7 +69,7 @@ async function checkSystemHealth() {
       console.log(`  ${exists ? '✅' : '❌'} ${dep}`);
       checks.push({ name: `DEP: ${dep}`, status: exists });
     }
-  } catch (error) {
+  } catch {
     console.log('  ❌ خطأ في قراءة package.json');
     checks.push({ name: 'package.json parsing', status: false });
   }
@@ -106,7 +105,7 @@ async function checkSystemHealth() {
   // فحص الأمان
   console.log('\n🔒 فحص الأمان:');
   await new Promise((resolve) => {
-    exec('npm audit --audit-level=high', (error, stdout, stderr) => {
+    exec('npm audit --audit-level=high', (error) => {
       const isSafe = !error;
       console.log(`  ${isSafe ? '✅' : '⚠️'} Security audit`);
       if (!isSafe) {
