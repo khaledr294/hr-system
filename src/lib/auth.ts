@@ -1,7 +1,9 @@
-import { NextAuthOptions } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
+import NextAuth from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import { compare } from "bcryptjs";
+import type { NextAuthConfig } from "next-auth";
 
 declare module "next-auth" {
   interface User {
@@ -15,18 +17,18 @@ declare module "next-auth" {
   }
 }
 
-export const authOptions: NextAuthOptions = {
-  debug: false, // تعطيل debug في الإنتاج لتقليل التحذيرات
+const config: NextAuthConfig = {
+  debug: false,
+  adapter: PrismaAdapter(prisma),
   session: {
     strategy: "jwt",
   },
-  secret: process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: "/auth/login",
   },
   providers: [
-    CredentialsProvider({
-      name: "Credentials",
+    Credentials({
+      name: "credentials",
       credentials: {
         identifier: { label: "اسم المستخدم أو البريد الإلكتروني", type: "text" },
         password: { label: "كلمة المرور", type: "password" }
@@ -34,23 +36,23 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         try {
           if (!credentials?.identifier || !credentials?.password) {
-            return null; // إرجاع null بدلاً من رفع خطأ
+            return null;
           }
 
           const user = await prisma.user.findFirst({
             where: {
               OR: [
-                { email: credentials.identifier },
-                { name: credentials.identifier }
+                { email: credentials.identifier as string },
+                { name: credentials.identifier as string }
               ]
             }
           });
 
           if (!user || !user.password) {
-            return null; // إرجاع null للأخطاء
+            return null;
           }
 
-          const isPasswordValid = await compare(credentials.password, user.password);
+          const isPasswordValid = await compare(credentials.password as string, user.password);
 
           if (!isPasswordValid) {
             return null;
@@ -90,3 +92,6 @@ export const authOptions: NextAuthOptions = {
     },
   },
 };
+
+export const { handlers, auth, signIn, signOut } = NextAuth(config);
+export { config as authOptions };

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { createLog } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     
     if (!session || !session.user) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
@@ -41,6 +41,14 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    // تسجيل العملية في السجل
+    await createLog(
+      'حجز عاملة',
+      `تم حجز العاملة ${worker.name} (كود: ${worker.code})`,
+      'Worker',
+      workerId
+    );
+
     return NextResponse.json({ 
       message: 'تم حجز العاملة بنجاح',
       worker: updatedWorker 
@@ -58,7 +66,7 @@ export async function POST(request: NextRequest) {
 // إلغاء الحجز
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     
     if (!session || !session.user) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
@@ -94,6 +102,14 @@ export async function DELETE(request: NextRequest) {
         reservedBy: null,
       }
     });
+
+    // تسجيل العملية في السجل
+    await createLog(
+      'إلغاء حجز عاملة',
+      `تم إلغاء حجز العاملة ${worker.name} (كود: ${worker.code})`,
+      'Worker',
+      workerId
+    );
 
     return NextResponse.json({ 
       message: 'تم إلغاء حجز العاملة بنجاح',

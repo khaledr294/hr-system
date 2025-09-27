@@ -1,30 +1,38 @@
-﻿import { withAuth } from 'next-auth/middleware';
-import { NextResponse } from 'next/server';
+﻿import { NextResponse, type NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
-export default withAuth(
-  function middleware(req) {
-    const { nextauth, nextUrl } = req;
-    const token = nextauth?.token;
-    const path = nextUrl.pathname;
+export async function middleware(req: NextRequest) {
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const { nextUrl } = req;
+  const path = nextUrl.pathname;
 
-    if (token && path === '/auth/login') {
-      return NextResponse.redirect(new URL('/workers', req.url));
-    }
-    return NextResponse.next();
-  },
-  {
-    pages: {
-      signIn: '/auth/login'
-    }
+  // إذا كان المستخدم مسجل دخول ويحاول الوصول لصفحة تسجيل الدخول
+  if (token && path === '/auth/login') {
+    return NextResponse.redirect(new URL('/workers', req.url));
   }
-);
 
-export const config = { matcher: [
-  '/dashboard',
-  '/workers/:path*',
-  '/clients/:path*',
-  '/contracts/:path*',
-  '/nationality-salary/:path*',
-  '/payroll/:path*',
-  '/users/:path*'
-]};
+  // إذا لم يكن مسجل دخول ويحاول الوصول لصفحة محمية
+  if (!token && path !== '/auth/login') {
+    return NextResponse.redirect(new URL('/auth/login', req.url));
+  }
+
+  // التحقق من الصلاحيات للصفحات الحساسة
+  if (token && path.startsWith('/users') && !['ADMIN', 'HR_MANAGER'].includes(token.role as string)) {
+    return NextResponse.redirect(new URL('/workers', req.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = { 
+  matcher: [
+    '/dashboard',
+    '/workers/:path*',
+    '/clients/:path*', 
+    '/contracts/:path*',
+    '/nationality-salary/:path*',
+    '/payroll/:path*',
+    '/users/:path*',
+    '/marketers/:path*'
+  ]
+};

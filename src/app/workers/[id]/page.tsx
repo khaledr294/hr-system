@@ -25,6 +25,22 @@ export default async function WorkerDetailsPage({
     redirect('/workers');
   }
 
+  // إذا كان هناك حجز، جلب اسم المستخدم
+  let reservedByUserName = worker.reservedBy;
+  if (worker.status === 'RESERVED' && worker.reservedBy) {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: worker.reservedBy },
+        select: { name: true, email: true }
+      });
+      if (user) {
+        reservedByUserName = user.name || user.email || worker.reservedBy;
+      }
+    } catch (error) {
+      console.error('Error fetching user name for reservation:', error);
+    }
+  }
+
 
   return (
     <DashboardLayout>
@@ -109,40 +125,14 @@ export default async function WorkerDetailsPage({
               <div>
                 <dt className="text-sm font-medium text-gray-500">الديانة</dt>
                 <dd className="mt-1 text-sm text-gray-900">
-                  <select 
-                    value={worker.religion || ''} 
-                    className="text-sm border rounded px-2 py-1"
-                    disabled
-                  >
-                    <option value="">غير محدد</option>
-                    <option value="Muslim">مسلم</option>
-                    <option value="Christian">مسيحي</option>
-                    <option value="Buddhist">بوذي</option>
-                    <option value="Hindu">هندوسي</option>
-                    <option value="Other">أخرى</option>
-                  </select>
+                  {worker.religion === 'Muslim' ? 'مسلم' :
+                   worker.religion === 'Non-Muslim' ? 'غير مسلم' :
+                   worker.religion || 'غير محدد'}
                 </dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">فرع الإقامة</dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  <select 
-                    value={worker.residenceBranch || ''} 
-                    className="text-sm border rounded px-2 py-1"
-                    disabled
-                  >
-                    <option value="">غير محدد</option>
-                    <option value="الرياض">الرياض</option>
-                    <option value="جدة">جدة</option>
-                    <option value="الدمام">الدمام</option>
-                    <option value="مكة">مكة</option>
-                    <option value="المدينة">المدينة</option>
-                    <option value="الطائف">الطائف</option>
-                    <option value="أبها">أبها</option>
-                    <option value="تبوك">تبوك</option>
-                    <option value="أخرى">أخرى</option>
-                  </select>
-                </dd>
+                <dd className="mt-1 text-sm text-gray-900">{worker.residenceBranch || 'غير محدد'}</dd>
               </div>
             </dl>
           </div>
@@ -174,7 +164,7 @@ export default async function WorkerDetailsPage({
                   </span>
                   {worker.status === 'RESERVED' && worker.reservedBy && (
                     <div className="mt-1 text-xs text-gray-600">
-                      محجوزة بواسطة: {worker.reservedBy}
+                      محجوزة بواسطة: {reservedByUserName}
                     </div>
                   )}
                   {worker.status === 'RESERVED' && worker.reservedAt && (

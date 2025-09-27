@@ -1,11 +1,12 @@
 {
   "framework": "nextjs",
+  "regions": ["iad1"],
   "functions": {
-    "pages/api/**/*.ts": {
-      "maxDuration": 10
+    "src/app/api/**/*.ts": {
+      "maxDuration": 30
     },
-    "pages/api/auth/**/*.ts": {
-      "maxDuration": 5
+    "src/app/api/auth/**/*.ts": {
+      "maxDuration": 10
     }
   },
   "headers": [

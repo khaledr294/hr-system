@@ -1,10 +1,10 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
+import { createLog } from '@/lib/logger';
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'HR')) {
     return new Response('Unauthorized - Admin or HR access required', { status: 401 });
@@ -80,6 +80,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Log the worker creation
+    await createLog(session.user.id, 'WORKER_CREATED', `Worker created: ${data.name} (Code: ${data.code})`);
+
     return new Response(JSON.stringify(worker), {
       status: 201,
       headers: { 'Content-Type': 'application/json' },
@@ -91,7 +94,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session) {
     return new Response('Unauthorized', { status: 401 });
@@ -127,7 +130,7 @@ export async function GET(req: NextRequest) {
               startDate: { lte: new Date() },
               endDate: { gte: new Date() },
             },
-          },
+          }
         },
         orderBy: { createdAt: 'desc' },
       });
@@ -164,10 +167,31 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // تحديد الحالة حسب العقود النشطة
-    const workers = workersRaw.map(worker => ({
-      ...worker,
-      status: worker.contracts && worker.contracts.length > 0 ? 'RENTED' : worker.status,
+    // تحديد الحالة حسب العقود النشطة وإضافة اسم المستخدم للحجوزات
+    const workers = await Promise.all(workersRaw.map(async worker => {
+      let reservedByUserName = worker.reservedBy;
+      
+      // إذا كان هناك حجز، جلب اسم المستخدم
+      if (worker.status === 'RESERVED' && worker.reservedBy) {
+        try {
+          const user = await prisma.user.findUnique({
+            where: { id: worker.reservedBy },
+            select: { name: true, email: true }
+          });
+          if (user) {
+            reservedByUserName = user.name || user.email || worker.reservedBy;
+          }
+        } catch (error) {
+          // في حالة حدوث خطأ، سنستخدم ID كما هو
+          console.error('Error fetching user name for reservation:', error);
+        }
+      }
+      
+      return {
+        ...worker,
+        status: worker.contracts && worker.contracts.length > 0 ? 'RENTED' : worker.status,
+        reservedByUserName
+      };
     }));
 
     return new Response(JSON.stringify(workers), {

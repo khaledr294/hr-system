@@ -1,5 +1,6 @@
 import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
+import { createLog } from '@/lib/logger';
 
 export async function PATCH(
   req: Request,
@@ -79,6 +80,9 @@ export async function DELETE(
         data: { status: 'AVAILABLE' }
       });
     });
+
+    // Log the contract deletion
+    await createLog(session.user.id, 'CONTRACT_DELETED', `Contract deleted for worker ID: ${contract.workerId}`);
 
     return new Response('Contract deleted successfully', { status: 200 });
   } catch (error) {

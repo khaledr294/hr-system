@@ -1,8 +1,8 @@
 "use client";
 
-import { Bell, Search, User2, Menu } from "lucide-react";
+import { Bell, Search, User2, Menu, LogOut } from "lucide-react";
 import { motion } from "framer-motion";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Topbar({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
@@ -50,6 +50,15 @@ export default function Topbar({ onToggleSidebar }: { onToggleSidebar?: () => vo
           </div>
           <User2 className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
         </motion.div>
+        <motion.button 
+          whileHover={{ scale: 1.05 }} 
+          whileTap={{ scale: 0.98 }}
+          onClick={() => signOut()}
+          className="glass rounded-xl sm:rounded-2xl p-2 shadow-soft hover:shadow-hover hover:bg-red-50 transition-colors group"
+          title="تسجيل الخروج"
+        >
+          <LogOut className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700 group-hover:text-red-600" />
+        </motion.button>
       </div>
     </div>
   );

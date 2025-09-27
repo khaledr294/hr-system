@@ -15,6 +15,7 @@ interface Worker {
   reservationNotes?: string;
   reservedAt?: string;
   reservedBy?: string;
+  reservedByUserName?: string;
 }
 
 export default function ReserveWorkerPage() {

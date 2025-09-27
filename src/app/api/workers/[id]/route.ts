@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
+import { createLog } from '@/lib/logger';
 
 export async function GET(
     req: NextRequest,
     context: { params: Promise<{ id: string }> }
 ) {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await auth();
         if (!session) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
@@ -46,7 +46,7 @@ export async function PUT(
     context: { params: Promise<{ id: string }> }
 ) {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await auth();
         if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'HR')) {
             return NextResponse.json(
                 { error: 'Unauthorized - Admin or HR access required' },
@@ -104,6 +104,9 @@ export async function PUT(
             data: updateData,
         });
 
+        // Log the worker update
+        await createLog(session.user.id, 'WORKER_UPDATED', `Worker updated: ${data.name} (ID: ${params.id})`);
+
         return NextResponse.json(worker);
     } catch (error) {
         console.error('Error updating worker:', error);
@@ -119,7 +122,7 @@ export async function DELETE(
     context: { params: Promise<{ id: string }> }
 ) {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await auth();
         if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'HR')) {
             return NextResponse.json(
                 { error: 'Unauthorized - Admin or HR access required' },
@@ -149,6 +152,9 @@ export async function DELETE(
         await prisma.worker.delete({
             where: { id: params.id },
         });
+
+        // Log the worker deletion
+        await createLog(session.user.id, 'WORKER_DELETED', `Worker deleted: ${worker?.name} (ID: ${params.id})`);
 
         return NextResponse.json({ success: true });
     } catch (error) {

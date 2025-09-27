@@ -21,4 +21,5 @@ export interface Worker {
   reservationNotes?: string;
   reservedAt?: Date;
   reservedBy?: string;
+  reservedByUserName?: string;
 }

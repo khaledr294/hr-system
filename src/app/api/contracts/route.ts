@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
+import { createLog } from '@/lib/logger';
 
 export async function GET(req: NextRequest) {
   const session = await getSession();
@@ -155,6 +156,9 @@ export async function POST(req: NextRequest) {
 
       return newContract;
     });
+
+    // Log the contract creation
+    await createLog(session.user.id, 'CONTRACT_CREATED', `Contract created for worker ID: ${data.workerId}, Client: ${data.clientName}`);
 
     return new Response(JSON.stringify(contract), {
       status: 201,

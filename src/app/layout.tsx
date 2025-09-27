@@ -2,6 +2,9 @@
 import "./globals.css";
 import Providers from "@/components/Providers";
 
+// Import polyfills for server-side rendering
+import "@/lib/polyfills";
+
 const kufi = Noto_Kufi_Arabic({ subsets: ["arabic"] });
 
 export const metadata = {

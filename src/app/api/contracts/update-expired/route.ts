@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
 import { updateExpiredContracts } from '@/lib/updateExpiredContracts';
 
 export async function POST() {
   try {
     // التحقق من الصلاحيات
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'HR')) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin or HR access required' },
