@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import { compare } from "bcryptjs";
 import type { NextAuthConfig } from "next-auth";
@@ -19,7 +18,6 @@ declare module "next-auth" {
 
 const config: NextAuthConfig = {
   debug: process.env.NODE_ENV === 'development',
-  adapter: PrismaAdapter(prisma),
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -29,8 +27,8 @@ const config: NextAuthConfig = {
     signOut: "/auth/login",
     error: "/auth/login",
   },
-  trustHost: true, // مهم للـ Vercel
-  useSecureCookies: process.env.NODE_ENV === 'production',
+  trustHost: true,
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     Credentials({
       name: "credentials",
@@ -90,11 +88,9 @@ const config: NextAuthConfig = {
   ],
   callbacks: {
     async redirect({ url, baseUrl }) {
-      // إذا كان الـ URL يبدأ بـ baseUrl، استخدمه كما هو
+      console.log("NextAuth redirect:", { url, baseUrl });
       if (url.startsWith(baseUrl)) return url;
-      // إذا كان الـ URL يبدأ بـ /، أضف baseUrl
       else if (url.startsWith("/")) return `${baseUrl}${url}`;
-      // وإلا ارجع إلى الـ dashboard
       return `${baseUrl}/dashboard`;
     },
     async jwt({ token, user }) {
