@@ -17,22 +17,19 @@ declare module "next-auth" {
 }
 
 const config: NextAuthConfig = {
-  debug: process.env.NODE_ENV === 'development', // تشغيل debug فقط في التطوير
+  debug: process.env.NODE_ENV === 'development',
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 7 * 24 * 60 * 60, // 7 days - مدة أقصر للاختبار
   },
   pages: {
     signIn: "/auth/login",
-    signOut: "/auth/login",
     error: "/auth/login",
   },
   trustHost: true,
-  // إصلاح مؤقت: استخدام URL ثابت بدلاً من متغير البيئة المعطل
-  ...(process.env.NODE_ENV === 'production' && {
-    url: "https://hr-system-ochre.vercel.app"
-  }),
   secret: process.env.NEXTAUTH_SECRET,
+  // إزالة إعدادات الكوكيز المخصصة للاستخدام الافتراضي
+  useSecureCookies: process.env.NODE_ENV === 'production',
   providers: [
     Credentials({
       name: "credentials",
@@ -92,10 +89,10 @@ const config: NextAuthConfig = {
   ],
   callbacks: {
     async redirect({ url, baseUrl }) {
-      console.log("🔄 NextAuth redirect:", { url, baseUrl, fullUrl: `${baseUrl}/dashboard` });
+      console.log("🔄 NextAuth redirect:", { url, baseUrl });
       
-      // دائماً توجه إلى dashboard بعد تسجيل الدخول الناجح
-      if (url === "/dashboard" || url.includes("/dashboard")) {
+      // بعد تسجيل الدخول الناجح، توجه إلى dashboard
+      if (url === baseUrl || url === `${baseUrl}/` || url === '/dashboard') {
         return `${baseUrl}/dashboard`;
       }
       
@@ -112,24 +109,41 @@ const config: NextAuthConfig = {
       // الافتراضي: dashboard
       return `${baseUrl}/dashboard`;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
+      console.log("🎟️ JWT Callback - User:", !!user, "Account:", !!account);
+      
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.email = user.email;
         token.name = user.name;
-        console.log("🎟️ JWT token created for:", user.name);
+        token.sub = user.id; // مهم للـ JWT
+        console.log("✅ JWT token populated:", { id: token.id, name: token.name, role: token.role });
       }
+      
+      console.log("🔄 JWT token final:", { 
+        id: token.id, 
+        name: token.name, 
+        role: token.role,
+        sub: token.sub,
+        exp: token.exp 
+      });
+      
       return token;
     },
     async session({ session, token }) {
+      console.log("📋 Session Callback - Token exists:", !!token);
+      
       if (session?.user && token) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
         session.user.email = token.email as string;
         session.user.name = token.name as string;
-        console.log("📋 Session created for:", session.user.name);
+        console.log("✅ Session populated:", session.user);
+      } else {
+        console.log("❌ Session callback failed - no token or session");
       }
+      
       return session;
     },
   },
