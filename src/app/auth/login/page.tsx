@@ -20,24 +20,39 @@ export default function LoginPage() {
       const password = formData.get("password") as string;
       
       console.log("📝 محاولة تسجيل دخول للمستخدم:", identifier);
+      console.log("🔑 كلمة المرور موجودة:", !!password);
+      
+      if (!identifier || !password) {
+        console.log("❌ بيانات ناقصة!");
+        setError("يرجى إدخال جميع البيانات المطلوبة");
+        return;
+      }
       
       const { signIn } = await import("next-auth/react");
+      console.log("⚡ بدء عملية تسجيل الدخول...");
+      
       const result = await signIn("credentials", {
         identifier,
         password,
         redirect: false
       });
       
-      console.log("🔍 نتيجة تسجيل الدخول:", result);
+      console.log("🔍 نتيجة تسجيل الدخول الكاملة:", JSON.stringify(result, null, 2));
       
       if (result?.error) {
         console.log("❌ فشل تسجيل الدخول:", result.error);
-        setError("فشل في تسجيل الدخول. تحقق من البيانات المدخلة.");
+        setError(`فشل في تسجيل الدخول: ${result.error}`);
       } else if (result?.ok) {
         console.log("✅ تم تسجيل الدخول بنجاح!");
+        console.log("🔄 التوجه إلى Dashboard...");
         
-        // إعادة تحميل كامل للصفحة للذهاب إلى dashboard
-        window.location.replace("/dashboard");
+        // تأخير قصير للتأكد من حفظ الجلسة
+        setTimeout(() => {
+          window.location.replace("/dashboard");
+        }, 500);
+      } else {
+        console.log("⚠️ نتيجة غير متوقعة:", result);
+        setError("حدث خطأ غير متوقع");
       }
     } catch (error) {
       console.error("💥 خطأ في تسجيل الدخول:", error);

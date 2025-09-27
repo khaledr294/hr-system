@@ -17,7 +17,7 @@ declare module "next-auth" {
 }
 
 const config: NextAuthConfig = {
-  debug: true, // تمكين debug مؤقتاً لحل المشكلة
+  debug: process.env.NODE_ENV === 'development', // تشغيل debug فقط في التطوير
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
