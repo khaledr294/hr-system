@@ -8,7 +8,7 @@ export async function middleware(req: NextRequest) {
 
   // إذا كان المستخدم مسجل دخول ويحاول الوصول لصفحة تسجيل الدخول
   if (token && path === '/auth/login') {
-    return NextResponse.redirect(new URL('/workers', req.url));
+    return NextResponse.redirect(new URL('/dashboard', req.url));
   }
 
   // إذا لم يكن مسجل دخول ويحاول الوصول لصفحة محمية
@@ -26,13 +26,14 @@ export async function middleware(req: NextRequest) {
 
 export const config = { 
   matcher: [
-    '/dashboard',
+    '/dashboard/:path*',
     '/workers/:path*',
     '/clients/:path*', 
     '/contracts/:path*',
     '/nationality-salary/:path*',
     '/payroll/:path*',
     '/users/:path*',
-    '/marketers/:path*'
+    '/marketers/:path*',
+    '/settings/:path*'
   ]
 };

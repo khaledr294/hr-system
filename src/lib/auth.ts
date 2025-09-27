@@ -72,6 +72,14 @@ const config: NextAuthConfig = {
     })
   ],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      // إذا كان الـ URL يبدأ بـ baseUrl، استخدمه كما هو
+      if (url.startsWith(baseUrl)) return url;
+      // إذا كان الـ URL يبدأ بـ /، أضف baseUrl
+      else if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // وإلا ارجع إلى الـ dashboard
+      return `${baseUrl}/dashboard`;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;

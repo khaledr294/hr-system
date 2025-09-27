@@ -2,10 +2,12 @@
 
 import { signIn } from "next-auth/react";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     console.log("Login page loaded successfully");
@@ -25,15 +27,14 @@ export default function LoginPage() {
       const res = await signIn("credentials", {
         identifier,
         password,
-        callbackUrl: '/dashboard',
-        redirect: false, // تغيير إلى false لمعالجة النتيجة يدوياً
+        redirect: false, // منع الـ redirect التلقائي
       });
       
       if (res?.error) {
         setError("بيانات تسجيل الدخول غير صحيحة");
       } else if (res?.ok) {
-        // إنجاح تسجيل الدخول - إعادة توجيه يدوياً
-        window.location.href = '/dashboard';
+        // إنجاح تسجيل الدخول - إعادة توجيه سلسة بدون refresh
+        router.push('/dashboard');
       }
     } catch (err) {
       console.error("Login error:", err);
