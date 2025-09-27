@@ -6,18 +6,23 @@ export async function middleware(req: NextRequest) {
   const { nextUrl } = req;
   const path = nextUrl.pathname;
 
+  console.log("Middleware - Path:", path, "Token:", token ? "EXISTS" : "NONE");
+
   // إذا كان المستخدم مسجل دخول ويحاول الوصول لصفحة تسجيل الدخول
   if (token && path === '/auth/login') {
+    console.log("Redirecting logged-in user from login to dashboard");
     return NextResponse.redirect(new URL('/dashboard', req.url));
   }
 
   // إذا لم يكن مسجل دخول ويحاول الوصول لصفحة محمية
   if (!token && path !== '/auth/login') {
+    console.log("Redirecting unauthenticated user to login");
     return NextResponse.redirect(new URL('/auth/login', req.url));
   }
 
   // التحقق من الصلاحيات للصفحات الحساسة
   if (token && path.startsWith('/users') && !['ADMIN', 'HR_MANAGER'].includes(token.role as string)) {
+    console.log("Redirecting user with insufficient permissions");
     return NextResponse.redirect(new URL('/workers', req.url));
   }
 

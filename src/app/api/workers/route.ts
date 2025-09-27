@@ -6,8 +6,8 @@ import { createLog } from '@/lib/logger';
 export async function POST(req: NextRequest) {
   const session = await auth();
 
-  if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'HR')) {
-    return new Response('Unauthorized - Admin or HR access required', { status: 401 });
+  if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'HR_MANAGER')) {
+    return new Response('Unauthorized - Admin or HR Manager access required', { status: 401 });
   }
 
   try {

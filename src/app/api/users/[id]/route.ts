@@ -11,8 +11,8 @@ export async function PUT(
   try {
     const session = await auth();
     
-    if (!session || session.user.role !== "HR") {
-      return NextResponse.json({ error: "غير مخول" }, { status: 403 });
+    if (!session || session.user.role !== "HR_MANAGER") {
+      return NextResponse.json({ error: "غير مخول - يتطلب صلاحية مدير الموارد البشرية" }, { status: 403 });
     }
 
     const { id } = await context.params;
@@ -67,8 +67,8 @@ export async function DELETE(
   try {
     const session = await auth();
     
-    if (!session || session.user.role !== "HR") {
-      return NextResponse.json({ error: "غير مخول" }, { status: 403 });
+    if (!session || session.user.role !== "HR_MANAGER") {
+      return NextResponse.json({ error: "غير مخول - يتطلب صلاحية مدير الموارد البشرية" }, { status: 403 });
     }
 
     const { id } = await context.params;

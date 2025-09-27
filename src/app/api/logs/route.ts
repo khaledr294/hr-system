@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   const action = searchParams.get('action') || undefined;
   
   // إذا كان المستخدم ليس أدمن، يجلب سجلاته فقط
-  const userId = ['ADMIN', 'HR_MANAGER', 'GENERAL_MANAGER', 'HR'].includes(session.user.role) 
+  const userId = ['ADMIN', 'HR_MANAGER', 'GENERAL_MANAGER'].includes(session.user.role) 
     ? searchParams.get('userId') || undefined 
     : session.user.id;
 

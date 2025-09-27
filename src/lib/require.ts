@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/session';
 
-export type UserRole = 'HR' | 'GENERAL_MANAGER' | 'MARKETER';
+export type UserRole = 'HR_MANAGER' | 'GENERAL_MANAGER' | 'MARKETER';
 
 export interface SessionUser {
   id: string;
@@ -42,7 +42,7 @@ export async function requireRole(allowedRoles: UserRole[]): Promise<SessionUser
  * Helper for HR-only access
  */
 export async function requireHR(): Promise<SessionUser> {
-  return requireRole(['HR']);
+  return requireRole(['HR_MANAGER']);
 }
 
 /**
@@ -56,7 +56,7 @@ export async function requireGeneralManager(): Promise<SessionUser> {
  * Helper for HR or General Manager access
  */
 export async function requireHROrManager(): Promise<SessionUser> {
-  return requireRole(['HR', 'GENERAL_MANAGER']);
+  return requireRole(['HR_MANAGER', 'GENERAL_MANAGER']);
 }
 
 /**

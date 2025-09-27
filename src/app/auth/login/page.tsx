@@ -1,125 +1,159 @@
 "use client";
 
-import { signIn } from "next-auth/react";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const router = useRouter();
 
-  useEffect(() => {
-    console.log("Login page loaded successfully");
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    console.log("Form submission started");
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("🔥 تم الضغط على زر تسجيل الدخول!");
+    
     setIsLoading(true);
     setError("");
-
-    const formData = new FormData(e.currentTarget);
-    const identifier = formData.get("identifier") as string;
-    const password = formData.get("password") as string;
-
+    
     try {
-      const res = await signIn("credentials", {
+      // Clear any existing session first
+      const { signOut } = await import("next-auth/react");
+      await signOut({ redirect: false });
+      
+      // Get form data
+      const formData = new FormData(e.target as HTMLFormElement);
+      const identifier = formData.get("username") as string;
+      const password = formData.get("password") as string;
+      
+      console.log("📝 محاولة تسجيل دخول للمستخدم:", identifier);
+      
+      const { signIn } = await import("next-auth/react");
+      const result = await signIn("credentials", {
         identifier,
         password,
-        redirect: false, // منع الـ redirect التلقائي
+        redirect: false
       });
       
-      if (res?.error) {
-        setError("بيانات تسجيل الدخول غير صحيحة");
-      } else if (res?.ok) {
-        // إنجاح تسجيل الدخول - إعادة توجيه سلسة بدون refresh
-        router.push('/dashboard');
+      if (result?.error) {
+        console.log("❌ فشل تسجيل الدخول:", result.error);
+        setError("فشل في تسجيل الدخول. تحقق من البيانات المدخلة.");
+      } else if (result?.ok) {
+        console.log("✅ تم تسجيل الدخول بنجاح!");
+        // Force a complete page reload to ensure fresh session
+        window.location.href = "/dashboard";
       }
-    } catch (err) {
-      console.error("Login error:", err);
-      setError("حدث خطأ في النظام");
+    } catch (error) {
+      console.error("💥 خطأ في تسجيل الدخول:", error);
+      setError("حدث خطأ أثناء تسجيل الدخول. حاول مرة أخرى.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen flex-col justify-center bg-gradient-to-br from-slate-100 to-blue-50 py-12 sm:px-6 lg:px-8" dir="rtl">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="mx-auto w-24 h-24 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-full flex items-center justify-center mb-6 shadow-lg border border-white/20">
-          <span className="text-2xl font-bold text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>ساعد</span>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="max-w-md w-full space-y-8">
+        {/* Header */}
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 bg-indigo-600 rounded-xl flex items-center justify-center mb-4">
+            <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h2 className="text-3xl font-bold text-gray-900">شركة ساعد للإستقدام</h2>
+          <p className="mt-2 text-sm text-gray-600">نظام إدارة الموارد البشرية</p>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-slate-900" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>
-          تسجيل الدخول
-        </h2>
-      </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white/80 backdrop-blur-sm px-4 py-8 shadow-xl border border-white/50 sm:rounded-xl sm:px-10">
-          <form className="space-y-6" onSubmit={handleSubmit}>
+        {/* Login Form */}
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <form className="space-y-6" onSubmit={handleLogin}>
             <div>
-              <label
-                htmlFor="identifier"
-                className="block text-right text-sm font-bold text-slate-800"
-                style={{ textShadow: '1px 1px 1px rgba(0,0,0,0.1)' }}
-              >
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
                 اسم المستخدم أو البريد الإلكتروني
               </label>
-              <div className="mt-1 text-left" dir="ltr">
-                <input
-                  id="identifier"
-                  name="identifier"
-                  type="text"
-                  autoComplete="username"
-                  required
-                  className="block w-full appearance-none rounded-lg border-2 border-slate-300 px-3 py-3 placeholder-slate-500 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm text-slate-900 font-bold focus:text-indigo-900 bg-white/90"
-                />
-              </div>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                autoComplete="username"
+                required
+                defaultValue="admin"
+                className="block w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition duration-200"
+                placeholder="أدخل اسم المستخدم"
+              />
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className="block text-right text-sm font-bold text-slate-800"
-                style={{ textShadow: '1px 1px 1px rgba(0,0,0,0.1)' }}
-              >
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 كلمة المرور
               </label>
-              <div className="mt-1 text-left" dir="ltr">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  className="block w-full appearance-none rounded-lg border-2 border-slate-300 px-3 py-3 placeholder-slate-500 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm text-slate-900 font-bold focus:text-indigo-900 bg-white/90"
-                />
-              </div>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                defaultValue="123456"
+                className="block w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition duration-200"
+                placeholder="أدخل كلمة المرور"
+              />
             </div>
 
             {error && (
-              <div className="rounded-lg bg-red-100 p-4 border-2 border-red-200">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                 <div className="flex">
-                  <div className="mr-3">
-                    <h3 className="text-sm font-bold text-red-900" style={{ textShadow: '1px 1px 1px rgba(0,0,0,0.1)' }}>{error}</h3>
-                  </div>
+                  <svg className="h-5 w-5 text-red-400 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                  <p className="text-sm text-red-600">{error}</p>
                 </div>
               </div>
             )}
 
-            <div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="flex w-full justify-center rounded-lg border border-transparent bg-gradient-to-r from-indigo-600 to-blue-600 px-4 py-3 text-sm font-bold text-white shadow-lg hover:from-indigo-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:from-indigo-400 disabled:to-blue-400 transition-all duration-200"
-                style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}
-              >
-                {isLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={`
+                w-full flex justify-center py-3 px-4 border border-transparent rounded-lg text-sm font-medium text-white
+                transition duration-200 transform hover:scale-105
+                ${isLoading 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                }
+              `}
+            >
+              {isLoading ? (
+                <div className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  جاري تسجيل الدخول...
+                </div>
+              ) : (
+                'تسجيل الدخول'
+              )}
+            </button>
           </form>
+
+          {/* Demo credentials */}
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+            <p className="text-xs text-gray-600 text-center mb-2">بيانات تجريبية للاختبار:</p>
+            <div className="grid grid-cols-1 gap-1 text-xs text-gray-700">
+              <div className="flex justify-between">
+                <span>👤 مدير النظام:</span>
+                <span>admin / 123456</span>
+              </div>
+              <div className="flex justify-between">
+                <span>👨‍💼 مدير موارد بشرية:</span>
+                <span>nader@saed-hr.com / 123456</span>
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* Footer */}
+        <p className="text-center text-xs text-gray-500">
+          © 2025 شركة ساعد للإستقدام. جميع الحقوق محفوظة.
+        </p>
       </div>
     </div>
   );

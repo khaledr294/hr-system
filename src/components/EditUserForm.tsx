@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import RolePermissionsSummary from "./RolePermissionsSummary";
 
 const roles = [
-  { value: "HR", label: "مدير الموارد البشرية" },
+  { value: "HR_MANAGER", label: "مدير الموارد البشرية" },
   { value: "GENERAL_MANAGER", label: "المدير العام" },
   { value: "MARKETER", label: "مسوق" },
   { value: "STAFF", label: "موظف" },

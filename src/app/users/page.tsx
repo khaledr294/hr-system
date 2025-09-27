@@ -83,7 +83,7 @@ export default async function UsersPage() {
                 
                 <div className="mb-4">
                   <span className={`inline-flex items-center px-3 py-1.5 text-sm font-bold border-2 ${
-                    user.role === 'HR' 
+                    user.role === 'HR_MANAGER' 
                       ? 'bg-blue-200 text-blue-800 border-blue-600'
                       : user.role === 'GENERAL_MANAGER'
                       ? 'bg-purple-200 text-purple-800 border-purple-600'

@@ -1,10 +1,6 @@
 ﻿import { Noto_Kufi_Arabic } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
-import ClientSidePolyfills from "@/components/ClientSidePolyfills";
-
-// Import polyfills for server-side rendering
-import "@/lib/polyfills";
 
 const kufi = Noto_Kufi_Arabic({ subsets: ["arabic"] });
 
@@ -24,7 +20,6 @@ export default function RootLayout({
         <meta charSet="utf-8" />
       </head>
       <body className={kufi.className}>
-        <ClientSidePolyfills />
         <Providers>{children}</Providers>
       </body>
     </html>

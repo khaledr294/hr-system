@@ -120,7 +120,7 @@ function NavLinks({ session, pathname }: { session: Session | null; pathname: st
           )}
         </div>
       ))}
-      {session?.user?.role === "HR" && (
+      {session?.user?.role === "HR_MANAGER" && (
         <Link
           href="/users"
           className={classNames(
@@ -186,7 +186,7 @@ function MobileNavLinks({ session, pathname }: { session: Session | null; pathna
           )}
         </div>
       ))}
-      {session?.user?.role === "HR" && (
+      {session?.user?.role === "HR_MANAGER" && (
         <Link
           href="/users"
           className={classNames(
@@ -286,7 +286,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       {session.user?.name || session.user?.email}
                     </div>
                     <div className="text-slate-300 text-xs font-bold leading-tight">
-                      {session.user?.role === 'HR' ? 'مدير الموارد البشرية' : 
+                      {session.user?.role === 'HR_MANAGER' ? 'مدير الموارد البشرية' : 
                        session.user?.role === 'GENERAL_MANAGER' ? 'المدير العام' :
                        session.user?.role === 'MARKETER' ? 'مسوق' : 'موظف'}
                     </div>

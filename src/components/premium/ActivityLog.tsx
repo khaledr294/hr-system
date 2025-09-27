@@ -5,7 +5,33 @@ import { formatDateTime } from "@/lib/date";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 
-type Log = { id?: string; action: string; entity?: string; entityId?: string; message?: string; createdAt: string };
+// ترجمة العمليات إلى العربية
+const getActionInArabic = (action: string) => {
+  const translations: Record<string, string> = {
+    'WORKER_CREATED': 'إضافة عامل',
+    'WORKER_UPDATED': 'تحديث عامل',
+    'WORKER_DELETED': 'حذف عامل',
+    'LOGIN': 'تسجيل دخول',
+    'LOGOUT': 'تسجيل خروج',
+    'CREATE_WORKER': 'إضافة عامل',
+    'UPDATE_CONTRACT': 'تحديث عقد',
+    'DELETE_USER': 'حذف مستخدم',
+    'VIEW_DASHBOARD': 'عرض لوحة التحكم',
+    'CREATE_USER': 'إضافة مستخدم',
+    'UPDATE_USER': 'تحديث مستخدم'
+  };
+  return translations[action] || action;
+};
+
+type Log = { 
+  id?: string; 
+  action: string; 
+  entity?: string; 
+  entityId?: string; 
+  message?: string; 
+  createdAt: string;
+  user?: { id: string; name: string; email: string; role: string };
+};
 
 export default function ActivityLog() {
   const { data: session } = useSession();
@@ -14,14 +40,14 @@ export default function ActivityLog() {
 
   useEffect(() => {
     const role = session?.user?.role;
-    if (role !== 'GENERAL_MANAGER' && role !== 'HR') {
+    if (!['ADMIN', 'GENERAL_MANAGER', 'HR_MANAGER'].includes(role || '')) {
       setLoading(false);
       return;
     }
     let mounted = true;
     fetch("/api/logs")
-      .then((r) => (r.ok ? r.json() : []))
-      .then((json) => mounted && setLogs(json))
+      .then((r) => (r.ok ? r.json() : { logs: [] }))
+      .then((json) => mounted && setLogs(json.logs || []))
       .finally(() => mounted && setLoading(false));
     return () => {
       mounted = false;
@@ -29,7 +55,7 @@ export default function ActivityLog() {
   }, [session]);
 
   const role = session?.user?.role;
-  if (role !== 'GENERAL_MANAGER' && role !== 'HR') return null;
+  if (!['ADMIN', 'GENERAL_MANAGER', 'HR_MANAGER'].includes(role || '')) return null;
 
   return (
     <motion.div 
@@ -55,8 +81,15 @@ export default function ActivityLog() {
           {logs.map((log, i) => (
             <div key={log.id || i} className="rounded-lg sm:rounded-xl bg-slate-50 hover:bg-slate-100 transition p-2 sm:p-3">
               <div className="flex items-start justify-between gap-2">
-                <div className="font-semibold text-slate-800 text-sm sm:text-base flex-1 min-w-0">
-                  <span className="truncate block">{log.action}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-slate-800 text-sm sm:text-base">
+                    <span className="truncate block">{getActionInArabic(log.action)}</span>
+                  </div>
+                  {log.user && (
+                    <div className="text-xs text-slate-600 mt-1">
+                      بواسطة: <span className="font-medium">{log.user.name}</span>
+                    </div>
+                  )}
                   {log.entity && (
                     <span className="inline-block mt-1 text-xs bg-slate-900 text-white px-2 py-0.5 rounded">
                       {log.entity}
@@ -68,7 +101,7 @@ export default function ActivityLog() {
                 </div>
               </div>
               {log.message && (
-                <div className="text-slate-600 text-xs sm:text-sm mt-1 line-clamp-2">
+                <div className="text-slate-600 text-xs sm:text-sm mt-2 line-clamp-2">
                   {log.message}
                 </div>
               )}

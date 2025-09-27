@@ -6,9 +6,9 @@ export async function POST() {
   try {
     // التحقق من الصلاحيات
     const session = await auth();
-    if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'HR')) {
+    if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'HR_MANAGER')) {
       return NextResponse.json(
-        { error: 'Unauthorized - Admin or HR access required' },
+        { error: 'Unauthorized - Admin or HR Manager access required' },
         { status: 401 }
       );
     }

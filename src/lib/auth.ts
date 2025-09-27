@@ -22,9 +22,11 @@ const config: NextAuthConfig = {
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
     signIn: "/auth/login",
+    signOut: "/auth/login",
   },
   providers: [
     Credentials({
@@ -35,7 +37,13 @@ const config: NextAuthConfig = {
       },
       async authorize(credentials) {
         try {
+          console.log("NextAuth authorize called with:", { 
+            identifier: credentials?.identifier,
+            password: credentials?.password ? "[PROVIDED]" : "[MISSING]"
+          });
+
           if (!credentials?.identifier || !credentials?.password) {
+            console.log("Missing credentials");
             return null;
           }
 
@@ -48,16 +56,24 @@ const config: NextAuthConfig = {
             }
           });
 
+          console.log("User found:", user ? { id: user.id, name: user.name, email: user.email } : "No user found");
+
+          console.log("User found:", user ? { id: user.id, name: user.name, email: user.email } : "No user found");
+
           if (!user || !user.password) {
+            console.log("No user found or no password");
             return null;
           }
 
           const isPasswordValid = await compare(credentials.password as string, user.password);
+          console.log("Password valid:", isPasswordValid);
 
           if (!isPasswordValid) {
+            console.log("Invalid password");
             return null;
           }
 
+          console.log("Authentication successful for user:", user.name);
           return {
             id: user.id,
             email: user.email || "",

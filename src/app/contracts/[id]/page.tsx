@@ -216,7 +216,7 @@ export default async function ContractDetailsPage({
         {/* زر حذف العقد - متاح فقط لمدير الموارد البشرية */}
         <DeleteContractButton 
           contractId={contract.id} 
-          isHRManager={session.user.role === 'HR_MANAGER' || session.user.role === 'HR'} 
+          isHRManager={session.user.role === 'HR_MANAGER'} 
         />
       </div>
     </DashboardLayout>

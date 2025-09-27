@@ -48,7 +48,7 @@ export async function DELETE(
   }
 
   // التحقق من أن المستخدم مدير موارد بشرية
-  if (session.user.role !== 'HR_MANAGER' && session.user.role !== 'HR') {
+  if (session.user.role !== 'HR_MANAGER') {
     return new Response('Forbidden: Only HR managers can delete contracts', { status: 403 });
   }
 
