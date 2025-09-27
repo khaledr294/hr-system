@@ -21,7 +21,9 @@ export default function WorkerActions({ workerId }: WorkerActionsProps) {
           if (confirm('هل أنت متأكد من حذف العاملة؟')) {
             const res = await fetch(`/api/workers/${workerId}`, { method: 'DELETE' });
             if (res.ok) {
-              window.location.href = '/workers';
+              if (typeof window !== 'undefined') {
+                window.location.href = '/workers';
+              }
             } else {
               alert('تعذر حذف العاملة. تأكد من عدم وجود عقود نشطة.');
             }
