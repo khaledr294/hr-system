@@ -17,7 +17,7 @@ declare module "next-auth" {
 }
 
 const config: NextAuthConfig = {
-  debug: process.env.NODE_ENV === 'development',
+  debug: true, // تمكين debug مؤقتاً لحل المشكلة
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -38,13 +38,13 @@ const config: NextAuthConfig = {
       },
       async authorize(credentials) {
         try {
-          console.log("NextAuth authorize called with:", { 
+          console.log("🔐 NextAuth authorize called with:", { 
             identifier: credentials?.identifier,
             password: credentials?.password ? "[PROVIDED]" : "[MISSING]"
           });
 
           if (!credentials?.identifier || !credentials?.password) {
-            console.log("Missing credentials");
+            console.log("❌ Missing credentials");
             return null;
           }
 
@@ -57,22 +57,22 @@ const config: NextAuthConfig = {
             }
           });
 
-          console.log("User found:", user ? { id: user.id, name: user.name, email: user.email } : "No user found");
+          console.log("👤 User found:", user ? { id: user.id, name: user.name, email: user.email } : "No user found");
 
           if (!user || !user.password) {
-            console.log("No user found or no password");
+            console.log("❌ No user found or no password");
             return null;
           }
 
           const isPasswordValid = await compare(credentials.password as string, user.password);
-          console.log("Password valid:", isPasswordValid);
+          console.log("🔑 Password valid:", isPasswordValid);
 
           if (!isPasswordValid) {
-            console.log("Invalid password");
+            console.log("❌ Invalid password");
             return null;
           }
 
-          console.log("Authentication successful for user:", user.name);
+          console.log("✅ Authentication successful for user:", user.name);
           return {
             id: user.id,
             email: user.email || "",
@@ -80,7 +80,7 @@ const config: NextAuthConfig = {
             role: user.role || "STAFF"
           };
         } catch (error) {
-          console.error("Auth error:", error);
+          console.error("💥 Auth error:", error);
           return null;
         }
       }
@@ -88,7 +88,7 @@ const config: NextAuthConfig = {
   ],
   callbacks: {
     async redirect({ url, baseUrl }) {
-      console.log("NextAuth redirect:", { url, baseUrl });
+      console.log("🔄 NextAuth redirect:", { url, baseUrl });
       if (url.startsWith(baseUrl)) return url;
       else if (url.startsWith("/")) return `${baseUrl}${url}`;
       return `${baseUrl}/dashboard`;
@@ -99,6 +99,7 @@ const config: NextAuthConfig = {
         token.role = user.role;
         token.email = user.email;
         token.name = user.name;
+        console.log("🎟️ JWT token created for:", user.name);
       }
       return token;
     },
@@ -108,11 +109,15 @@ const config: NextAuthConfig = {
         session.user.role = token.role as string;
         session.user.email = token.email as string;
         session.user.name = token.name as string;
+        console.log("📋 Session created for:", session.user.name);
       }
       return session;
     },
   },
 };
+
+console.log("⚙️ NextAuth config initialized with NEXTAUTH_URL:", process.env.NEXTAUTH_URL);
+console.log("⚙️ NextAuth secret exists:", !!process.env.NEXTAUTH_SECRET);
 
 export const { handlers, auth, signIn, signOut } = NextAuth(config);
 export { config as authOptions };
