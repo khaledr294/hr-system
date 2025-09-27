@@ -28,6 +28,10 @@ const config: NextAuthConfig = {
     error: "/auth/login",
   },
   trustHost: true,
+  // إصلاح مؤقت: استخدام URL ثابت بدلاً من متغير البيئة المعطل
+  ...(process.env.NODE_ENV === 'production' && {
+    url: "https://hr-system-ochre.vercel.app"
+  }),
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
     Credentials({
