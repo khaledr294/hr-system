@@ -1,2 +1,198 @@
-// Deprecated - use /dashboard
-export default function Page() { return null; }
+'use client';
+
+import { useState } from 'react';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import LoadingSpinner from '@/components/ui/loading-spinner';
+import EmptyState from '@/components/ui/empty-state';
+import { motion } from 'framer-motion';
+import { Search, Filter, User, FileText, Users, Calendar } from 'lucide-react';
+
+interface SearchResult {
+  id: string;
+  type: 'worker' | 'client' | 'contract';
+  name: string;
+  details: string;
+  metadata: Record<string, unknown>;
+}
+
+export default function SearchPage() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchType, setSearchType] = useState('all');
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
+
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) return;
+
+    setLoading(true);
+    setSearched(true);
+    try {
+      const params = new URLSearchParams({ 
+        q: searchTerm,
+        type: searchType
+      });
+
+      const response = await fetch(`/api/search?${params.toString()}`);
+      if (response.ok) {
+        const data = await response.json();
+        setResults(data.results || []);
+      }
+    } catch (error) {
+      console.error('Error searching:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'worker': return <User className="w-5 h-5" />;
+      case 'client': return <Users className="w-5 h-5" />;
+      case 'contract': return <FileText className="w-5 h-5" />;
+      default: return <Search className="w-5 h-5" />;
+    }
+  };
+
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'worker': return 'عامل';
+      case 'client': return 'عميل';
+      case 'contract': return 'عقد';
+      default: return '';
+    }
+  };
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'worker': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'client': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+      case 'contract': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
+    }
+  };
+
+  return (
+    <div className="container mx-auto p-6 space-y-6" dir="rtl">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center gap-3"
+      >
+        <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+          <Search className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">البحث المتقدم</h1>
+          <p className="text-gray-500 dark:text-gray-400">البحث في العمال، العملاء، والعقود</p>
+        </div>
+      </motion.div>
+
+      {/* Search Box */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="p-6 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700"
+      >
+        <div className="space-y-4">
+          <div className="flex gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="ابحث عن أي شيء... (اسم، رقم، تفاصيل)"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                className="pr-10"
+              />
+            </div>
+            <Button onClick={handleSearch} variant="primary" disabled={loading}>
+              <div className="flex items-center gap-2">
+                {loading ? <LoadingSpinner size="sm" /> : <Search className="w-5 h-5" />}
+                <span>بحث</span>
+              </div>
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Filter className="w-5 h-5 text-gray-400" />
+            <select
+              value={searchType}
+              onChange={(e) => setSearchType(e.target.value)}
+              className="px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="all">كل الأنواع</option>
+              <option value="worker">العمال فقط</option>
+              <option value="client">العملاء فقط</option>
+              <option value="contract">العقود فقط</option>
+            </select>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Results */}
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <LoadingSpinner size="lg" text="جاري البحث..." />
+        </div>
+      ) : searched && results.length === 0 ? (
+        <EmptyState
+          icon={Search}
+          title="لا توجد نتائج"
+          description="لم يتم العثور على أي نتائج مطابقة لبحثك. جرب كلمات مفتاحية أخرى."
+        />
+      ) : searched ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="space-y-3"
+        >
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            تم العثور على {results.length} نتيجة
+          </p>
+          <div className="space-y-3">
+            {results.map((result, index) => (
+              <motion.div
+                key={result.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="p-4 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors cursor-pointer"
+              >
+                <div className="flex items-start gap-4">
+                  <div className={`p-2 rounded-lg ${getTypeColor(result.type)}`}>
+                    {getTypeIcon(result.type)}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                        {result.name}
+                      </h3>
+                      <span className={`px-2 py-1 text-xs font-bold rounded-full ${getTypeColor(result.type)}`}>
+                        {getTypeLabel(result.type)}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {result.details}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      ) : (
+        <div className="text-center py-12">
+          <Search className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+          <p className="text-gray-500 dark:text-gray-400">
+            ابدأ بالبحث عن عمال، عملاء، أو عقود
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}

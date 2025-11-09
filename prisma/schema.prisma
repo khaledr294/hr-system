@@ -1,3 +1,13 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "accelerate"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
 model Log {
   id        String   @id @default(cuid())
   userId    String?
@@ -8,49 +18,41 @@ model Log {
   createdAt DateTime @default(now())
   user      User?    @relation("UserLogs", fields: [userId], references: [id])
 }
+
 model Package {
   id        String   @id @default(cuid())
   name      String
-  duration  Int      // days
+  duration  Int
   price     Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-model Worker {
-  id             String   @id @default(cuid())
-  name           String
-  code           Int      @unique
-  nationality    String
-  residencyNumber String  @unique
-  dateOfBirth    DateTime
-  phone          String
-  status         String   @default("AVAILABLE")
-  reservationNotes String?
-  reservedAt     DateTime?
-  reservedBy     String?
-  salary         Float?
-  // حقول جديدة
-  borderNumber   String?
-  officeName     String?
-  arrivalDate    DateTime?
-  passportNumber String?
-  religion       String?
-  iban           String?
-  residenceBranch String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  contracts      Contract[]
-  nationalitySalary   NationalitySalary? @relation("NationalityWorkers", fields: [nationalitySalaryId], references: [id])
-  nationalitySalaryId String?
-}
-generator client {
-  provider = "prisma-client-js"
-  engineType = "accelerate"
-}
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+model Worker {
+  id                  String             @id @default(cuid())
+  name                String
+  code                Int                @unique
+  nationality         String
+  residencyNumber     String             @unique
+  dateOfBirth         DateTime
+  phone               String
+  status              String             @default("AVAILABLE")
+  salary              Float?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  nationalitySalaryId String?
+  arrivalDate         DateTime?
+  borderNumber        String?
+  iban                String?
+  officeName          String?
+  passportNumber      String?
+  religion            String?
+  reservationNotes    String?
+  reservedAt          DateTime?
+  reservedBy          String?
+  residenceBranch     String?
+  contracts           Contract[]
+  nationalitySalary   NationalitySalary? @relation("NationalityWorkers", fields: [nationalitySalaryId], references: [id])
 }
 
 model NationalitySalary {
@@ -61,34 +63,38 @@ model NationalitySalary {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  name         String    @default("")
-  email        String?
-  password     String?
-  role         String?   @default("STAFF")
-  nationality  String?   @default("")
-  nationalitySalaryId String?
-  residencyNumber     String?  @unique
-  dateOfBirth         DateTime? @default(now())
-  phone               String?  @default("")
-  status              String             @default("AVAILABLE")
-  salary              Float?
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
-  logs      Log[]    @relation("UserLogs")
+  id                   String         @id @default(cuid())
+  name                 String         @default("")
+  email                String?
+  password             String?
+  role                 String?        @default("STAFF")
+  nationality          String?        @default("")
+  nationalitySalaryId  String?
+  residencyNumber      String?        @unique
+  dateOfBirth          DateTime?      @default(now())
+  phone                String?        @default("")
+  status               String         @default("AVAILABLE")
+  salary               Float?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  twoFactorBackupCodes String?
+  twoFactorEnabled     Boolean        @default(false)
+  twoFactorSecret      String?
+  logs                 Log[]          @relation("UserLogs")
+  Notification         Notification[]
 }
 
 model Client {
-  id        String     @id @default(cuid())
-  name      String
-  phone     String
-  email     String?
-  address   String
-  idNumber  String     @unique
+  id          String     @id @default(cuid())
+  name        String
+  phone       String
+  email       String?
+  address     String
+  idNumber    String     @unique
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   dateOfBirth DateTime?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  contracts Contract[]
+  contracts   Contract[]
 }
 
 model Marketer {
@@ -113,17 +119,113 @@ model Contract {
   status         String    @default("ACTIVE")
   notifiedBefore Boolean   @default(false)
   contractNumber String?   @unique
-  notes          String?   @default("")
-  // حقول نظام الغرامة
-  delayDays      Int?      @default(0)
-  penaltyAmount  Float?    @default(0)
-  penaltyRate    Float?    @default(120) // 120 ريال لكل يوم
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   marketerId     String?
+  notes          String?   @default("")
+  delayDays      Int?      @default(0)
+  penaltyAmount  Float?    @default(0)
+  penaltyRate    Float?    @default(120)
   client         Client    @relation(fields: [clientId], references: [id])
   marketer       Marketer? @relation(fields: [marketerId], references: [id])
   worker         Worker    @relation(fields: [workerId], references: [id])
+}
+
+model ArchiveLog {
+  id          String   @id
+  entityType  String
+  entityId    String
+  action      String
+  performedBy String?
+  reason      String?
+  metadata    String?
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([entityType, entityId])
+}
+
+model ArchivedContract {
+  id             String   @id
+  originalId     String   @unique
+  workerId       String
+  workerName     String
+  workerCode     Int
+  clientId       String
+  clientName     String
+  startDate      DateTime
+  endDate        DateTime
+  packageType    String
+  packageName    String?
+  totalAmount    Float
+  status         String
+  contractNumber String?
+  notes          String?
+  delayDays      Int?
+  penaltyAmount  Float?
+  marketerId     String?
+  marketerName   String?
+  archivedAt     DateTime @default(now())
+  archivedBy     String?
+  archiveReason  String   @default("EXPIRED")
+  metadata       String?
+
+  @@index([archiveReason])
+  @@index([archivedAt])
+  @@index([clientId])
+  @@index([workerId])
+}
+
+model ArchivedWorker {
+  id              String   @id
+  originalId      String   @unique
+  name            String
+  code            Int
+  nationality     String
+  residencyNumber String
+  dateOfBirth     DateTime
+  phone           String
+  status          String
+  passportNumber  String?
+  salary          Float?
+  archivedAt      DateTime @default(now())
+  archivedBy      String?
+  archiveReason   String   @default("INACTIVE")
+  contractsCount  Int      @default(0)
+  metadata        String?
+
+  @@index([archiveReason])
+  @@index([archivedAt])
+}
+
+model Backup {
+  id        String   @id
+  filename  String
+  size      BigInt
+  type      String   @default("automatic")
+  status    String   @default("in_progress")
+  error     String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([status])
+}
+
+model Notification {
+  id        String   @id
+  type      String
+  title     String
+  message   String
+  priority  String   @default("MEDIUM")
+  read      Boolean  @default(false)
+  userId    String?
+  metadata  String?
+  link      String?
+  createdAt DateTime @default(now())
+  User      User?    @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+  @@index([userId, read])
 }
 
 enum Role {
