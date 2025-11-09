@@ -23,7 +23,8 @@ const nextConfig: NextConfig = {
 
   // Experimental features for better performance
   experimental: {
-    optimizePackageImports: ['lucide-react'],
+    optimizePackageImports: ['lucide-react', 'framer-motion', 'recharts'],
+    optimizeCss: true,
   },
   
   // Headers for security and performance
