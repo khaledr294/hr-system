@@ -7,11 +7,6 @@ import { motion } from 'framer-motion';
 export default function DarkModeToggle() {
   const { mode, toggleMode, mounted } = useDarkMode();
 
-  if (!mounted) {
-    // Return a placeholder to avoid layout shift
-    return <div className="w-10 h-10 rounded-xl bg-transparent" />;
-  }
-
   const isDark = mode === 'dark';
 
   return (
@@ -22,6 +17,7 @@ export default function DarkModeToggle() {
       whileTap={{ scale: 0.95 }}
       title={isDark ? 'التبديل للوضع النهاري' : 'التبديل للوضع الليلي'}
       aria-label={isDark ? 'التبديل للوضع النهاري' : 'التبديل للوضع الليلي'}
+      style={{ opacity: mounted ? 1 : 0.5 }}
     >
       <motion.div
         initial={false}
