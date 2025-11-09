@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { Session } from "next-auth";
 import { useTheme } from "./ThemeProvider";
-import ThemeToggle from "./ThemeToggle";
 import PremiumPageShell from "./premium/PremiumPageShell";
 
 const navigation = [
@@ -278,7 +277,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </div>
             <div className="flex items-center flex-shrink-0 gap-3">
-              <ThemeToggle />
               {session ? (
                 <div className="flex items-center space-x-4 space-x-reverse">
                   <div className="text-right ml-3 hidden sm:block">
