@@ -18,7 +18,7 @@
     "incremental": true,
     "isolatedModules": true,
     "resolveJsonModule": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "noFallthroughCasesInSwitch": true,
     "types": [
       "node",
