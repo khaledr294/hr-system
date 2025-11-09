@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { LayoutGrid, Users, Wallet, FileText, Settings, BarChart3, Home, ClipboardList, UserCog, Briefcase, FolderKanban, ChevronDown } from "lucide-react";
+import { 
+  LayoutGrid, Users, Wallet, FileText, Settings, BarChart3, Home, 
+  ClipboardList, UserCog, Briefcase, FolderKanban, ChevronDown,
+  Archive, HardDrive, Search, Activity, Bell, Shield
+} from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -47,7 +51,13 @@ export const sections: Section[] = [
   {
     title: "الإدارة",
     items: [
+      { href: "/dashboard/reports", label: "التقارير", icon: ClipboardList },
+      { href: "/dashboard/search", label: "البحث المتقدم", icon: Search },
+      { href: "/dashboard/archive", label: "الأرشيف", icon: Archive },
+      { href: "/dashboard/backups", label: "النسخ الاحتياطية", icon: HardDrive },
+      { href: "/dashboard/performance", label: "الأداء", icon: Activity },
       { href: "/users", label: "المستخدمون", icon: UserCog },
+      { href: "/dashboard/settings/two-factor", label: "المصادقة الثنائية", icon: Shield },
       { href: "/settings", label: "الإعدادات", icon: Settings },
       { href: "/settings/theme", label: "المظهر", icon: Settings },
     ],
