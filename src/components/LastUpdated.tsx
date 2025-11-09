@@ -7,10 +7,12 @@ import Button from "@/components/ui/Button";
 
 export default function LastUpdated({ className }: { className?: string }) {
   const router = useRouter();
-  const [ts, setTs] = useState<Date | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [ts, setTs] = useState<Date>(new Date());
 
-  // Set initial time on client side only to avoid hydration mismatch
+  // Only show content after client hydration
   useEffect(() => {
+    setMounted(true);
     setTs(new Date());
   }, []);
 
@@ -19,16 +21,9 @@ export default function LastUpdated({ className }: { className?: string }) {
     router.refresh();
   };
 
-  // Show loading state until client hydration is complete
-  if (!ts) {
-    return (
-      <div className={`flex items-center justify-between ${className ?? ''}`} dir="rtl">
-        <div className="text-xs text-slate-500 font-semibold">
-          آخر تحديث: <span className="text-slate-700">...</span>
-        </div>
-        <Button onClick={refresh} size="sm" variant="secondary">تحديث</Button>
-      </div>
-    );
+  // Don't render anything until mounted to avoid hydration mismatch
+  if (!mounted) {
+    return null;
   }
 
   const date = ts.toLocaleDateString(AR_GREG_LOCALE);
