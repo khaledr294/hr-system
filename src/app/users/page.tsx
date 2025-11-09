@@ -3,7 +3,8 @@ import Link from "next/link";
 import DeleteUserButton from "@/components/DeleteUserButton";
 import DashboardLayout from "@/components/DashboardLayout";
 import { requireHR } from "@/lib/require";
-import { unstable_cache } from 'next/cache';
+
+export const revalidate = 20; // Cache page for 20 seconds
 
 const roleLabels = {
   HR: "مدير الموارد البشرية",
@@ -12,26 +13,18 @@ const roleLabels = {
   STAFF: "موظف"
 };
 
-// Cache users list for 20 seconds
-const getCachedUsers = unstable_cache(
-  async () => {
-    return await prisma.user.findMany({
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
-  },
-  ['users-list'],
-  {
-    revalidate: 20, // Cache for 20 seconds
-    tags: ['users']
-  }
-);
+async function getUsers() {
+  return await prisma.user.findMany({
+    orderBy: {
+      createdAt: 'desc'
+    }
+  });
+}
 
 export default async function UsersPage() {
   const currentUser = await requireHR(); // This will redirect if not HR role
   
-  const users = await getCachedUsers();
+  const users = await getUsers();
   
   return (
     <DashboardLayout>

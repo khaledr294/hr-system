@@ -5,28 +5,27 @@ import Link from 'next/link';
 import Button from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { requireSession } from '@/lib/require';
-import { unstable_cache } from 'next/cache';
 
-// Cache worker data for 30 seconds
-const getCachedWorkers = unstable_cache(
-  async () => {
-    // جلب العمالة مع العقود - مع معالجة الحقول المفقودة
-    const workersRaw = await prisma.worker.findMany({
-      include: {
-        contracts: {
-          where: {
-            status: 'ACTIVE',
-            startDate: { lte: new Date() },
-            endDate: { gte: new Date() },
-          },
+export const revalidate = 30; // Cache page for 30 seconds
+
+async function getWorkers() {
+  // جلب العمالة مع العقود - مع معالجة الحقول المفقودة
+  const workersRaw = await prisma.worker.findMany({
+    include: {
+      contracts: {
+        where: {
+          status: 'ACTIVE',
+          startDate: { lte: new Date() },
+          endDate: { gte: new Date() },
         },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    }).catch(async () => {
-      // Fallback for missing columns
-      return await prisma.worker.findMany({
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  }).catch(async () => {
+    // Fallback for missing columns
+    return await prisma.worker.findMany({
         select: {
           id: true,
           code: true,
@@ -54,31 +53,25 @@ const getCachedWorkers = unstable_cache(
           createdAt: 'desc',
         },
       });
-    });
+  });
 
-    // تحديد الحالة حسب العقود النشطة
-    return workersRaw.map(worker => ({
-      id: worker.id,
-      code: worker.code,
-      name: worker.name,
-      nationality: worker.nationality,
-      residencyNumber: worker.residencyNumber,
-      dateOfBirth: worker.dateOfBirth,
-      phone: worker.phone,
-      status: worker.contracts && worker.contracts.length > 0 ? 'RENTED' : worker.status,
-    }));
-  },
-  ['workers-list'],
-  {
-    revalidate: 30, // Cache for 30 seconds
-    tags: ['workers']
-  }
-);
+  // تحديد الحالة حسب العقود النشطة
+  return workersRaw.map(worker => ({
+    id: worker.id,
+    code: worker.code,
+    name: worker.name,
+    nationality: worker.nationality,
+    residencyNumber: worker.residencyNumber,
+    dateOfBirth: worker.dateOfBirth,
+    phone: worker.phone,
+    status: worker.contracts && worker.contracts.length > 0 ? 'RENTED' : worker.status,
+  }));
+}
 
 export default async function WorkersPage() {
   await requireSession(); // This will redirect if not authenticated
 
-  const workers = await getCachedWorkers();
+  const workers = await getWorkers();
 
   return (
     <DashboardLayout>

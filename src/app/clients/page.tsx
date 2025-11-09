@@ -7,6 +7,8 @@ import ClientList from '@/components/clients/ClientList';
 import Button from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 
+export const revalidate = 30; // Cache page for 30 seconds
+
 export default async function ClientsPage() {
   const session = await getSession();
 
