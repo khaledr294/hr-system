@@ -31,11 +31,24 @@ export default function LoginPage() {
       const { signIn } = await import("next-auth/react");
       console.log("⚡ بدء عملية تسجيل الدخول...");
       
-      await signIn("credentials", {
+      const result = await signIn("credentials", {
         identifier,
         password,
-        redirectTo: "/dashboard"
+        redirect: false,
       });
+      
+      console.log("📊 نتيجة تسجيل الدخول:", result);
+      
+      if (result?.error) {
+        console.log("❌ خطأ في التحقق:", result.error);
+        setError("اسم المستخدم أو كلمة المرور غير صحيحة");
+        return;
+      }
+      
+      if (result?.ok) {
+        console.log("✅ تم تسجيل الدخول بنجاح!");
+        window.location.href = "/dashboard";
+      }
     } catch (error) {
       console.error("💥 خطأ في تسجيل الدخول:", error);
       setError("حدث خطأ أثناء تسجيل الدخول. حاول مرة أخرى.");
