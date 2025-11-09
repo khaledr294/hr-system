@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-  "module": "NodeNext",
-  "moduleResolution": "nodenext",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
     "lib": [
       "dom",
       "dom.iterable",
@@ -18,7 +18,7 @@
     "incremental": true,
     "isolatedModules": true,
     "resolveJsonModule": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "noFallthroughCasesInSwitch": true,
     "types": [
       "node",
@@ -41,7 +41,8 @@
     "**/*.ts",
     "**/*.tsx",
     "next-env.d.ts",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

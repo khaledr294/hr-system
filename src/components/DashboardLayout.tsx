@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { Session } from "next-auth";
-import { useTheme } from "./ThemeProvider";
 import PremiumPageShell from "./premium/PremiumPageShell";
 
 const navigation = [
@@ -206,8 +205,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
   const { data: session, status } = useSession();
-  const { theme } = useTheme();
-  const isPremium = theme === "premium";
+  const isPremium = true; // Always use Premium theme
 
   // إذا كانت الجلسة قيد التحميل، أظهر شاشة تحميل
   if (status === "loading") {
