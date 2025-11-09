@@ -10,6 +10,7 @@ export async function POST(req: Request) {
     const email = form.get("email") as string;
     const password = form.get("password") as string;
     const role = form.get("role") as string;
+    const jobTitleId = form.get("jobTitleId") as string | null;
     
     if (!name || !email || !password || !role) {
       return NextResponse.json({ error: "جميع الحقول مطلوبة" }, { status: 400 });
@@ -17,7 +18,13 @@ export async function POST(req: Request) {
     
     const hashed = await bcrypt.hash(password, 10);
     await prisma.user.create({
-      data: { name, email, password: hashed, role: role as Role },
+      data: { 
+        name, 
+        email, 
+        password: hashed, 
+        role: role as Role,
+        ...(jobTitleId && { jobTitleId })
+      },
     });
     
     return NextResponse.redirect("/users");

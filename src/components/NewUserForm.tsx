@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import RolePermissionsSummary from "./RolePermissionsSummary";
 
@@ -12,11 +12,26 @@ const roles = [
   { value: "STAFF", label: "موظف" },
 ];
 
+interface JobTitle {
+  id: string;
+  nameAr: string;
+  name: string;
+}
+
 export default function NewUserForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState("");
+  const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
   const [error, setError] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    // جلب المسميات الوظيفية
+    fetch("/api/job-titles")
+      .then(res => res.ok ? res.json() : [])
+      .then(data => setJobTitles(data.filter((jt: any) => jt.isActive)))
+      .catch(() => setJobTitles([]));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -124,6 +139,29 @@ export default function NewUserForm() {
                   
                   <RolePermissionsSummary selectedRole={selectedRole} />
                 </div>
+
+                {selectedRole === "STAFF" && jobTitles.length > 0 && (
+                  <div>
+                    <label htmlFor="jobTitleId" className="block text-base font-bold text-slate-900 mb-2">
+                      المسمى الوظيفي
+                    </label>
+                    <select
+                      name="jobTitleId"
+                      id="jobTitleId"
+                      className="w-full px-4 py-3 text-base border-2 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white text-slate-900 font-bold"
+                    >
+                      <option value="">بدون مسمى وظيفي</option>
+                      {jobTitles.map((jobTitle) => (
+                        <option key={jobTitle.id} value={jobTitle.id}>
+                          {jobTitle.nameAr} ({jobTitle.name})
+                        </option>
+                      ))}
+                    </select>
+                    <p className="mt-2 text-sm text-gray-600">
+                      اختر المسمى الوظيفي لتحديد صلاحيات محددة للموظف
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
