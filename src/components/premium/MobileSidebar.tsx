@@ -16,12 +16,13 @@ interface MobileSidebarProps {
 
 export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
   const pathname = usePathname();
-  const [open, setOpen] = useState<Record<string, boolean>>({
-    "عام": true,
-    "العمليات": true,
-    "المالية": true,
-    "التسويق": true,
-    "الإدارة": true,
+  // Initialize all sections as open by default
+  const [open, setOpen] = useState<Record<string, boolean>>(() => {
+    const initialState: Record<string, boolean> = {};
+    sections.forEach(section => {
+      initialState[section.title] = true;
+    });
+    return initialState;
   });
   
   const toggle = (title: string) => setOpen((p) => ({ ...p, [title]: !p[title] }));
