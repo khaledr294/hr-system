@@ -31,13 +31,52 @@ export default function SearchPage() {
     try {
       const params = new URLSearchParams({ 
         q: searchTerm,
-        type: searchType
+        entities: searchType === 'all' ? 'workers,clients,contracts' : searchType === 'worker' ? 'workers' : searchType === 'client' ? 'clients' : 'contracts'
       });
 
       const response = await fetch(`/api/search?${params.toString()}`);
       if (response.ok) {
         const data = await response.json();
-        setResults(data.results || []);
+        // تحويل البيانات إلى صيغة موحدة
+        const allResults: SearchResult[] = [];
+        
+        if (data.workers) {
+          data.workers.forEach((w: any) => {
+            allResults.push({
+              id: w.id,
+              type: 'worker',
+              name: w.name,
+              details: `الجنسية: ${w.nationality} | الحالة: ${w.status} | رقم الجواز: ${w.passportNumber || '-'}`,
+              metadata: w
+            });
+          });
+        }
+        
+        if (data.clients) {
+          data.clients.forEach((c: any) => {
+            allResults.push({
+              id: c.id,
+              type: 'client',
+              name: c.name,
+              details: `الهاتف: ${c.phone} | رقم الهوية: ${c.idNumber} | عدد العقود: ${c.contractsCount}`,
+              metadata: c
+            });
+          });
+        }
+        
+        if (data.contracts) {
+          data.contracts.forEach((c: any) => {
+            allResults.push({
+              id: c.id,
+              type: 'contract',
+              name: `عقد: ${c.workerName} - ${c.clientName}`,
+              details: `الحالة: ${c.status} | المبلغ: ${c.totalAmount} ر.س | ${new Date(c.startDate).toLocaleDateString('ar-SA')}`,
+              metadata: c
+            });
+          });
+        }
+        
+        setResults(allResults);
       }
     } catch (error) {
       console.error('Error searching:', error);
@@ -74,27 +113,11 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6" dir="rtl">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-3"
-      >
-        <div className="p-3 bg-indigo-100 rounded-lg">
-          <Search className="w-8 h-8 text-indigo-600" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">البحث المتقدم</h1>
-          <p className="text-gray-500">البحث في العمال، العملاء، والعقود</p>
-        </div>
-      </motion.div>
-
+    <div className="space-y-6">
       {/* Search Box */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
         className="p-6 bg-white rounded-lg border-2 border-gray-200"
       >
         <div className="space-y-4">

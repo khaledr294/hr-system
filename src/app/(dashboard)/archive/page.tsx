@@ -53,19 +53,21 @@ export default function ArchivePage() {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (filterReason !== 'all') params.append('reason', filterReason);
-      if (filterDate !== 'all') params.append('dateRange', filterDate);
+      if (filterReason !== 'all') params.append('archiveReason', filterReason);
 
       const [contractsRes, statsRes] = await Promise.all([
         fetch(`/api/archive?${params.toString()}`),
-        fetch('/api/archive?statsOnly=true')
+        fetch('/api/archive?action=stats')
       ]);
 
-      if (contractsRes.ok && statsRes.ok) {
+      if (contractsRes.ok) {
         const contractsData = await contractsRes.json();
+        setContracts(Array.isArray(contractsData) ? contractsData : []);
+      }
+      
+      if (statsRes.ok) {
         const statsData = await statsRes.json();
-        setContracts(contractsData.contracts || []);
-        setStats(statsData.stats || null);
+        setStats(statsData);
       }
     } catch (error) {
       console.error('Error fetching archive data:', error);
@@ -84,7 +86,7 @@ export default function ArchivePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'restore',
-          contractId
+          archivedContractId: contractId
         })
       });
 
@@ -92,7 +94,8 @@ export default function ArchivePage() {
         await fetchData();
         alert('تم استعادة العقد بنجاح');
       } else {
-        alert('حدث خطأ أثناء استعادة العقد');
+        const error = await response.json();
+        alert(error.error || 'حدث خطأ أثناء استعادة العقد');
       }
     } catch (error) {
       console.error('Error restoring contract:', error);

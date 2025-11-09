@@ -40,6 +40,8 @@ export default function BackupsPage() {
   };
 
   const createBackup = async () => {
+    if (!confirm('هل أنت متأكد من رغبتك في إنشاء نسخة احتياطية؟ قد تستغرق هذه العملية عدة دقائق.')) return;
+    
     setCreating(true);
     try {
       const response = await fetch('/api/backups', {
@@ -52,11 +54,12 @@ export default function BackupsPage() {
         await fetchBackups();
         alert('تم إنشاء النسخة الاحتياطية بنجاح');
       } else {
-        alert('حدث خطأ أثناء إنشاء النسخة الاحتياطية');
+        const error = await response.json();
+        alert(error.error || 'حدث خطأ أثناء إنشاء النسخة الاحتياطية.\n\nملاحظة: تتطلب هذه الميزة تثبيت PostgreSQL client (pg_dump) على السيرفر.');
       }
     } catch (error) {
       console.error('Error creating backup:', error);
-      alert('حدث خطأ أثناء إنشاء النسخة الاحتياطية');
+      alert('حدث خطأ أثناء إنشاء النسخة الاحتياطية.\n\nملاحظة: تتطلب هذه الميزة تثبيت PostgreSQL client (pg_dump) على السيرفر.');
     } finally {
       setCreating(false);
     }
