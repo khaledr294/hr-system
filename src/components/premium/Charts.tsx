@@ -48,28 +48,28 @@ function Charts() {
       <motion.div 
         initial={{ opacity: 0, y: 8 }} 
         animate={{ opacity: 1, y: 0 }} 
-        className="card-premium rounded-xl sm:rounded-2xl shadow-soft p-3 sm:p-4 dark:bg-slate-800/50 dark:border dark:border-slate-700/50"
+        className="card-premium rounded-xl sm:rounded-2xl shadow-soft p-3 sm:p-4"
       >
         <div className="flex items-center justify-between mb-3">
-          <div className="text-slate-900 dark:text-slate-100 font-extrabold text-sm sm:text-base">تطور العقود</div>
-          <div className="text-slate-500 dark:text-slate-400 text-xs font-semibold">شهر جاري</div>
+          <div className="text-slate-900 font-extrabold text-sm sm:text-base">تطور العقود</div>
+          <div className="text-slate-500 text-xs font-semibold">شهر جاري</div>
         </div>
         <div className="h-52 sm:h-64">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={lineData} margin={{ left: 4, right: 4, bottom: 4, top: 4 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" className="dark:stroke-slate-700" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" className="" />
               <XAxis 
                 dataKey="label" 
                 stroke="#64748b" 
                 fontSize={12} 
                 tick={{ fontSize: 12, fill: '#64748b' }}
-                className="dark:stroke-slate-400"
+                className=""
               />
               <YAxis 
                 stroke="#64748b" 
                 fontSize={12}
                 tick={{ fontSize: 12, fill: '#64748b' }}
-                className="dark:stroke-slate-400"
+                className=""
               />
               <Tooltip 
                 contentStyle={{ 
@@ -95,28 +95,28 @@ function Charts() {
       <motion.div 
         initial={{ opacity: 0, y: 8 }} 
         animate={{ opacity: 1, y: 0 }} 
-        className="card-premium rounded-xl sm:rounded-2xl shadow-soft p-3 sm:p-4 dark:bg-slate-800/50 dark:border dark:border-slate-700/50"
+        className="card-premium rounded-xl sm:rounded-2xl shadow-soft p-3 sm:p-4"
       >
         <div className="flex items-center justify-between mb-3">
-          <div className="text-slate-900 dark:text-slate-100 font-extrabold text-sm sm:text-base">حالة العقود</div>
-          <div className="text-slate-500 dark:text-slate-400 text-xs font-semibold">حسب النوع</div>
+          <div className="text-slate-900 font-extrabold text-sm sm:text-base">حالة العقود</div>
+          <div className="text-slate-500 text-xs font-semibold">حسب النوع</div>
         </div>
         <div className="h-52 sm:h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={statusData} margin={{ left: 4, right: 4, bottom: 4, top: 4 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" className="dark:stroke-slate-700" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" className="" />
               <XAxis 
                 dataKey="name" 
                 stroke="#64748b" 
                 fontSize={12}
                 tick={{ fontSize: 12, fill: '#64748b' }}
-                className="dark:stroke-slate-400"
+                className=""
               />
               <YAxis 
                 stroke="#64748b" 
                 fontSize={12}
                 tick={{ fontSize: 12, fill: '#64748b' }}
-                className="dark:stroke-slate-400"
+                className=""
               />
               <Tooltip 
                 contentStyle={{ 
@@ -139,11 +139,11 @@ function Charts() {
       <motion.div 
         initial={{ opacity: 0, y: 8 }} 
         animate={{ opacity: 1, y: 0 }} 
-        className="card-premium rounded-xl sm:rounded-2xl shadow-soft p-3 sm:p-4 dark:bg-slate-800/50 dark:border dark:border-slate-700/50 col-span-1 md:col-span-2 xl:col-span-1"
+        className="card-premium rounded-xl sm:rounded-2xl shadow-soft p-3 sm:p-4 col-span-1 md:col-span-2 xl:col-span-1"
       >
         <div className="flex items-center justify-between mb-3">
-          <div className="text-slate-900 dark:text-slate-100 font-extrabold text-sm sm:text-base">توزيع الحالات</div>
-          <div className="text-slate-500 dark:text-slate-400 text-xs font-semibold">نسبة مئوية</div>
+          <div className="text-slate-900 font-extrabold text-sm sm:text-base">توزيع الحالات</div>
+          <div className="text-slate-500 text-xs font-semibold">نسبة مئوية</div>
         </div>
         <div className="h-52 sm:h-64">
           <ResponsiveContainer width="100%" height="100%">
@@ -176,3 +176,4 @@ function Charts() {
 }
 
 export default memo(Charts);
+

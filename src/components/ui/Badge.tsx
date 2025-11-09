@@ -15,3 +15,4 @@ export function Badge({ className, variant = "default", ...props }: BadgeProps) 
   } as const;
   return <span className={twMerge(base, variants[variant], className)} {...props} />;
 }
+

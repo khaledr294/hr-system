@@ -6,3 +6,4 @@ export default function HomeClient({ data }: { data: DashboardStats }) {
   // Always use Premium Dashboard
   return <PremiumDashboard data={data} />;
 }
+

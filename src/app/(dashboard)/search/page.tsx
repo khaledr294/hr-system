@@ -66,10 +66,10 @@ export default function SearchPage() {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'worker': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-      case 'client': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-      case 'contract': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
+      case 'worker': return 'bg-blue-100 text-blue-800';
+      case 'client': return 'bg-green-100 text-green-800';
+      case 'contract': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -81,12 +81,12 @@ export default function SearchPage() {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center gap-3"
       >
-        <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-          <Search className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+        <div className="p-3 bg-indigo-100 rounded-lg">
+          <Search className="w-8 h-8 text-indigo-600" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">البحث المتقدم</h1>
-          <p className="text-gray-500 dark:text-gray-400">البحث في العمال، العملاء، والعقود</p>
+          <h1 className="text-3xl font-bold text-gray-900">البحث المتقدم</h1>
+          <p className="text-gray-500">البحث في العمال، العملاء، والعقود</p>
         </div>
       </motion.div>
 
@@ -95,7 +95,7 @@ export default function SearchPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="p-6 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700"
+        className="p-6 bg-white rounded-lg border-2 border-gray-200"
       >
         <div className="space-y-4">
           <div className="flex gap-4">
@@ -123,7 +123,7 @@ export default function SearchPage() {
             <select
               value={searchType}
               onChange={(e) => setSearchType(e.target.value)}
-              className="px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-indigo-500"
+              className="px-3 py-2 border-2 border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-indigo-500"
             >
               <option value="all">كل الأنواع</option>
               <option value="worker">العمال فقط</option>
@@ -151,7 +151,7 @@ export default function SearchPage() {
           animate={{ opacity: 1 }}
           className="space-y-3"
         >
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600">
             تم العثور على {results.length} نتيجة
           </p>
           <div className="space-y-3">
@@ -161,7 +161,7 @@ export default function SearchPage() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="p-4 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors cursor-pointer"
+                className="p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-indigo-300 transition-colors cursor-pointer"
               >
                 <div className="flex items-start gap-4">
                   <div className={`p-2 rounded-lg ${getTypeColor(result.type)}`}>
@@ -169,14 +169,14 @@ export default function SearchPage() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                      <h3 className="text-lg font-bold text-gray-900">
                         {result.name}
                       </h3>
                       <span className={`px-2 py-1 text-xs font-bold rounded-full ${getTypeColor(result.type)}`}>
                         {getTypeLabel(result.type)}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-gray-600">
                       {result.details}
                     </p>
                   </div>
@@ -187,8 +187,8 @@ export default function SearchPage() {
         </motion.div>
       ) : (
         <div className="text-center py-12">
-          <Search className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-          <p className="text-gray-500 dark:text-gray-400">
+          <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <p className="text-gray-500">
             ابدأ بالبحث عن عمال، عملاء، أو عقود
           </p>
         </div>
@@ -196,3 +196,4 @@ export default function SearchPage() {
     </div>
   );
 }
+

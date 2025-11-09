@@ -26,3 +26,4 @@ export function AccordionTrigger({ className, children, ...props }: React.Button
 export function AccordionContent({ className, children }: React.HTMLAttributes<HTMLDivElement>) {
   return <div className={twMerge("px-2 pb-2", className)}>{children}</div>;
 }
+

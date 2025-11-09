@@ -39,15 +39,15 @@ export default function PerformancePage() {
   };
 
   const getStatusColor = (value: number) => {
-    if (value < 50) return 'text-green-600 dark:text-green-400';
-    if (value < 80) return 'text-yellow-600 dark:text-yellow-400';
-    return 'text-red-600 dark:text-red-400';
+    if (value < 50) return 'text-green-600';
+    if (value < 80) return 'text-yellow-600';
+    return 'text-red-600';
   };
 
   const getStatusBg = (value: number) => {
-    if (value < 50) return 'bg-green-100 dark:bg-green-900/20 border-green-200 dark:border-green-800';
-    if (value < 80) return 'bg-yellow-100 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
-    return 'bg-red-100 dark:bg-red-900/20 border-red-200 dark:border-red-800';
+    if (value < 50) return 'bg-green-100 border-green-200';
+    if (value < 80) return 'bg-yellow-100 border-yellow-200';
+    return 'bg-red-100 border-red-200';
   };
 
   if (loading) {
@@ -66,12 +66,12 @@ export default function PerformancePage() {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center gap-3"
       >
-        <div className="p-3 bg-pink-100 dark:bg-pink-900/30 rounded-lg">
-          <Activity className="w-8 h-8 text-pink-600 dark:text-pink-400" />
+        <div className="p-3 bg-pink-100 rounded-lg">
+          <Activity className="w-8 h-8 text-pink-600" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">مراقبة الأداء</h1>
-          <p className="text-gray-500 dark:text-gray-400">مراقبة أداء النظام في الوقت الفعلي</p>
+          <h1 className="text-3xl font-bold text-gray-900">مراقبة الأداء</h1>
+          <p className="text-gray-500">مراقبة أداء النظام في الوقت الفعلي</p>
         </div>
       </motion.div>
 
@@ -94,7 +94,7 @@ export default function PerformancePage() {
                 </div>
                 <Cpu className={`w-12 h-12 opacity-50 ${getStatusColor(metrics.cpu)}`} />
               </div>
-              <div className="mt-3 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="mt-3 bg-gray-200 rounded-full h-2">
                 <div
                   className={`h-2 rounded-full transition-all ${
                     metrics.cpu < 50 ? 'bg-green-500' :
@@ -120,7 +120,7 @@ export default function PerformancePage() {
                 </div>
                 <HardDrive className={`w-12 h-12 opacity-50 ${getStatusColor(metrics.memory)}`} />
               </div>
-              <div className="mt-3 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="mt-3 bg-gray-200 rounded-full h-2">
                 <div
                   className={`h-2 rounded-full transition-all ${
                     metrics.memory < 50 ? 'bg-green-500' :
@@ -146,7 +146,7 @@ export default function PerformancePage() {
                 </div>
                 <HardDrive className={`w-12 h-12 opacity-50 ${getStatusColor(metrics.disk)}`} />
               </div>
-              <div className="mt-3 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="mt-3 bg-gray-200 rounded-full h-2">
                 <div
                   className={`h-2 rounded-full transition-all ${
                     metrics.disk < 50 ? 'bg-green-500' :
@@ -164,12 +164,12 @@ export default function PerformancePage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="p-6 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg"
+              className="p-6 bg-white border-2 border-gray-200 rounded-lg"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">زمن الاستجابة</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
+                  <p className="text-sm font-medium text-gray-600">زمن الاستجابة</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-1">
                     {metrics.responseTime}ms
                   </p>
                 </div>
@@ -181,12 +181,12 @@ export default function PerformancePage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="p-6 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg"
+              className="p-6 bg-white border-2 border-gray-200 rounded-lg"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">المستخدمون النشطون</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
+                  <p className="text-sm font-medium text-gray-600">المستخدمون النشطون</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-1">
                     {metrics.activeUsers}
                   </p>
                 </div>
@@ -198,12 +198,12 @@ export default function PerformancePage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
-              className="p-6 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg"
+              className="p-6 bg-white border-2 border-gray-200 rounded-lg"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">الطلبات/دقيقة</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
+                  <p className="text-sm font-medium text-gray-600">الطلبات/دقيقة</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-1">
                     {metrics.requestsPerMinute}
                   </p>
                 </div>
@@ -217,13 +217,13 @@ export default function PerformancePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
-            className="p-6 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg"
+            className="p-6 bg-white border-2 border-gray-200 rounded-lg"
           >
             <div className="flex items-center gap-3 mb-4">
-              <AlertTriangle className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">حالة النظام</h3>
+              <AlertTriangle className="w-6 h-6 text-yellow-600" />
+              <h3 className="text-lg font-bold text-gray-900">حالة النظام</h3>
             </div>
-            <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+            <div className="space-y-2 text-sm text-gray-600">
               <p>• آخر تحديث: {new Date().toLocaleTimeString('ar-SA')}</p>
               <p>• النظام يعمل بكفاءة</p>
               <p>• يتم التحديث كل 5 ثوانٍ تلقائياً</p>
@@ -234,3 +234,4 @@ export default function PerformancePage() {
     </div>
   );
 }
+

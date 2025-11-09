@@ -168,12 +168,12 @@ export default function ArchivePage() {
         className="flex items-center justify-between"
       >
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-            <Archive className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+          <div className="p-3 bg-purple-100 rounded-lg">
+            <Archive className="w-8 h-8 text-purple-600" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">الأرشيف</h1>
-            <p className="text-gray-500 dark:text-gray-400">إدارة العقود المؤرشفة</p>
+            <h1 className="text-3xl font-bold text-gray-900">الأرشيف</h1>
+            <p className="text-gray-500">إدارة العقود المؤرشفة</p>
           </div>
         </div>
         <Button onClick={handleExport} variant="secondary">
@@ -191,12 +191,12 @@ export default function ArchivePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg"
+            className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 rounded-lg"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">إجمالي المؤرشف</p>
-                <p className="text-3xl font-bold text-blue-900 dark:text-blue-100 mt-1">
+                <p className="text-sm text-blue-600 font-medium">إجمالي المؤرشف</p>
+                <p className="text-3xl font-bold text-blue-900 mt-1">
                   {stats.totalArchived}
                 </p>
               </div>
@@ -208,12 +208,12 @@ export default function ArchivePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="p-6 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-2 border-red-200 dark:border-red-800 rounded-lg"
+            className="p-6 bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-200 rounded-lg"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-red-600 dark:text-red-400 font-medium">عقود منتهية</p>
-                <p className="text-3xl font-bold text-red-900 dark:text-red-100 mt-1">
+                <p className="text-sm text-red-600 font-medium">عقود منتهية</p>
+                <p className="text-3xl font-bold text-red-900 mt-1">
                   {stats.expiredContracts}
                 </p>
               </div>
@@ -225,12 +225,12 @@ export default function ArchivePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="p-6 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 border-2 border-yellow-200 dark:border-yellow-800 rounded-lg"
+            className="p-6 bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-200 rounded-lg"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-yellow-600 dark:text-yellow-400 font-medium">عقود ملغاة</p>
-                <p className="text-3xl font-bold text-yellow-900 dark:text-yellow-100 mt-1">
+                <p className="text-sm text-yellow-600 font-medium">عقود ملغاة</p>
+                <p className="text-3xl font-bold text-yellow-900 mt-1">
                   {stats.cancelledContracts}
                 </p>
               </div>
@@ -242,12 +242,12 @@ export default function ArchivePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="p-6 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-2 border-green-200 dark:border-green-800 rounded-lg"
+            className="p-6 bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200 rounded-lg"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-green-600 dark:text-green-400 font-medium">إجمالي القيمة</p>
-                <p className="text-2xl font-bold text-green-900 dark:text-green-100 mt-1">
+                <p className="text-sm text-green-600 font-medium">إجمالي القيمة</p>
+                <p className="text-2xl font-bold text-green-900 mt-1">
                   {formatCurrency(stats.totalValue)}
                 </p>
               </div>
@@ -258,7 +258,7 @@ export default function ArchivePage() {
       )}
 
       {/* Filters */}
-      <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700">
+      <div className="p-4 bg-white rounded-lg border-2 border-gray-200">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative">
             <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -276,7 +276,7 @@ export default function ArchivePage() {
             <select
               value={filterReason}
               onChange={(e) => setFilterReason(e.target.value)}
-              className="flex-1 px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">كل الأسباب</option>
               <option value="EXPIRED">منتهي</option>
@@ -290,7 +290,7 @@ export default function ArchivePage() {
             <select
               value={filterDate}
               onChange={(e) => setFilterDate(e.target.value)}
-              className="flex-1 px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">كل الفترات</option>
               <option value="today">اليوم</option>
@@ -310,65 +310,65 @@ export default function ArchivePage() {
           description="لم يتم العثور على عقود مطابقة للبحث والفلاتر المحددة"
         />
       ) : (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="bg-white rounded-lg border-2 border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-900 border-b-2 border-gray-200 dark:border-gray-700">
+              <thead className="bg-gray-50 border-b-2 border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
                     العامل
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
                     العميل
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
                     تاريخ الانتهاء
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
                     القيمة
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
                     السبب
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
                     تاريخ الأرشفة
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
                     إجراء
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="divide-y divide-gray-200">
                 {filteredContracts.map((contract, index) => (
                   <motion.tr
                     key={contract.id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: index * 0.05 }}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
+                    className="hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
-                        <div className="text-sm font-bold text-gray-900 dark:text-white">
+                        <div className="text-sm font-bold text-gray-900">
                           {contract.workerName}
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                        <div className="text-sm text-gray-500">
                           رقم: {contract.workerCode}
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {contract.clientName}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                       {formatDate(contract.endDate)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-bold text-gray-900 dark:text-white">
+                      <div className="text-sm font-bold text-gray-900">
                         {formatCurrency(contract.totalAmount)}
                       </div>
                       {contract.penaltyAmount ? (
-                        <div className="text-xs text-red-600 dark:text-red-400 font-medium">
+                        <div className="text-xs text-red-600 font-medium">
                           غرامة: {formatCurrency(contract.penaltyAmount)}
                         </div>
                       ) : null}
@@ -376,16 +376,16 @@ export default function ArchivePage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 text-xs font-bold rounded-full ${
                         contract.archiveReason === 'EXPIRED'
-                          ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                          ? 'bg-red-100 text-red-800'
                           : contract.archiveReason === 'CANCELLED'
-                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-                          : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-green-100 text-green-800'
                       }`}>
                         {contract.archiveReason === 'EXPIRED' ? 'منتهي' :
                          contract.archiveReason === 'CANCELLED' ? 'ملغي' : 'مكتمل'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                       {formatDate(contract.archivedAt)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -420,3 +420,4 @@ export default function ArchivePage() {
     </div>
   );
 }
+

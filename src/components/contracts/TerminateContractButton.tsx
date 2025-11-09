@@ -40,3 +40,4 @@ export default function TerminateContractButton({ contractId }: TerminateContrac
     </button>
   );
 }
+

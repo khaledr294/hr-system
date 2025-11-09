@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { WorkerList } from './WorkerList';
 import { type Worker } from '@/types/worker';
@@ -10,3 +10,4 @@ interface ClientWorkerListProps {
 export function ClientWorkerList({ workers }: ClientWorkerListProps) {
   return <WorkerList workers={workers} />;
 }
+

@@ -36,3 +36,4 @@ export default function LastUpdated({ className }: { className?: string }) {
     </div>
   );
 }
+

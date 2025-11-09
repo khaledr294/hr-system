@@ -37,3 +37,4 @@ export default async function DashboardPage() {
   const data = await getDashboardData();
   return <HomeClient data={data} />;
 }
+

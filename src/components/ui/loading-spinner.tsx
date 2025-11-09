@@ -21,10 +21,10 @@ export default function LoadingSpinner({
   const content = (
     <div className="flex flex-col items-center justify-center gap-3">
       <Loader2 
-        className={`${sizeClasses[size]} text-indigo-600 dark:text-indigo-400 animate-spin`} 
+        className={`${sizeClasses[size]} text-indigo-600 animate-spin`} 
       />
       {text && (
-        <p className="text-gray-600 dark:text-gray-400 font-semibold animate-pulse">
+        <p className="text-gray-600 font-semibold animate-pulse">
           {text}
         </p>
       )}
@@ -33,7 +33,7 @@ export default function LoadingSpinner({
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="fixed inset-0 bg-white/90 backdrop-blur-sm z-50 flex items-center justify-center">
         {content}
       </div>
     );
@@ -53,7 +53,8 @@ export function ButtonLoader() {
 export function SimpleLoader() {
   return (
     <div className="flex items-center justify-center py-8">
-      <Loader2 className="w-8 h-8 text-indigo-600 dark:text-indigo-400 animate-spin" />
+      <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
     </div>
   );
 }
+

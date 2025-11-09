@@ -133,12 +133,12 @@ export default function TwoFactorPage() {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center gap-3"
       >
-        <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg">
-          <Shield className="w-8 h-8 text-teal-600 dark:text-teal-400" />
+        <div className="p-3 bg-teal-100 rounded-lg">
+          <Shield className="w-8 h-8 text-teal-600" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">المصادقة الثنائية (2FA)</h1>
-          <p className="text-gray-500 dark:text-gray-400">حماية إضافية لحسابك</p>
+          <h1 className="text-3xl font-bold text-gray-900">المصادقة الثنائية (2FA)</h1>
+          <p className="text-gray-500">حماية إضافية لحسابك</p>
         </div>
       </motion.div>
 
@@ -147,24 +147,24 @@ export default function TwoFactorPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="p-6 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700"
+        className="p-6 bg-white rounded-lg border-2 border-gray-200"
       >
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             {status?.enabled ? (
               <>
-                <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                <CheckCircle className="w-6 h-6 text-green-600" />
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">المصادقة الثنائية مفعلة</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">حسابك محمي بمستوى أمان إضافي</p>
+                  <h3 className="text-lg font-bold text-gray-900">المصادقة الثنائية مفعلة</h3>
+                  <p className="text-sm text-gray-600">حسابك محمي بمستوى أمان إضافي</p>
                 </div>
               </>
             ) : (
               <>
-                <XCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                <XCircle className="w-6 h-6 text-red-600" />
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">المصادقة الثنائية معطلة</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">قم بتفعيلها لحماية أفضل</p>
+                  <h3 className="text-lg font-bold text-gray-900">المصادقة الثنائية معطلة</h3>
+                  <p className="text-sm text-gray-600">قم بتفعيلها لحماية أفضل</p>
                 </div>
               </>
             )}
@@ -173,9 +173,9 @@ export default function TwoFactorPage() {
 
         {!status?.enabled && (
           <div className="space-y-4">
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-              <h4 className="font-bold text-blue-900 dark:text-blue-100 mb-2">كيف تعمل المصادقة الثنائية؟</h4>
-              <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-decimal list-inside">
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <h4 className="font-bold text-blue-900 mb-2">كيف تعمل المصادقة الثنائية؟</h4>
+              <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
                 <li>قم بتثبيت تطبيق مصادقة مثل Google Authenticator أو Microsoft Authenticator</li>
                 <li>انقر على &quot;تفعيل المصادقة الثنائية&quot; أدناه</li>
                 <li>امسح رمز QR باستخدام التطبيق</li>
@@ -194,25 +194,25 @@ export default function TwoFactorPage() {
 
         {status?.enabled && status.qrCode && (
           <div className="space-y-4">
-            <div className="flex flex-col items-center gap-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+            <div className="flex flex-col items-center gap-4 p-4 bg-gray-50 rounded-lg">
               <QrCode className="w-12 h-12 text-gray-400" />
               <div className="text-center">
-                <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                <p className="text-sm font-medium text-gray-900 mb-2">
                   امسح هذا الرمز باستخدام تطبيق المصادقة
                 </p>
                 <div className="bg-white p-4 rounded-lg inline-block">
                   <img src={status.qrCode} alt="QR Code" className="w-48 h-48" />
                 </div>
                 {status.secret && (
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-3">
-                    أو أدخل الرمز يدوياً: <code className="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">{status.secret}</code>
+                  <p className="text-xs text-gray-600 mt-3">
+                    أو أدخل الرمز يدوياً: <code className="bg-gray-200 px-2 py-1 rounded">{status.secret}</code>
                   </p>
                 )}
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block text-sm font-medium text-gray-700">
                 رمز التحقق (6 أرقام)
               </label>
               <Input
@@ -250,13 +250,13 @@ export default function TwoFactorPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="p-6 bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 border-2 border-teal-200 dark:border-teal-800 rounded-lg"
+        className="p-6 bg-gradient-to-br from-teal-50 to-cyan-50 border-2 border-teal-200 rounded-lg"
       >
         <div className="flex items-start gap-3">
-          <Smartphone className="w-6 h-6 text-teal-600 dark:text-teal-400 mt-1" />
+          <Smartphone className="w-6 h-6 text-teal-600 mt-1" />
           <div>
-            <h4 className="font-bold text-teal-900 dark:text-teal-100 mb-2">تطبيقات المصادقة الموصى بها</h4>
-            <ul className="text-sm text-teal-800 dark:text-teal-200 space-y-1">
+            <h4 className="font-bold text-teal-900 mb-2">تطبيقات المصادقة الموصى بها</h4>
+            <ul className="text-sm text-teal-800 space-y-1">
               <li>• Google Authenticator</li>
               <li>• Microsoft Authenticator</li>
               <li>• Authy</li>
@@ -268,3 +268,4 @@ export default function TwoFactorPage() {
     </div>
   );
 }
+

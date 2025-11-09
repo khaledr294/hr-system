@@ -78,47 +78,47 @@ function ActivityLog() {
     <motion.div 
       initial={{ opacity: 0, y: 8 }} 
       animate={{ opacity: 1, y: 0 }} 
-      className="card-premium rounded-xl sm:rounded-2xl shadow-soft p-3 sm:p-4 dark:bg-slate-800/50 dark:border dark:border-slate-700/50"
+      className="card-premium rounded-xl sm:rounded-2xl shadow-soft p-3 sm:p-4"
     >
       <div className="flex items-center justify-between mb-3">
-        <div className="text-slate-900 dark:text-slate-100 font-extrabold text-sm sm:text-base">سجل العمليات</div>
-        <div className="text-slate-500 dark:text-slate-400 text-xs font-semibold">آخر الأنشطة</div>
+        <div className="text-slate-900 font-extrabold text-sm sm:text-base">سجل العمليات</div>
+        <div className="text-slate-500 text-xs font-semibold">آخر الأنشطة</div>
       </div>
 
       {loading ? (
         <div className="space-y-2 sm:space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-8 sm:h-10 rounded-lg sm:rounded-xl bg-slate-100 dark:bg-slate-700/50 animate-pulse" />
+            <div key={i} className="h-8 sm:h-10 rounded-lg sm:rounded-xl bg-slate-100 animate-pulse" />
           ))}
         </div>
       ) : logs.length === 0 ? (
-        <div className="text-slate-500 dark:text-slate-400 text-sm">لا توجد عمليات حديثة</div>
+        <div className="text-slate-500 text-sm">لا توجد عمليات حديثة</div>
       ) : (
         <div className="space-y-2 sm:space-y-3 max-h-64 sm:max-h-80 overflow-y-auto pr-1 custom-scrollbar">
           {logs.map((log, i) => (
-            <div key={log.id || i} className="rounded-lg sm:rounded-xl bg-slate-50 dark:bg-slate-700/30 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition p-2 sm:p-3">
+            <div key={log.id || i} className="rounded-lg sm:rounded-xl bg-slate-50 hover:bg-slate-100 transition p-2 sm:p-3">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-slate-800 dark:text-slate-200 text-sm sm:text-base">
+                  <div className="font-semibold text-slate-800 text-sm sm:text-base">
                     <span className="truncate block">{getActionInArabic(log.action)}</span>
                   </div>
                   {log.user && (
-                    <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                    <div className="text-xs text-slate-600 mt-1">
                       بواسطة: <span className="font-medium">{log.user.name}</span>
                     </div>
                   )}
                   {log.entity && (
-                    <span className="inline-block mt-1 text-xs bg-slate-900 dark:bg-indigo-600 text-white px-2 py-0.5 rounded">
+                    <span className="inline-block mt-1 text-xs bg-slate-900 text-white px-2 py-0.5 rounded">
                       {log.entity}
                     </span>
                   )}
                 </div>
-                <div className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                <div className="text-xs text-slate-500 whitespace-nowrap">
                   {formatDateTime(log.createdAt)}
                 </div>
               </div>
               {log.message && (
-                <div className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm mt-2 line-clamp-2">
+                <div className="text-slate-600 text-xs sm:text-sm mt-2 line-clamp-2">
                   {log.message}
                 </div>
               )}
@@ -131,3 +131,4 @@ function ActivityLog() {
 }
 
 export default memo(ActivityLog);
+

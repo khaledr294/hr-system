@@ -1,4 +1,4 @@
-﻿import { Noto_Kufi_Arabic } from "next/font/google";
+import { Noto_Kufi_Arabic } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
 
@@ -25,3 +25,4 @@ export default function RootLayout({
     </html>
   );
 }
+

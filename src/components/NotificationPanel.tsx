@@ -133,13 +133,13 @@ export default function NotificationPanel() {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'URGENT':
-        return 'border-r-4 border-red-500 dark:border-red-400';
+        return 'border-r-4 border-red-500';
       case 'HIGH':
-        return 'border-r-4 border-orange-500 dark:border-orange-400';
+        return 'border-r-4 border-orange-500';
       case 'MEDIUM':
-        return 'border-r-4 border-yellow-500 dark:border-yellow-400';
+        return 'border-r-4 border-yellow-500';
       default:
-        return 'border-r-4 border-blue-500 dark:border-blue-400';
+        return 'border-r-4 border-blue-500';
     }
   };
 
@@ -163,11 +163,11 @@ export default function NotificationPanel() {
       {/* زر الإشعارات */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative glass dark:bg-slate-700/50 rounded-xl p-2 shadow-soft hover:shadow-hover hover:bg-white/80 dark:hover:bg-slate-600/50 transition-colors"
+        className="relative glass rounded-xl p-2 shadow-soft hover:shadow-hover hover:bg-white/80 transition-colors"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.98 }}
       >
-        <Bell className="w-5 h-5 text-slate-700 dark:text-slate-200" />
+        <Bell className="w-5 h-5 text-slate-700" />
         {unreadCount > 0 && (
           <motion.span
             initial={{ scale: 0 }}
@@ -189,7 +189,7 @@ export default function NotificationPanel() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
-              className="fixed inset-0 bg-black/20 dark:bg-black/40 z-40"
+              className="fixed inset-0 bg-black/20 z-40"
             />
 
             {/* Panel */}
@@ -197,14 +197,14 @@ export default function NotificationPanel() {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 50 }}
-              className="fixed top-16 left-4 w-96 max-h-[600px] glass dark:bg-slate-800/95 rounded-2xl shadow-2xl z-50 flex flex-col"
+              className="fixed top-16 left-4 w-96 max-h-[600px] glass rounded-2xl shadow-2xl z-50 flex flex-col"
               dir="rtl"
             >
               {/* Header */}
-              <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+              <div className="p-4 border-b border-slate-200 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Bell className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
-                  <h3 className="font-bold text-slate-800 dark:text-slate-200">
+                  <Bell className="w-5 h-5 text-indigo-500" />
+                  <h3 className="font-bold text-slate-800">
                     الإشعارات
                   </h3>
                   {unreadCount > 0 && (
@@ -217,7 +217,7 @@ export default function NotificationPanel() {
                   {unreadCount > 0 && (
                     <button
                       onClick={markAllAsRead}
-                      className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                      className="text-xs text-indigo-600 hover:underline flex items-center gap-1"
                       title="تحديد الكل كمقروء"
                     >
                       <CheckCheck className="w-4 h-4" />
@@ -226,9 +226,9 @@ export default function NotificationPanel() {
                   )}
                   <button
                     onClick={() => setIsOpen(false)}
-                    className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                    className="p-1 hover:bg-slate-200 rounded-lg transition-colors"
                   >
-                    <X className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                    <X className="w-5 h-5 text-slate-600" />
                   </button>
                 </div>
               </div>
@@ -240,7 +240,7 @@ export default function NotificationPanel() {
                     <div className="animate-spin w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full" />
                   </div>
                 ) : notifications.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-40 text-slate-500 dark:text-slate-400">
+                  <div className="flex flex-col items-center justify-center h-40 text-slate-500">
                     <Bell className="w-12 h-12 mb-2 opacity-30" />
                     <p className="text-sm">لا توجد إشعارات</p>
                   </div>
@@ -254,8 +254,8 @@ export default function NotificationPanel() {
                         className={`
                           p-3 rounded-xl transition-all cursor-pointer
                           ${!notification.read
-                            ? 'bg-indigo-50 dark:bg-indigo-900/20'
-                            : 'bg-white dark:bg-slate-700/50'
+                            ? 'bg-indigo-50'
+                            : 'bg-white'
                           }
                           ${getPriorityColor(notification.priority)}
                           hover:shadow-md
@@ -275,18 +275,18 @@ export default function NotificationPanel() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
-                              <h4 className="font-semibold text-sm text-slate-800 dark:text-slate-200">
+                              <h4 className="font-semibold text-sm text-slate-800">
                                 {notification.title}
                               </h4>
                               {!notification.read && (
                                 <div className="w-2 h-2 bg-indigo-500 rounded-full mt-1" />
                               )}
                             </div>
-                            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">
+                            <p className="text-xs text-slate-600 mt-1 line-clamp-2">
                               {notification.message}
                             </p>
                             <div className="flex items-center justify-between mt-2">
-                              <span className="text-xs text-slate-500 dark:text-slate-500">
+                              <span className="text-xs text-slate-500">
                                 {formatTime(notification.createdAt)}
                               </span>
                               <div className="flex items-center gap-1">
@@ -296,10 +296,10 @@ export default function NotificationPanel() {
                                       e.stopPropagation();
                                       markAsRead(notification.id);
                                     }}
-                                    className="p-1 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors"
+                                    className="p-1 hover:bg-slate-200 rounded transition-colors"
                                     title="تحديد كمقروء"
                                   >
-                                    <Check className="w-3 h-3 text-green-600 dark:text-green-400" />
+                                    <Check className="w-3 h-3 text-green-600" />
                                   </button>
                                 )}
                                 <button
@@ -307,10 +307,10 @@ export default function NotificationPanel() {
                                     e.stopPropagation();
                                     deleteNotification(notification.id);
                                   }}
-                                  className="p-1 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors"
+                                  className="p-1 hover:bg-slate-200 rounded transition-colors"
                                   title="حذف"
                                 >
-                                  <Trash2 className="w-3 h-3 text-red-600 dark:text-red-400" />
+                                  <Trash2 className="w-3 h-3 text-red-600" />
                                 </button>
                               </div>
                             </div>
@@ -328,3 +328,4 @@ export default function NotificationPanel() {
     </>
   );
 }
+

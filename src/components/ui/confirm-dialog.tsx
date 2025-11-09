@@ -44,26 +44,26 @@ export default function ConfirmDialog({
   const typeConfig = {
     danger: {
       icon: XCircle,
-      iconColor: 'text-red-600 dark:text-red-400',
-      bgColor: 'bg-red-50 dark:bg-red-900/20',
+      iconColor: 'text-red-600',
+      bgColor: 'bg-red-50',
       buttonColor: 'bg-red-600 hover:bg-red-700'
     },
     warning: {
       icon: AlertTriangle,
-      iconColor: 'text-yellow-600 dark:text-yellow-400',
-      bgColor: 'bg-yellow-50 dark:bg-yellow-900/20',
+      iconColor: 'text-yellow-600',
+      bgColor: 'bg-yellow-50',
       buttonColor: 'bg-yellow-600 hover:bg-yellow-700'
     },
     success: {
       icon: CheckCircle,
-      iconColor: 'text-green-600 dark:text-green-400',
-      bgColor: 'bg-green-50 dark:bg-green-900/20',
+      iconColor: 'text-green-600',
+      bgColor: 'bg-green-50',
       buttonColor: 'bg-green-600 hover:bg-green-700'
     },
     info: {
       icon: Info,
-      iconColor: 'text-blue-600 dark:text-blue-400',
-      bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+      iconColor: 'text-blue-600',
+      bgColor: 'bg-blue-50',
       buttonColor: 'bg-blue-600 hover:bg-blue-700'
     }
   };
@@ -90,7 +90,7 @@ export default function ConfirmDialog({
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+              className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
             >
               {/* Header */}
               <div className={`${config.bgColor} p-6 flex items-start gap-4`}>
@@ -98,16 +98,16 @@ export default function ConfirmDialog({
                   <Icon className="w-6 h-6" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
                     {title}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-gray-600">
                     {description}
                   </p>
                 </div>
                 <button
                   onClick={onClose}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -118,7 +118,7 @@ export default function ConfirmDialog({
                 <button
                   onClick={onClose}
                   disabled={isLoading || loading}
-                  className="flex-1 px-6 py-3 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-all disabled:opacity-50"
+                  className="flex-1 px-6 py-3 rounded-xl bg-gray-200 text-gray-900 font-semibold hover:bg-gray-300 transition-all disabled:opacity-50"
                 >
                   {cancelText}
                 </button>
@@ -170,3 +170,4 @@ export function useConfirmDialog() {
 
   return { confirm, dialog };
 }
+

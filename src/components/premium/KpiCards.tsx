@@ -26,15 +26,15 @@ function KpiCards() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.05 }}
-          className="kpi card-premium shadow-soft hover:shadow-hover border-gradient p-3 sm:p-4 dark:bg-slate-800/50 dark:border dark:border-slate-700/50"
+          className="kpi card-premium shadow-soft hover:shadow-hover border-gradient p-3 sm:p-4"
         >
           <div className={`rounded-xl sm:rounded-2xl p-2 sm:p-3 text-white bg-gradient-to-tr ${kpi.color} inline-flex min-w-[2.5rem] sm:min-w-[3rem] justify-center items-center mb-2 sm:mb-3 shadow-lg`}>
             {kpi.hint && <div className="text-xs font-bold text-center">{kpi.hint}</div>}
           </div>
-          <div className="text-lg sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
+          <div className="text-lg sm:text-2xl font-extrabold tracking-tight text-slate-900">
             {kpi.value.toLocaleString('ar-SA')}
           </div>
-          <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-semibold">{kpi.label}</div>
+          <div className="text-xs sm:text-sm text-slate-500 font-semibold">{kpi.label}</div>
         </motion.div>
       ))}
     </div>
@@ -42,3 +42,4 @@ function KpiCards() {
 }
 
 export default memo(KpiCards);
+

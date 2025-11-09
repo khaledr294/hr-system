@@ -131,12 +131,12 @@ export default function BackupsPage() {
         className="flex items-center justify-between"
       >
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg">
-            <Database className="w-8 h-8 text-cyan-600 dark:text-cyan-400" />
+          <div className="p-3 bg-cyan-100 rounded-lg">
+            <Database className="w-8 h-8 text-cyan-600" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">النسخ الاحتياطي</h1>
-            <p className="text-gray-500 dark:text-gray-400">إدارة النسخ الاحتياطية لقاعدة البيانات</p>
+            <h1 className="text-3xl font-bold text-gray-900">النسخ الاحتياطي</h1>
+            <p className="text-gray-500">إدارة النسخ الاحتياطية لقاعدة البيانات</p>
           </div>
         </div>
         <Button onClick={createBackup} disabled={creating} variant="primary">
@@ -167,16 +167,16 @@ export default function BackupsPage() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="p-4 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-cyan-300 dark:hover:border-cyan-700 transition-colors"
+              className="p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-cyan-300 transition-colors"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   {getStatusIcon(backup.status)}
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                    <h3 className="text-lg font-bold text-gray-900">
                       {backup.filename}
                     </h3>
-                    <div className="flex items-center gap-3 mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
                       <span>{formatSize(backup.size)}</span>
                       <span>•</span>
                       <span>{formatDate(backup.createdAt)}</span>
@@ -205,3 +205,4 @@ export default function BackupsPage() {
     </div>
   );
 }
+

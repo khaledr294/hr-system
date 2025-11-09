@@ -83,12 +83,12 @@ export default function ReportsPage() {
         className="flex items-center justify-between"
       >
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-            <BarChart3 className="w-8 h-8 text-green-600 dark:text-green-400" />
+          <div className="p-3 bg-green-100 rounded-lg">
+            <BarChart3 className="w-8 h-8 text-green-600" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">التقارير والإحصائيات</h1>
-            <p className="text-gray-500 dark:text-gray-400">تقارير مفصلة عن أداء النظام</p>
+            <h1 className="text-3xl font-bold text-gray-900">التقارير والإحصائيات</h1>
+            <p className="text-gray-500">تقارير مفصلة عن أداء النظام</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -112,7 +112,7 @@ export default function ReportsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="p-4 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700"
+        className="p-4 bg-white rounded-lg border-2 border-gray-200"
       >
         <div className="flex gap-2">
           <Button 
@@ -153,15 +153,15 @@ export default function ReportsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg"
+            className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 rounded-lg"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">إجمالي العقود</p>
-                <p className="text-3xl font-bold text-blue-900 dark:text-blue-100 mt-1">
+                <p className="text-sm text-blue-600 font-medium">إجمالي العقود</p>
+                <p className="text-3xl font-bold text-blue-900 mt-1">
                   {stats.totalContracts}
                 </p>
-                <p className="text-xs text-blue-600/70 dark:text-blue-400/70 mt-1">
+                <p className="text-xs text-blue-600/70 mt-1">
                   نشط: {stats.activeContracts}
                 </p>
               </div>
@@ -173,15 +173,15 @@ export default function ReportsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="p-6 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-2 border-green-200 dark:border-green-800 rounded-lg"
+            className="p-6 bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200 rounded-lg"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-green-600 dark:text-green-400 font-medium">إجمالي الإيرادات</p>
-                <p className="text-2xl font-bold text-green-900 dark:text-green-100 mt-1">
+                <p className="text-sm text-green-600 font-medium">إجمالي الإيرادات</p>
+                <p className="text-2xl font-bold text-green-900 mt-1">
                   {formatCurrency(stats.totalRevenue)}
                 </p>
-                <p className="text-xs text-green-600/70 dark:text-green-400/70 mt-1">
+                <p className="text-xs text-green-600/70 mt-1">
                   شهري: {formatCurrency(stats.monthlyRevenue)}
                 </p>
               </div>
@@ -193,15 +193,15 @@ export default function ReportsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-2 border-purple-200 dark:border-purple-800 rounded-lg"
+            className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200 rounded-lg"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-purple-600 dark:text-purple-400 font-medium">العمال</p>
-                <p className="text-3xl font-bold text-purple-900 dark:text-purple-100 mt-1">
+                <p className="text-sm text-purple-600 font-medium">العمال</p>
+                <p className="text-3xl font-bold text-purple-900 mt-1">
                   {stats.totalWorkers}
                 </p>
-                <p className="text-xs text-purple-600/70 dark:text-purple-400/70 mt-1">
+                <p className="text-xs text-purple-600/70 mt-1">
                   متاح: {stats.availableWorkers}
                 </p>
               </div>
@@ -213,12 +213,12 @@ export default function ReportsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="p-6 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-2 border-orange-200 dark:border-orange-800 rounded-lg"
+            className="p-6 bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200 rounded-lg"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-orange-600 dark:text-orange-400 font-medium">العملاء</p>
-                <p className="text-3xl font-bold text-orange-900 dark:text-orange-100 mt-1">
+                <p className="text-sm text-orange-600 font-medium">العملاء</p>
+                <p className="text-3xl font-bold text-orange-900 mt-1">
                   {stats.totalClients}
                 </p>
               </div>
@@ -233,13 +233,14 @@ export default function ReportsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className="p-8 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700"
+        className="p-8 bg-white rounded-lg border-2 border-gray-200"
       >
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">الرسوم البيانية</h3>
-        <div className="h-64 flex items-center justify-center bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-          <p className="text-gray-500 dark:text-gray-400">الرسوم البيانية قيد التطوير...</p>
+        <h3 className="text-xl font-bold text-gray-900 mb-4">الرسوم البيانية</h3>
+        <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
+          <p className="text-gray-500">الرسوم البيانية قيد التطوير...</p>
         </div>
       </motion.div>
     </div>
   );
 }
+
