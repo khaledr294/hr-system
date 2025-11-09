@@ -5,44 +5,15 @@ import Link from 'next/link';
 import Button from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { requireSession } from '@/lib/require';
+import { unstable_cache } from 'next/cache';
 
-export default async function WorkersPage() {
-  await requireSession(); // This will redirect if not authenticated
-
-
-  // جلب العمالة مع العقود - مع معالجة الحقول المفقودة
-  const workersRaw = await prisma.worker.findMany({
-    include: {
-      contracts: {
-        where: {
-          status: 'ACTIVE',
-          startDate: { lte: new Date() },
-          endDate: { gte: new Date() },
-        },
-      },
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  }).catch(async () => {
-    // Fallback for missing columns
-    return await prisma.worker.findMany({
-      select: {
-        id: true,
-        code: true,
-        name: true,
-        nationality: true,
-        residencyNumber: true,
-        dateOfBirth: true,
-        phone: true,
-        status: true,
-        createdAt: true,
+// Cache worker data for 30 seconds
+const getCachedWorkers = unstable_cache(
+  async () => {
+    // جلب العمالة مع العقود - مع معالجة الحقول المفقودة
+    const workersRaw = await prisma.worker.findMany({
+      include: {
         contracts: {
-          select: {
-            status: true,
-            startDate: true,
-            endDate: true,
-          },
           where: {
             status: 'ACTIVE',
             startDate: { lte: new Date() },
@@ -53,20 +24,61 @@ export default async function WorkersPage() {
       orderBy: {
         createdAt: 'desc',
       },
+    }).catch(async () => {
+      // Fallback for missing columns
+      return await prisma.worker.findMany({
+        select: {
+          id: true,
+          code: true,
+          name: true,
+          nationality: true,
+          residencyNumber: true,
+          dateOfBirth: true,
+          phone: true,
+          status: true,
+          createdAt: true,
+          contracts: {
+            select: {
+              status: true,
+              startDate: true,
+              endDate: true,
+            },
+            where: {
+              status: 'ACTIVE',
+              startDate: { lte: new Date() },
+              endDate: { gte: new Date() },
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
     });
-  });
 
-  // تحديد الحالة حسب العقود النشطة
-  const workers = workersRaw.map(worker => ({
-    id: worker.id,
-    code: worker.code,
-    name: worker.name,
-    nationality: worker.nationality,
-    residencyNumber: worker.residencyNumber,
-    dateOfBirth: worker.dateOfBirth,
-    phone: worker.phone,
-    status: worker.contracts && worker.contracts.length > 0 ? 'RENTED' : worker.status,
-  }));
+    // تحديد الحالة حسب العقود النشطة
+    return workersRaw.map(worker => ({
+      id: worker.id,
+      code: worker.code,
+      name: worker.name,
+      nationality: worker.nationality,
+      residencyNumber: worker.residencyNumber,
+      dateOfBirth: worker.dateOfBirth,
+      phone: worker.phone,
+      status: worker.contracts && worker.contracts.length > 0 ? 'RENTED' : worker.status,
+    }));
+  },
+  ['workers-list'],
+  {
+    revalidate: 30, // Cache for 30 seconds
+    tags: ['workers']
+  }
+);
+
+export default async function WorkersPage() {
+  await requireSession(); // This will redirect if not authenticated
+
+  const workers = await getCachedWorkers();
 
   return (
     <DashboardLayout>

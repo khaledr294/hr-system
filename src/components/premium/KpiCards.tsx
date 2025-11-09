@@ -1,50 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState, memo } from "react";
+import { useMemo, memo } from "react";
 import { motion } from "framer-motion";
-
-type DashboardStats = {
-  workers: number;
-  clients: number;
-  contracts: number;
-  marketers: number;
-  contractsToday: number;
-  contractsMonth: number;
-};
+import { useDashboardData } from "@/components/DashboardDataProvider";
 
 type Kpi = { label: string; value: number; hint?: string; color: string };
 
 function KpiCards() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let mounted = true;
-    const controller = new AbortController();
-    
-    fetch("/api/dashboard", { signal: controller.signal })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((json) => {
-        if (mounted && json) {
-          setStats(json);
-        }
-      })
-      .catch((err) => {
-        if (err.name !== 'AbortError') {
-          console.error('Error fetching dashboard stats:', err);
-        }
-      })
-      .finally(() => {
-        if (mounted) {
-          setLoading(false);
-        }
-      });
-    
-    return () => {
-      mounted = false;
-      controller.abort();
-    };
-  }, []);
+  const { data: stats, loading } = useDashboardData();
 
   const kpis: Kpi[] = useMemo(() => {
     return [

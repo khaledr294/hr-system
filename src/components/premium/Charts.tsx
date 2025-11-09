@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, memo } from "react";
+import { useMemo, memo } from "react";
 import { motion } from "framer-motion";
 import {
   LineChart,
@@ -16,50 +16,12 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-
-type StatusCount = { status: string; _count: { status: number } };
-type DashboardData = {
-  contractsToday: number;
-  contractsMonth: number;
-  statusCounts: StatusCount[];
-};
+import { useDashboardData } from "@/components/DashboardDataProvider";
 
 const COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#06b6d4", "#f472b6"];
 
 function Charts() {
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let mounted = true;
-    const controller = new AbortController();
-    
-    fetch("/api/dashboard", { 
-      signal: controller.signal,
-      headers: { 'Cache-Control': 'max-age=60' }
-    })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((json) => {
-        if (mounted && json) {
-          setData(json);
-        }
-      })
-      .catch((err) => {
-        if (err.name !== 'AbortError') {
-          console.error('Error fetching chart data:', err);
-        }
-      })
-      .finally(() => {
-        if (mounted) {
-          setLoading(false);
-        }
-      });
-    
-    return () => {
-      mounted = false;
-      controller.abort();
-    };
-  }, []);
+  const { data, loading } = useDashboardData();
 
   const statusData = useMemo(() => {
     if (!data?.statusCounts) return [] as { name: string; value: number }[];

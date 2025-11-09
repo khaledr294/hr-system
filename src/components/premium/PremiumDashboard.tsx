@@ -9,6 +9,7 @@ import Charts from "./Charts";
 import ActivityLog from "./ActivityLog";
 import { useState } from "react";
 import LastUpdated from "@/components/LastUpdated";
+import { DashboardDataProvider } from "@/components/DashboardDataProvider";
 
 export default function PremiumDashboard({ children }: { children?: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -29,12 +30,14 @@ export default function PremiumDashboard({ children }: { children?: React.ReactN
                 <div className="text-slate-600 dark:text-slate-300 mt-1 text-sm sm:text-base">تجربة حديثة ومذهلة لإدارة عملك</div>
               </div>
 
-              <KpiCards />
+              <DashboardDataProvider>
+                <KpiCards />
 
-              <div className="mt-4 sm:mt-6">
-                <LastUpdated className="mb-3" />
-                <Charts />
-              </div>
+                <div className="mt-4 sm:mt-6">
+                  <LastUpdated className="mb-3" />
+                  <Charts />
+                </div>
+              </DashboardDataProvider>
 
               <div className="mt-4 sm:mt-6">
                 <ActivityLog />
