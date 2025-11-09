@@ -9,9 +9,15 @@ import Charts from "./Charts";
 import ActivityLog from "./ActivityLog";
 import { useState } from "react";
 import LastUpdated from "@/components/LastUpdated";
-import { DashboardDataProvider } from "@/components/DashboardDataProvider";
+import { DashboardDataProvider, type DashboardStats } from "@/components/DashboardDataProvider";
 
-export default function PremiumDashboard({ children }: { children?: React.ReactNode }) {
+export default function PremiumDashboard({ 
+  children, 
+  data 
+}: { 
+  children?: React.ReactNode;
+  data: DashboardStats;
+}) {
   const [mobileOpen, setMobileOpen] = useState(false);
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 transition-colors duration-300">
@@ -30,7 +36,7 @@ export default function PremiumDashboard({ children }: { children?: React.ReactN
                 <div className="text-slate-600 dark:text-slate-300 mt-1 text-sm sm:text-base">تجربة حديثة ومذهلة لإدارة عملك</div>
               </div>
 
-              <DashboardDataProvider>
+              <DashboardDataProvider data={data}>
                 <KpiCards />
 
                 <div className="mt-4 sm:mt-6">

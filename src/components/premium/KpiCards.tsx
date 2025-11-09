@@ -7,26 +7,16 @@ import { useDashboardData } from "@/components/DashboardDataProvider";
 type Kpi = { label: string; value: number; hint?: string; color: string };
 
 function KpiCards() {
-  const { data: stats, loading } = useDashboardData();
+  const { data: stats } = useDashboardData();
 
   const kpis: Kpi[] = useMemo(() => {
     return [
-      { label: "العمالة", value: stats?.workers ?? 0, color: "from-indigo-500 to-sky-400" },
-      { label: "العملاء", value: stats?.clients ?? 0, color: "from-emerald-500 to-teal-400" },
-      { label: "العقود", value: stats?.contracts ?? 0, hint: `اليوم: ${(stats?.contractsToday ?? 0).toLocaleString('ar-SA')}` , color: "from-fuchsia-500 to-pink-400" },
-      { label: "عقود هذا الشهر", value: stats?.contractsMonth ?? 0, color: "from-amber-500 to-orange-400" },
+      { label: "العمالة", value: stats.workers, color: "from-indigo-500 to-sky-400" },
+      { label: "العملاء", value: stats.clients, color: "from-emerald-500 to-teal-400" },
+      { label: "العقود", value: stats.contracts, hint: `اليوم: ${stats.contractsToday.toLocaleString('ar-SA')}` , color: "from-fuchsia-500 to-pink-400" },
+      { label: "عقود هذا الشهر", value: stats.contractsMonth, color: "from-amber-500 to-orange-400" },
     ];
   }, [stats]);
-
-  if (loading) {
-    return (
-      <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-24 sm:h-28 card-premium shadow-soft rounded-xl sm:rounded-2xl animate-pulse dark:bg-slate-800/50" />
-        ))}
-      </div>
-    );
-  }
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">

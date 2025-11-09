@@ -21,10 +21,10 @@ import { useDashboardData } from "@/components/DashboardDataProvider";
 const COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#06b6d4", "#f472b6"];
 
 function Charts() {
-  const { data, loading } = useDashboardData();
+  const { data } = useDashboardData();
 
   const statusData = useMemo(() => {
-    if (!data?.statusCounts) return [] as { name: string; value: number }[];
+    if (!data.statusCounts) return [] as { name: string; value: number }[];
     return data.statusCounts.map((s) => ({
       name: s.status === "ACTIVE" ? "نشط" : s.status === "COMPLETED" ? "منتهي" : s.status,
       value: s._count.status,
@@ -33,24 +33,14 @@ function Charts() {
 
   const lineData = useMemo(() => {
     // Minimal line series using available numbers
-    const today = data?.contractsToday ?? 0;
-    const month = data?.contractsMonth ?? 0;
+    const today = data.contractsToday;
+    const month = data.contractsMonth;
     return [
       { label: "بداية الشهر", العقود: Math.max(0, Math.round(month * 0.2)) },
       { label: "منتصف الشهر", العقود: Math.max(0, Math.round(month * 0.6)) },
       { label: "اليوم", العقود: today },
     ];
   }, [data]);
-
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-        <div className="h-64 sm:h-72 card-premium rounded-xl sm:rounded-2xl shadow-soft animate-pulse dark:bg-slate-800/50" />
-        <div className="h-64 sm:h-72 card-premium rounded-xl sm:rounded-2xl shadow-soft animate-pulse dark:bg-slate-800/50" />
-        <div className="h-64 sm:h-72 card-premium rounded-xl sm:rounded-2xl shadow-soft animate-pulse dark:bg-slate-800/50 col-span-1 md:col-span-2 xl:col-span-1" />
-      </div>
-    );
-  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
