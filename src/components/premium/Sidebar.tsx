@@ -59,7 +59,6 @@ export const sections: Section[] = [
       { href: "/users", label: "المستخدمون", icon: UserCog },
       { href: "/dashboard/settings/two-factor", label: "المصادقة الثنائية", icon: Shield },
       { href: "/settings", label: "الإعدادات", icon: Settings },
-      { href: "/settings/theme", label: "المظهر", icon: Settings },
     ],
   },
 ];

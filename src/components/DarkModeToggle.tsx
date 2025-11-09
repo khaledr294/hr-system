@@ -7,36 +7,33 @@ import { motion } from 'framer-motion';
 export default function DarkModeToggle() {
   const { mode, toggleMode, mounted } = useDarkMode();
 
-  if (!mounted) return null;
+  if (!mounted) {
+    // Return a placeholder to avoid layout shift
+    return <div className="w-10 h-10 rounded-xl bg-transparent" />;
+  }
 
   const isDark = mode === 'dark';
 
   return (
     <motion.button
       onClick={toggleMode}
-      className={`
-        relative flex items-center gap-2 px-4 py-2 rounded-xl
-        transition-all duration-300
-        ${isDark 
-          ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' 
-          : 'bg-indigo-500 text-white hover:bg-indigo-600'
-        }
-        shadow-lg hover:shadow-xl
-      `}
+      className="glass rounded-xl p-2 shadow-soft hover:shadow-hover hover:bg-white/80 transition-all duration-300"
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       title={isDark ? 'التبديل للوضع النهاري' : 'التبديل للوضع الليلي'}
+      aria-label={isDark ? 'التبديل للوضع النهاري' : 'التبديل للوضع الليلي'}
     >
       <motion.div
         initial={false}
         animate={{ rotate: isDark ? 180 : 0 }}
         transition={{ duration: 0.3 }}
       >
-        {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+        {isDark ? (
+          <Moon className="w-5 h-5 text-slate-200" />
+        ) : (
+          <Sun className="w-5 h-5 text-yellow-500" />
+        )}
       </motion.div>
-      <span className="text-sm font-medium">
-        {isDark ? 'وضع ليلي' : 'وضع نهاري'}
-      </span>
     </motion.button>
   );
 }
