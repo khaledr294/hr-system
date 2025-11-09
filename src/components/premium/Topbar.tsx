@@ -4,6 +4,7 @@ import { Bell, Search, User2, Menu, LogOut } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSession, signOut } from "next-auth/react";
 import ThemeToggle from "@/components/ThemeToggle";
+import DarkModeToggle from "@/components/DarkModeToggle";
 
 export default function Topbar({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
   const { data: session } = useSession();
@@ -27,8 +28,9 @@ export default function Topbar({ onToggleSidebar }: { onToggleSidebar?: () => vo
       </div>
 
       <div className="flex items-center gap-1 sm:gap-2">
-        <div className="hidden sm:block">
+        <div className="hidden sm:flex gap-2">
           <ThemeToggle />
+          <DarkModeToggle />
         </div>
         <motion.button 
           whileHover={{ scale: 1.05 }} 

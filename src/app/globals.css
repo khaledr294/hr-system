@@ -183,3 +183,146 @@ a:not(.inline-flex):not(.inline-block):hover {
   text-rendering: optimizeLegibility;
   font-weight: 700;
 }
+
+/* ============================================
+   DARK MODE SUPPORT
+   ============================================ */
+
+/* Dark mode base colors */
+.dark {
+  color-scheme: dark;
+}
+
+.dark body {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+/* Dark mode cards and panels */
+.dark .glass,
+.dark .card-modern,
+.dark .card-premium {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: #334155;
+}
+
+/* Dark mode text colors */
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6 {
+  color: #f1f5f9 !important;
+}
+
+.dark .text-slate-900 {
+  color: #f1f5f9 !important;
+}
+
+.dark .text-slate-800 {
+  color: #e2e8f0 !important;
+}
+
+.dark .text-slate-700 {
+  color: #cbd5e1 !important;
+}
+
+.dark .text-slate-600 {
+  color: #94a3b8 !important;
+}
+
+.dark .text-slate-500 {
+  color: #64748b !important;
+}
+
+/* Dark mode backgrounds */
+.dark .bg-white {
+  background: #1e293b;
+}
+
+.dark .bg-slate-50 {
+  background: #0f172a;
+}
+
+.dark .bg-slate-100 {
+  background: #1e293b;
+}
+
+.dark .bg-gray-50 {
+  background: #0f172a;
+}
+
+.dark .bg-gray-100 {
+  background: #1e293b;
+}
+
+/* Dark mode borders */
+.dark .border-slate-200,
+.dark .border-gray-200 {
+  border-color: #334155;
+}
+
+.dark .border-slate-300,
+.dark .border-gray-300 {
+  border-color: #475569;
+}
+
+/* Dark mode inputs */
+.dark input,
+.dark select,
+.dark textarea {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+.dark input:focus,
+.dark select:focus,
+.dark textarea:focus {
+  border-color: #4f46e5;
+  outline-color: #4f46e5;
+}
+
+.dark input::placeholder {
+  color: #64748b;
+}
+
+/* Dark mode buttons */
+.dark button:not(.gradient-brand):not([class*="bg-blue"]):not([class*="bg-red"]):not([class*="bg-green"]) {
+  background: #334155;
+  color: #e2e8f0;
+}
+
+.dark button:hover:not(.gradient-brand) {
+  background: #475569;
+}
+
+/* Dark mode hover states */
+.dark .hover\:bg-white\/80:hover {
+  background: rgba(30, 41, 59, 0.8) !important;
+}
+
+.dark .hover\:bg-slate-50:hover {
+  background: #1e293b !important;
+}
+
+/* Dark mode gradients (keep them visible) */
+.dark .gradient-brand {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+}
+
+.dark .bg-gradient-to-br {
+  background: linear-gradient(to bottom right, #0f172a, #1e293b);
+}
+
+/* Dark mode Premium theme adjustments */
+.dark .theme-premium .glass {
+  background: rgba(30, 41, 59, 0.6);
+  backdrop-filter: blur(12px);
+}
+
+.dark .theme-premium .shadow-soft {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+

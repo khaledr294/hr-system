@@ -1,6 +1,41 @@
 import { prisma } from '@/lib/prisma';
 import { sendEmail, generateContractExpirationEmail } from '@/lib/email';
 
+// Export notification management functions
+export async function getUserNotifications(userId: string, unreadOnly?: boolean) {
+  return await prisma.notification.findMany({
+    where: unreadOnly ? { userId, read: false } : { userId },
+    orderBy: { createdAt: 'desc' },
+    take: 50
+  });
+}
+
+export async function getUnreadCount(userId: string) {
+  return await prisma.notification.count({
+    where: { userId, read: false }
+  });
+}
+
+export async function markAsRead(notificationId: string) {
+  return await prisma.notification.update({
+    where: { id: notificationId },
+    data: { read: true }
+  });
+}
+
+export async function markAllAsRead(userId: string) {
+  return await prisma.notification.updateMany({
+    where: { userId, read: false },
+    data: { read: true }
+  });
+}
+
+export async function deleteNotification(notificationId: string) {
+  return await prisma.notification.delete({
+    where: { id: notificationId }
+  });
+}
+
 export async function checkExpiringContracts() {
   try {
     // Get contracts that are expiring in the next 7 days and haven't been notified

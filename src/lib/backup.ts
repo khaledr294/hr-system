@@ -3,6 +3,7 @@ import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
 import { prisma } from './prisma';
+import { v4 as uuidv4 } from 'uuid';
 
 const execAsync = promisify(exec);
 
@@ -59,8 +60,9 @@ export async function createDatabaseBackup(type: 'manual' | 'automatic' = 'autom
     // حفظ معلومات النسخة الاحتياطية في قاعدة البيانات
     const backup = await prisma.backup.create({
       data: {
+        id: uuidv4(),
         filename,
-        size: stats.size,
+        size: BigInt(stats.size),
         type,
         status: 'completed',
       },
@@ -81,8 +83,9 @@ export async function createDatabaseBackup(type: 'manual' | 'automatic' = 'autom
     try {
       await prisma.backup.create({
         data: {
+          id: uuidv4(),
           filename: `failed-${new Date().toISOString()}`,
-          size: 0,
+          size: BigInt(0),
           type,
           status: 'failed',
           error: error instanceof Error ? error.message : 'Unknown error',

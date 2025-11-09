@@ -177,7 +177,7 @@ export default function TwoFactorPage() {
               <h4 className="font-bold text-blue-900 dark:text-blue-100 mb-2">كيف تعمل المصادقة الثنائية؟</h4>
               <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-decimal list-inside">
                 <li>قم بتثبيت تطبيق مصادقة مثل Google Authenticator أو Microsoft Authenticator</li>
-                <li>انقر على "تفعيل المصادقة الثنائية" أدناه</li>
+                <li>انقر على &quot;تفعيل المصادقة الثنائية&quot; أدناه</li>
                 <li>امسح رمز QR باستخدام التطبيق</li>
                 <li>أدخل الرمز الذي يظهر في التطبيق للتأكيد</li>
               </ol>

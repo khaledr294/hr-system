@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * أرشفة عقد منتهي
@@ -27,6 +28,7 @@ export async function archiveContract(contractId: string, userId?: string, reaso
     // نسخ العقد إلى الأرشيف
     const archivedContract = await prisma.archivedContract.create({
       data: {
+        id: contract.id, // استخدام نفس ID
         originalId: contract.id,
         workerId: contract.workerId,
         workerName: contract.worker.name,
@@ -62,6 +64,7 @@ export async function archiveContract(contractId: string, userId?: string, reaso
     // تسجيل في سجل الأرشفة
     await prisma.archiveLog.create({
       data: {
+        id: uuidv4(),
         entityType: 'CONTRACT',
         entityId: contractId,
         action: 'ARCHIVE',
@@ -185,6 +188,7 @@ export async function restoreContract(archivedContractId: string, userId?: strin
     // تسجيل في سجل الأرشفة
     await prisma.archiveLog.create({
       data: {
+        id: uuidv4(),
         entityType: 'CONTRACT',
         entityId: archived.originalId,
         action: 'RESTORE',
@@ -326,6 +330,7 @@ export async function cleanupOldArchives(yearsToKeep: number = 5) {
 
     await prisma.archiveLog.create({
       data: {
+        id: uuidv4(),
         entityType: 'CONTRACT',
         entityId: 'BATCH_CLEANUP',
         action: 'DELETE',
