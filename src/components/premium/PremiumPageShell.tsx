@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Topbar from "./Topbar";
 import Sidebar from "./Sidebar";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import MobileSidebar from "./MobileSidebar";
 
 export default function PremiumPageShell({ children, title }: { children: React.ReactNode; title?: string }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -31,17 +31,7 @@ export default function PremiumPageShell({ children, title }: { children: React.
         </div>
       </div>
 
-      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        {mobileOpen && <div className="fixed inset-0 z-40 bg-slate-900/50" onClick={() => setMobileOpen(false)} />}
-        {mobileOpen && (
-          <SheetContent side="right" className="z-50">
-            <SheetHeader>
-              <SheetTitle>القائمة</SheetTitle>
-            </SheetHeader>
-            <Sidebar />
-          </SheetContent>
-        )}
-      </Sheet>
+      <MobileSidebar isOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
     </div>
   );
 }

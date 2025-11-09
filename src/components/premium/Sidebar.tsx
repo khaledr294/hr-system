@@ -57,6 +57,7 @@ export const sections: Section[] = [
       { href: "/dashboard/backups", label: "النسخ الاحتياطية", icon: HardDrive },
       { href: "/dashboard/performance", label: "الأداء", icon: Activity },
       { href: "/users", label: "المستخدمون", icon: UserCog },
+      { href: "/premium/job-titles", label: "المسميات الوظيفية", icon: Briefcase },
       { href: "/dashboard/settings/two-factor", label: "المصادقة الثنائية", icon: Shield },
       { href: "/settings", label: "الإعدادات", icon: Settings },
     ],
@@ -65,8 +66,15 @@ export const sections: Section[] = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const [open, setOpen] = useState<Record<string, boolean>>({});
-  const toggle = (title: string) => setOpen((p) => ({ ...p, [title]: !(p[title] ?? true) }));
+  // Initialize all sections as open by default
+  const [open, setOpen] = useState<Record<string, boolean>>(() => {
+    const initialState: Record<string, boolean> = {};
+    sections.forEach(section => {
+      initialState[section.title] = true;
+    });
+    return initialState;
+  });
+  const toggle = (title: string) => setOpen((p) => ({ ...p, [title]: !p[title] }));
 
   return (
   <aside dir="rtl" className="hidden lg:flex flex-col gap-2 p-3 w-64 text-right">
@@ -84,9 +92,9 @@ export default function Sidebar() {
             <AccordionItem key={section.title}>
               <AccordionTrigger onClick={() => toggle(section.title)}>
                 <span>{section.title}</span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${(open[section.title] ?? true) ? 'rotate-0' : '-rotate-90'}`} />
+                <ChevronDown className={`w-4 h-4 transition-transform ${open[section.title] ? 'rotate-0' : '-rotate-90'}`} />
               </AccordionTrigger>
-              {(open[section.title] ?? true) && (
+              {open[section.title] && (
                 <AccordionContent>
                   {section.items.map(({ href, label, icon: Icon }) => {
                     const active = href === "/" ? pathname === "/" : pathname?.startsWith(href);

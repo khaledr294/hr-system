@@ -22,6 +22,7 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
     sections.forEach(section => {
       initialState[section.title] = true;
     });
+    console.log('MobileSidebar - sections:', sections.length, 'initialState:', initialState);
     return initialState;
   });
   
@@ -95,60 +96,58 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto p-4">
           <div className="space-y-4">
-            {sections.map((section) => (
-              <div key={section.title} className="space-y-2">
-                <button
-                  onClick={() => toggle(section.title)}
-                  className="flex items-center justify-between w-full p-2 text-right rounded-lg hover:bg-slate-50 transition-colors"
-                >
-                  <span className="font-semibold text-slate-800 text-sm">{section.title}</span>
-                  <ChevronDown 
-                    className={`w-4 h-4 text-slate-500 transition-transform ${
-                      open[section.title] ? 'rotate-0' : '-rotate-90'
-                    }`} 
-                  />
-                </button>
-                
-                {open[section.title] && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="space-y-1 mr-2"
+            {sections.map((section) => {
+              console.log('Rendering section:', section.title, 'open:', open[section.title], 'items:', section.items.length);
+              return (
+                <div key={section.title} className="space-y-2">
+                  <button
+                    onClick={() => toggle(section.title)}
+                    className="flex items-center justify-between w-full p-2 text-right rounded-lg hover:bg-slate-50 transition-colors"
                   >
-                    {section.items.map(({ href, label, icon: Icon }) => {
-                      const active = href === "/dashboard" ? pathname === "/dashboard" : pathname?.startsWith(href);
-                      const badge = getBadgeFor(href);
-                      
-                      return (
-                        <Link key={href} href={href} onClick={onClose}>
-                          <motion.div 
-                            whileTap={{ scale: 0.98 }}
-                            className={`flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${
-                              active 
-                                ? "bg-indigo-50 border border-indigo-200 text-indigo-700" 
-                                : "hover:bg-slate-50 text-slate-600"
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <Icon className={`w-5 h-5 ${active ? 'text-indigo-600' : 'text-slate-500'}`} />
-                              <span className={`text-sm font-medium ${active ? 'text-indigo-700' : 'text-slate-600'}`}>
-                                {label}
-                              </span>
-                            </div>
-                            {typeof badge === 'number' && badge > 0 && (
-                              <span className="text-xs font-bold bg-slate-800 text-white px-2 py-1 rounded-full min-w-[20px] text-center">
-                                {badge.toLocaleString('ar-SA')}
-                              </span>
-                            )}
-                          </motion.div>
-                        </Link>
-                      );
-                    })}
-                  </motion.div>
-                )}
-              </div>
-            ))}
+                    <span className="font-semibold text-slate-800 text-sm">{section.title}</span>
+                    <ChevronDown 
+                      className={`w-4 h-4 text-slate-500 transition-transform ${
+                        open[section.title] ? 'rotate-0' : '-rotate-90'
+                      }`} 
+                    />
+                  </button>
+                  
+                  {open[section.title] && (
+                    <div className="space-y-1 mr-2">
+                      {section.items.map(({ href, label, icon: Icon }) => {
+                        const active = href === "/dashboard" ? pathname === "/dashboard" : pathname?.startsWith(href);
+                        const badge = getBadgeFor(href);
+                        
+                        return (
+                          <Link key={href} href={href} onClick={onClose}>
+                            <motion.div 
+                              whileTap={{ scale: 0.98 }}
+                              className={`flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${
+                                active 
+                                  ? "bg-indigo-50 border border-indigo-200 text-indigo-700" 
+                                  : "hover:bg-slate-50 text-slate-600"
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <Icon className={`w-5 h-5 ${active ? 'text-indigo-600' : 'text-slate-500'}`} />
+                                <span className={`text-sm font-medium ${active ? 'text-indigo-700' : 'text-slate-600'}`}>
+                                  {label}
+                                </span>
+                              </div>
+                              {typeof badge === 'number' && badge > 0 && (
+                                <span className="text-xs font-bold bg-slate-800 text-white px-2 py-1 rounded-full min-w-[20px] text-center">
+                                  {badge.toLocaleString('ar-SA')}
+                                </span>
+                              )}
+                            </motion.div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </nav>
 

@@ -62,12 +62,25 @@ model NationalitySalary {
   workers     Worker[] @relation("NationalityWorkers")
 }
 
+model JobTitle {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  nameAr      String
+  description String?
+  permissions String   @default("[]") // JSON array of permissions
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]   @relation("UserJobTitle")
+}
+
 model User {
   id                   String         @id @default(cuid())
   name                 String         @default("")
   email                String?
   password             String?
   role                 String?        @default("STAFF")
+  jobTitleId           String?
   nationality          String?        @default("")
   nationalitySalaryId  String?
   residencyNumber      String?        @unique
@@ -80,6 +93,7 @@ model User {
   twoFactorBackupCodes String?
   twoFactorEnabled     Boolean        @default(false)
   twoFactorSecret      String?
+  jobTitle             JobTitle?      @relation("UserJobTitle", fields: [jobTitleId], references: [id])
   logs                 Log[]          @relation("UserLogs")
   Notification         Notification[]
 }

@@ -1,0 +1,425 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Briefcase, Plus, Edit, Trash2, Save, X, Shield, Users } from "lucide-react";
+
+interface JobTitle {
+  id: string;
+  name: string;
+  nameAr: string;
+  description: string | null;
+  permissions: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  _count?: {
+    users: number;
+  };
+}
+
+// الصلاحيات المتاحة
+const AVAILABLE_PERMISSIONS = [
+  { id: "VIEW_WORKERS", label: "عرض العمال", category: "workers" },
+  { id: "CREATE_WORKERS", label: "إضافة عمال", category: "workers" },
+  { id: "EDIT_WORKERS", label: "تعديل العمال", category: "workers" },
+  { id: "DELETE_WORKERS", label: "حذف العمال", category: "workers" },
+  
+  { id: "VIEW_CONTRACTS", label: "عرض العقود", category: "contracts" },
+  { id: "CREATE_CONTRACTS", label: "إنشاء عقود", category: "contracts" },
+  { id: "EDIT_CONTRACTS", label: "تعديل العقود", category: "contracts" },
+  { id: "DELETE_CONTRACTS", label: "حذف العقود", category: "contracts" },
+  
+  { id: "VIEW_CLIENTS", label: "عرض العملاء", category: "clients" },
+  { id: "CREATE_CLIENTS", label: "إضافة عملاء", category: "clients" },
+  { id: "EDIT_CLIENTS", label: "تعديل العملاء", category: "clients" },
+  { id: "DELETE_CLIENTS", label: "حذف العملاء", category: "clients" },
+  
+  { id: "VIEW_USERS", label: "عرض المستخدمين", category: "users" },
+  { id: "CREATE_USERS", label: "إضافة مستخدمين", category: "users" },
+  { id: "EDIT_USERS", label: "تعديل المستخدمين", category: "users" },
+  { id: "DELETE_USERS", label: "حذف المستخدمين", category: "users" },
+  
+  { id: "VIEW_REPORTS", label: "عرض التقارير", category: "reports" },
+  { id: "EXPORT_DATA", label: "تصدير البيانات", category: "reports" },
+  
+  { id: "VIEW_LOGS", label: "عرض السجلات", category: "system" },
+  { id: "MANAGE_SETTINGS", label: "إدارة الإعدادات", category: "system" },
+  { id: "MANAGE_JOB_TITLES", label: "إدارة المسميات الوظيفية", category: "system" },
+];
+
+const PERMISSION_CATEGORIES = {
+  workers: { label: "العمال", icon: "👷" },
+  contracts: { label: "العقود", icon: "📄" },
+  clients: { label: "العملاء", icon: "👥" },
+  users: { label: "المستخدمين", icon: "🔐" },
+  reports: { label: "التقارير", icon: "📊" },
+  system: { label: "النظام", icon: "⚙️" },
+};
+
+export default function JobTitlesPage() {
+  const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    nameAr: "",
+    description: "",
+    permissions: [] as string[],
+    isActive: true,
+  });
+
+  useEffect(() => {
+    fetchJobTitles();
+  }, []);
+
+  const fetchJobTitles = async () => {
+    try {
+      const response = await fetch("/api/job-titles");
+      if (response.ok) {
+        const data = await response.json();
+        setJobTitles(data);
+      }
+    } catch (error) {
+      console.error("Error fetching job titles:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const url = editingId ? `/api/job-titles/${editingId}` : "/api/job-titles";
+      const method = editingId ? "PATCH" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        await fetchJobTitles();
+        handleCloseModal();
+      } else {
+        const error = await response.json();
+        alert(error.error || "حدث خطأ");
+      }
+    } catch (error) {
+      console.error("Error saving job title:", error);
+      alert("حدث خطأ أثناء الحفظ");
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("هل أنت متأكد من حذف هذا المسمى الوظيفي؟")) return;
+
+    try {
+      const response = await fetch(`/api/job-titles/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        await fetchJobTitles();
+      } else {
+        const error = await response.json();
+        alert(error.error || "حدث خطأ");
+      }
+    } catch (error) {
+      console.error("Error deleting job title:", error);
+      alert("حدث خطأ أثناء الحذف");
+    }
+  };
+
+  const handleEdit = (jobTitle: JobTitle) => {
+    setEditingId(jobTitle.id);
+    setFormData({
+      name: jobTitle.name,
+      nameAr: jobTitle.nameAr,
+      description: jobTitle.description || "",
+      permissions: JSON.parse(jobTitle.permissions),
+      isActive: jobTitle.isActive,
+    });
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingId(null);
+    setFormData({
+      name: "",
+      nameAr: "",
+      description: "",
+      permissions: [],
+      isActive: true,
+    });
+  };
+
+  const togglePermission = (permissionId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      permissions: prev.permissions.includes(permissionId)
+        ? prev.permissions.filter((p) => p !== permissionId)
+        : [...prev.permissions, permissionId],
+    }));
+  };
+
+  const selectAllInCategory = (category: string) => {
+    const categoryPerms = AVAILABLE_PERMISSIONS
+      .filter((p) => p.category === category)
+      .map((p) => p.id);
+    
+    const allSelected = categoryPerms.every((p) => formData.permissions.includes(p));
+    
+    if (allSelected) {
+      setFormData((prev) => ({
+        ...prev,
+        permissions: prev.permissions.filter((p) => !categoryPerms.includes(p)),
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        permissions: [...new Set([...prev.permissions, ...categoryPerms])],
+      }));
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl shadow-lg">
+            <Briefcase className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">المسميات الوظيفية</h1>
+            <p className="text-sm text-gray-600">إدارة المسميات الوظيفية والصلاحيات</p>
+          </div>
+        </div>
+        <button
+          onClick={() => setShowModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
+        >
+          <Plus className="w-5 h-5" />
+          <span>إضافة مسمى وظيفي</span>
+        </button>
+      </div>
+
+      {/* Job Titles Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {jobTitles.map((jobTitle) => {
+          const permissions = JSON.parse(jobTitle.permissions);
+          return (
+            <div
+              key={jobTitle.id}
+              className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-800">{jobTitle.nameAr}</h3>
+                  <p className="text-sm text-gray-500">{jobTitle.name}</p>
+                </div>
+                <div className={`px-2 py-1 rounded-lg text-xs font-semibold ${
+                  jobTitle.isActive
+                    ? "bg-green-100 text-green-700"
+                    : "bg-gray-100 text-gray-600"
+                }`}>
+                  {jobTitle.isActive ? "نشط" : "غير نشط"}
+                </div>
+              </div>
+
+              {jobTitle.description && (
+                <p className="text-sm text-gray-600 mb-3">{jobTitle.description}</p>
+              )}
+
+              <div className="flex items-center gap-4 mb-4 text-sm text-gray-600">
+                <div className="flex items-center gap-1">
+                  <Shield className="w-4 h-4" />
+                  <span>{permissions.length} صلاحية</span>
+                </div>
+                {jobTitle._count && (
+                  <div className="flex items-center gap-1">
+                    <Users className="w-4 h-4" />
+                    <span>{jobTitle._count.users} مستخدم</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleEdit(jobTitle)}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                >
+                  <Edit className="w-4 h-4" />
+                  <span>تعديل</span>
+                </button>
+                <button
+                  onClick={() => handleDelete(jobTitle.id)}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                  disabled={jobTitle._count && jobTitle._count.users > 0}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>حذف</span>
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-800">
+                {editingId ? "تعديل مسمى وظيفي" : "إضافة مسمى وظيفي جديد"}
+              </h2>
+              <button
+                onClick={handleCloseModal}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              {/* Basic Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    الاسم بالعربية *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.nameAr}
+                    onChange={(e) => setFormData({ ...formData, nameAr: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="مثال: مدير قسم"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    الاسم بالإنجليزية *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Example: Department Manager"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  الوصف
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  rows={3}
+                  placeholder="وصف المسمى الوظيفي ومسؤولياته..."
+                />
+              </div>
+
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  checked={formData.isActive}
+                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                  className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                />
+                <label htmlFor="isActive" className="text-sm font-semibold text-gray-700">
+                  نشط
+                </label>
+              </div>
+
+              {/* Permissions */}
+              <div>
+                <h3 className="text-lg font-bold text-gray-800 mb-4">الصلاحيات</h3>
+                <div className="space-y-4">
+                  {Object.entries(PERMISSION_CATEGORIES).map(([category, info]) => {
+                    const categoryPerms = AVAILABLE_PERMISSIONS.filter((p) => p.category === category);
+                    const selectedCount = categoryPerms.filter((p) => formData.permissions.includes(p.id)).length;
+                    
+                    return (
+                      <div key={category} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-2xl">{info.icon}</span>
+                            <h4 className="font-bold text-gray-700">{info.label}</h4>
+                            <span className="text-xs text-gray-500">
+                              ({selectedCount}/{categoryPerms.length})
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => selectAllInCategory(category)}
+                            className="text-xs text-purple-600 hover:text-purple-700 font-semibold"
+                          >
+                            {selectedCount === categoryPerms.length ? "إلغاء الكل" : "تحديد الكل"}
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {categoryPerms.map((permission) => (
+                            <label
+                              key={permission.id}
+                              className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={formData.permissions.includes(permission.id)}
+                                onChange={() => togglePermission(permission.id)}
+                                className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                              />
+                              <span className="text-sm text-gray-700">{permission.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-4 border-t border-gray-200">
+                <button
+                  type="submit"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold"
+                >
+                  <Save className="w-5 h-5" />
+                  <span>{editingId ? "حفظ التغييرات" : "إضافة المسمى الوظيفي"}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
