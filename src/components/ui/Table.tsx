@@ -1,7 +1,5 @@
 "use client";
 
-import { useTheme } from "@/components/ThemeProvider";
-
 interface Column<T> {
   header: string;
   accessor: keyof T;
@@ -23,14 +21,12 @@ export default function Table<T>({
   compact = false,
   stickyHeader = false,
 }: TableProps<T>) {
-  const { theme } = useTheme();
-  const isPremium = theme === 'premium';
   return (
-    <div className={isPremium ? 'overflow-x-auto glass ring-soft rounded-2xl' : 'overflow-x-auto bg-white border-2 border-slate-900'}>
+    <div className="overflow-x-auto glass ring-soft rounded-2xl">
       <table className="min-w-full">
         <thead className={
           [
-            isPremium ? 'bg-white/70' : 'bg-slate-200',
+            'bg-white/70',
             stickyHeader ? 'sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-white/60' : ''
           ].join(' ').trim()
         }>
@@ -42,7 +38,7 @@ export default function Table<T>({
                 className={
                   [
                     'text-right text-sm font-bold text-slate-900',
-                    isPremium ? 'border-b border-white/60' : 'border-b-2 border-slate-900',
+                    'border-b border-white/60',
                     compact ? 'py-2 pr-3' : 'py-4 pr-4'
                   ].join(' ')
                 }
@@ -52,15 +48,13 @@ export default function Table<T>({
             ))}
           </tr>
         </thead>
-        <tbody className={isPremium ? 'bg-white/70' : 'bg-white'}>
+        <tbody className="bg-white/70">
           {data.map((item, index) => (
             <tr
               key={index}
               onClick={() => onRowClick?.(item)}
               className={
-                isPremium
-                  ? (onRowClick ? 'cursor-pointer hover:bg-white/80 transition-colors duration-200 border-b border-white/50' : 'hover:bg-white/75 transition-colors duration-200 border-b border-white/50')
-                  : (onRowClick ? 'cursor-pointer hover:bg-slate-100 transition-colors duration-200 border-b border-slate-300' : 'hover:bg-slate-50 transition-colors duration-200 border-b border-slate-300')
+                onRowClick ? 'cursor-pointer hover:bg-white/80 transition-colors duration-200 border-b border-white/50' : 'hover:bg-white/75 transition-colors duration-200 border-b border-white/50'
               }
             >
               {columns.map((column) => (
