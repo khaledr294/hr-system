@@ -1,10 +1,17 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
+import { hasPermission } from '@/lib/permissions';
 
 export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const session = await getSession();
-  if (!session) return new Response('Unauthorized', { status: 401 });
+  if (!session?.user) return new Response('Unauthorized', { status: 401 });
+
+  // التحقق من صلاحية إدارة الإعدادات
+  const canManage = await hasPermission(session.user.id, 'MANAGE_SETTINGS');
+  if (!canManage) {
+    return new Response('Forbidden - ليس لديك صلاحية تعديل الباقات', { status: 403 });
+  }
   try {
     const { id } = await context.params;
     const data = await req.json();
@@ -26,7 +33,13 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
 
 export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const session = await getSession();
-  if (!session) return new Response('Unauthorized', { status: 401 });
+  if (!session?.user) return new Response('Unauthorized', { status: 401 });
+
+  // التحقق من صلاحية إدارة الإعدادات
+  const canManage = await hasPermission(session.user.id, 'MANAGE_SETTINGS');
+  if (!canManage) {
+    return new Response('Forbidden - ليس لديك صلاحية حذف الباقات', { status: 403 });
+  }
   try {
     const { id } = await context.params;
     await prisma.package.delete({ where: { id } });

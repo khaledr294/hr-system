@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Briefcase, Plus, Edit, Trash2, Save, X, Shield, Users } from "lucide-react";
+import { Briefcase, Plus, Edit, Trash2, Save, X, Shield, Users, CheckCircle, Circle } from "lucide-react";
 
 interface JobTitle {
   id: string;
@@ -19,41 +19,42 @@ interface JobTitle {
 
 // الصلاحيات المتاحة
 const AVAILABLE_PERMISSIONS = [
-  { id: "VIEW_WORKERS", label: "عرض العمال", category: "workers" },
-  { id: "CREATE_WORKERS", label: "إضافة عمال", category: "workers" },
-  { id: "EDIT_WORKERS", label: "تعديل العمال", category: "workers" },
-  { id: "DELETE_WORKERS", label: "حذف العمال", category: "workers" },
+  { id: "VIEW_WORKERS", label: "عرض العمال", category: "workers", icon: "👁️" },
+  { id: "CREATE_WORKERS", label: "إضافة عمال", category: "workers", icon: "➕" },
+  { id: "EDIT_WORKERS", label: "تعديل العمال", category: "workers", icon: "✏️" },
+  { id: "DELETE_WORKERS", label: "حذف العمال", category: "workers", icon: "🗑️" },
+  { id: "RESERVE_WORKERS", label: "حجز العاملات", category: "workers", icon: "🔒" },
   
-  { id: "VIEW_CONTRACTS", label: "عرض العقود", category: "contracts" },
-  { id: "CREATE_CONTRACTS", label: "إنشاء عقود", category: "contracts" },
-  { id: "EDIT_CONTRACTS", label: "تعديل العقود", category: "contracts" },
-  { id: "DELETE_CONTRACTS", label: "حذف العقود", category: "contracts" },
+  { id: "VIEW_CONTRACTS", label: "عرض العقود", category: "contracts", icon: "👁️" },
+  { id: "CREATE_CONTRACTS", label: "إنشاء عقود", category: "contracts", icon: "➕" },
+  { id: "EDIT_CONTRACTS", label: "تعديل العقود", category: "contracts", icon: "✏️" },
+  { id: "DELETE_CONTRACTS", label: "حذف العقود", category: "contracts", icon: "🗑️" },
   
-  { id: "VIEW_CLIENTS", label: "عرض العملاء", category: "clients" },
-  { id: "CREATE_CLIENTS", label: "إضافة عملاء", category: "clients" },
-  { id: "EDIT_CLIENTS", label: "تعديل العملاء", category: "clients" },
-  { id: "DELETE_CLIENTS", label: "حذف العملاء", category: "clients" },
+  { id: "VIEW_CLIENTS", label: "عرض العملاء", category: "clients", icon: "👁️" },
+  { id: "CREATE_CLIENTS", label: "إضافة عملاء", category: "clients", icon: "➕" },
+  { id: "EDIT_CLIENTS", label: "تعديل العملاء", category: "clients", icon: "✏️" },
+  { id: "DELETE_CLIENTS", label: "حذف العملاء", category: "clients", icon: "🗑️" },
   
-  { id: "VIEW_USERS", label: "عرض المستخدمين", category: "users" },
-  { id: "CREATE_USERS", label: "إضافة مستخدمين", category: "users" },
-  { id: "EDIT_USERS", label: "تعديل المستخدمين", category: "users" },
-  { id: "DELETE_USERS", label: "حذف المستخدمين", category: "users" },
+  { id: "VIEW_USERS", label: "عرض المستخدمين", category: "users", icon: "👁️" },
+  { id: "CREATE_USERS", label: "إضافة مستخدمين", category: "users", icon: "➕" },
+  { id: "EDIT_USERS", label: "تعديل المستخدمين", category: "users", icon: "✏️" },
+  { id: "DELETE_USERS", label: "حذف المستخدمين", category: "users", icon: "🗑️" },
   
-  { id: "VIEW_REPORTS", label: "عرض التقارير", category: "reports" },
-  { id: "EXPORT_DATA", label: "تصدير البيانات", category: "reports" },
+  { id: "VIEW_REPORTS", label: "عرض التقارير", category: "reports", icon: "📊" },
+  { id: "EXPORT_DATA", label: "تصدير البيانات", category: "reports", icon: "💾" },
   
-  { id: "VIEW_LOGS", label: "عرض السجلات", category: "system" },
-  { id: "MANAGE_SETTINGS", label: "إدارة الإعدادات", category: "system" },
-  { id: "MANAGE_JOB_TITLES", label: "إدارة المسميات الوظيفية", category: "system" },
+  { id: "VIEW_LOGS", label: "عرض السجلات", category: "system", icon: "📋" },
+  { id: "MANAGE_SETTINGS", label: "إدارة الإعدادات", category: "system", icon: "⚙️" },
+  { id: "MANAGE_JOB_TITLES", label: "إدارة المسميات الوظيفية", category: "system", icon: "💼" },
 ];
 
 const PERMISSION_CATEGORIES = {
-  workers: { label: "العمال", icon: "👷" },
-  contracts: { label: "العقود", icon: "📄" },
-  clients: { label: "العملاء", icon: "👥" },
-  users: { label: "المستخدمين", icon: "🔐" },
-  reports: { label: "التقارير", icon: "📊" },
-  system: { label: "النظام", icon: "⚙️" },
+  workers: { label: "العمال", icon: "👷", color: "blue" },
+  contracts: { label: "العقود", icon: "📄", color: "purple" },
+  clients: { label: "العملاء", icon: "👥", color: "green" },
+  users: { label: "المستخدمين", icon: "🔐", color: "orange" },
+  reports: { label: "التقارير", icon: "📊", color: "pink" },
+  system: { label: "النظام", icon: "⚙️", color: "gray" },
 };
 
 export default function JobTitlesPage() {
@@ -61,6 +62,7 @@ export default function JobTitlesPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     name: "",
     nameAr: "",
@@ -148,6 +150,7 @@ export default function JobTitlesPage() {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingId(null);
+    setCurrentStep(1);
     setFormData({
       name: "",
       nameAr: "",
@@ -155,6 +158,18 @@ export default function JobTitlesPage() {
       permissions: [],
       isActive: true,
     });
+  };
+
+  const getColorClasses = (color: string) => {
+    const colors: Record<string, { bg: string; text: string; border: string; hover: string }> = {
+      blue: { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200", hover: "hover:bg-blue-100" },
+      purple: { bg: "bg-purple-50", text: "text-purple-700", border: "border-purple-200", hover: "hover:bg-purple-100" },
+      green: { bg: "bg-green-50", text: "text-green-700", border: "border-green-200", hover: "hover:bg-green-100" },
+      orange: { bg: "bg-orange-50", text: "text-orange-700", border: "border-orange-200", hover: "hover:bg-orange-100" },
+      pink: { bg: "bg-pink-50", text: "text-pink-700", border: "border-pink-200", hover: "hover:bg-pink-100" },
+      gray: { bg: "bg-gray-50", text: "text-gray-700", border: "border-gray-200", hover: "hover:bg-gray-100" },
+    };
+    return colors[color] || colors.gray;
   };
 
   const togglePermission = (permissionId: string) => {
@@ -278,148 +293,246 @@ export default function JobTitlesPage() {
         })}
       </div>
 
-      {/* Modal */}
+      {/* Modal - Improved Design */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-800">
-                {editingId ? "تعديل مسمى وظيفي" : "إضافة مسمى وظيفي جديد"}
-              </h2>
-              <button
-                onClick={handleCloseModal}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-50 p-4 pt-8">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-5xl w-full flex flex-col" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
+            {/* Header */}
+            <div className="px-8 py-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {editingId ? "تعديل مسمى وظيفي" : "إضافة مسمى وظيفي جديد"}
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {currentStep === 1 ? "أدخل البيانات الأساسية" : "اختر الصلاحيات المناسبة"}
+                  </p>
+                </div>
+                <button
+                  onClick={handleCloseModal}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X className="w-6 h-6 text-gray-500" />
+                </button>
+              </div>
+
+              {/* Steps Indicator */}
+              <div className="flex items-center gap-4 mt-6">
+                <div className="flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
+                    currentStep === 1 ? 'bg-purple-600 text-white' : 'bg-green-500 text-white'
+                  }`}>
+                    {currentStep === 1 ? '1' : '✓'}
+                  </div>
+                  <span className={`text-sm font-medium ${currentStep === 1 ? 'text-purple-600' : 'text-gray-600'}`}>
+                    البيانات الأساسية
+                  </span>
+                </div>
+                <div className={`flex-1 h-0.5 ${currentStep === 2 ? 'bg-purple-600' : 'bg-gray-300'}`} />
+                <div className="flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
+                    currentStep === 2 ? 'bg-purple-600 text-white' : 'bg-gray-300 text-gray-500'
+                  }`}>
+                    2
+                  </div>
+                  <span className={`text-sm font-medium ${currentStep === 2 ? 'text-purple-600' : 'text-gray-400'}`}>
+                    الصلاحيات
+                  </span>
+                </div>
+              </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
-              {/* Basic Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    الاسم بالعربية *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.nameAr}
-                    onChange={(e) => setFormData({ ...formData, nameAr: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="مثال: مدير قسم"
-                  />
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto px-8 py-6">
+              {currentStep === 1 ? (
+                /* Step 1: Basic Info */
+                <div className="space-y-6 max-w-2xl mx-auto">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2">
+                        الاسم بالعربية <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.nameAr}
+                        onChange={(e) => setFormData({ ...formData, nameAr: e.target.value })}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                        placeholder="مثال: مدير قسم الموارد البشرية"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2">
+                        الاسم بالإنجليزية <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                        placeholder="Example: HR Department Manager"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      الوصف
+                    </label>
+                    <textarea
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all resize-none"
+                      rows={4}
+                      placeholder="وصف المسمى الوظيفي ومسؤولياته..."
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                    <input
+                      type="checkbox"
+                      id="isActive"
+                      checked={formData.isActive}
+                      onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                      className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                    />
+                    <label htmlFor="isActive" className="text-sm font-bold text-gray-700 cursor-pointer">
+                      نشط (يمكن اختياره عند إضافة مستخدم جديد)
+                    </label>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    الاسم بالإنجليزية *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="Example: Department Manager"
-                  />
-                </div>
-              </div>
+              ) : (
+                /* Step 2: Permissions */
+                <div className="space-y-6">
+                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-2xl border-2 border-purple-200">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Shield className="w-6 h-6 text-purple-600" />
+                      <h3 className="text-lg font-bold text-gray-900">الصلاحيات المحددة</h3>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-3xl font-bold text-purple-600">{formData.permissions.length}</span>
+                      <span className="text-gray-600">من أصل {AVAILABLE_PERMISSIONS.length} صلاحية</span>
+                    </div>
+                  </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  الوصف
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  rows={3}
-                  placeholder="وصف المسمى الوظيفي ومسؤولياته..."
-                />
-              </div>
-
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="isActive"
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                  className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-                />
-                <label htmlFor="isActive" className="text-sm font-semibold text-gray-700">
-                  نشط
-                </label>
-              </div>
-
-              {/* Permissions */}
-              <div>
-                <h3 className="text-lg font-bold text-gray-800 mb-4">الصلاحيات</h3>
-                <div className="space-y-4">
-                  {Object.entries(PERMISSION_CATEGORIES).map(([category, info]) => {
-                    const categoryPerms = AVAILABLE_PERMISSIONS.filter((p) => p.category === category);
-                    const selectedCount = categoryPerms.filter((p) => formData.permissions.includes(p.id)).length;
-                    
-                    return (
-                      <div key={category} className="border border-gray-200 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <span className="text-2xl">{info.icon}</span>
-                            <h4 className="font-bold text-gray-700">{info.label}</h4>
-                            <span className="text-xs text-gray-500">
-                              ({selectedCount}/{categoryPerms.length})
-                            </span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => selectAllInCategory(category)}
-                            className="text-xs text-purple-600 hover:text-purple-700 font-semibold"
-                          >
-                            {selectedCount === categoryPerms.length ? "إلغاء الكل" : "تحديد الكل"}
-                          </button>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                          {categoryPerms.map((permission) => (
-                            <label
-                              key={permission.id}
-                              className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer"
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.entries(PERMISSION_CATEGORIES).map(([category, info]) => {
+                      const categoryPerms = AVAILABLE_PERMISSIONS.filter((p) => p.category === category);
+                      const selectedCount = categoryPerms.filter((p) => formData.permissions.includes(p.id)).length;
+                      const allSelected = selectedCount === categoryPerms.length;
+                      const colors = getColorClasses(info.color);
+                      
+                      return (
+                        <div key={category} className={`p-5 border-2 rounded-2xl ${colors.border} ${colors.bg}`}>
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                              <span className="text-2xl">{info.icon}</span>
+                              <div>
+                                <h4 className="font-bold text-gray-800">{info.label}</h4>
+                                <p className="text-xs text-gray-600">{selectedCount}/{categoryPerms.length} محددة</p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => selectAllInCategory(category)}
+                              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                                allSelected
+                                  ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                  : `${colors.bg} ${colors.text} ${colors.hover} border ${colors.border}`
+                              }`}
                             >
-                              <input
-                                type="checkbox"
-                                checked={formData.permissions.includes(permission.id)}
-                                onChange={() => togglePermission(permission.id)}
-                                className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-                              />
-                              <span className="text-sm text-gray-700">{permission.label}</span>
-                            </label>
-                          ))}
+                              {allSelected ? 'إلغاء الكل' : 'تحديد الكل'}
+                            </button>
+                          </div>
+                          <div className="space-y-2">
+                            {categoryPerms.map((permission) => {
+                              const isSelected = formData.permissions.includes(permission.id);
+                              return (
+                                <button
+                                  key={permission.id}
+                                  type="button"
+                                  onClick={() => togglePermission(permission.id)}
+                                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
+                                    isSelected
+                                      ? 'bg-white shadow-sm border-2 border-purple-300'
+                                      : 'bg-white/50 border-2 border-transparent hover:border-gray-300'
+                                  }`}
+                                >
+                                  {isSelected ? (
+                                    <CheckCircle className="w-5 h-5 text-purple-600 flex-shrink-0" />
+                                  ) : (
+                                    <Circle className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                                  )}
+                                  <span className="text-sm mr-1">{permission.icon}</span>
+                                  <span className={`text-sm font-medium text-right ${
+                                    isSelected ? 'text-gray-900' : 'text-gray-600'
+                                  }`}>
+                                    {permission.label}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer Actions */}
+            <div className="px-8 py-6 border-t border-gray-200 bg-gray-50 rounded-b-3xl">
+              <div className="flex justify-between items-center">
+                {currentStep === 2 && (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(1)}
+                    className="px-6 py-3 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-all"
+                  >
+                    ← السابق
+                  </button>
+                )}
+                <div className={`flex gap-3 ${currentStep === 1 ? 'mr-auto' : ''}`}>
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-100 transition-all"
+                  >
+                    إلغاء
+                  </button>
+                  {currentStep === 1 ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!formData.name || !formData.nameAr) {
+                          alert('الرجاء إدخال الاسم بالعربية والإنجليزية');
+                          return;
+                        }
+                        setCurrentStep(2);
+                      }}
+                      className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-xl hover:shadow-lg transition-all"
+                    >
+                      التالي: اختيار الصلاحيات →
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleSubmit}
+                      className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-xl hover:shadow-lg transition-all"
+                    >
+                      <Save className="w-5 h-5" />
+                      {editingId ? "حفظ التغييرات" : "إنشاء المسمى الوظيفي"}
+                    </button>
+                  )}
                 </div>
               </div>
-
-              {/* Actions */}
-              <div className="flex gap-3 pt-4 border-t border-gray-200">
-                <button
-                  type="submit"
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold"
-                >
-                  <Save className="w-5 h-5" />
-                  <span>{editingId ? "حفظ التغييرات" : "إضافة المسمى الوظيفي"}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold"
-                >
-                  إلغاء
-                </button>
-              </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
     </div>
   );
 }
+

@@ -2,36 +2,38 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import RolePermissionsSummary from "./RolePermissionsSummary";
-
-const roles = [
-  { value: "", label: "اختر الدور..." },
-  { value: "HR_MANAGER", label: "مدير الموارد البشرية" },
-  { value: "GENERAL_MANAGER", label: "المدير العام" },
-  { value: "MARKETER", label: "مسوق" },
-  { value: "STAFF", label: "موظف" },
-];
 
 interface JobTitle {
   id: string;
   nameAr: string;
   name: string;
+  permissions: string;
 }
 
 export default function NewUserForm() {
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedRole, setSelectedRole] = useState("");
+  const [selectedJobTitle, setSelectedJobTitle] = useState("");
   const [jobTitles, setJobTitles] = useState<JobTitle[]>([]);
   const [error, setError] = useState("");
   const router = useRouter();
 
   useEffect(() => {
-    // جلب المسميات الوظيفية
+    // جلب المسميات الوظيفية النشطة
     fetch("/api/job-titles")
       .then(res => res.ok ? res.json() : [])
       .then(data => setJobTitles(data.filter((jt: any) => jt.isActive)))
       .catch(() => setJobTitles([]));
   }, []);
+
+  const getPermissionsCount = (jobTitleId: string) => {
+    const jobTitle = jobTitles.find(jt => jt.id === jobTitleId);
+    if (!jobTitle) return 0;
+    try {
+      return JSON.parse(jobTitle.permissions).length;
+    } catch {
+      return 0;
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -119,49 +121,39 @@ export default function NewUserForm() {
                 </div>
 
                 <div>
-                  <label htmlFor="role" className="block text-base font-bold text-slate-900 mb-2">
-                    الدور والصلاحيات <span className="text-red-600">*</span>
+                  <label htmlFor="jobTitleId" className="block text-base font-bold text-slate-900 mb-2">
+                    المسمى الوظيفي <span className="text-red-600">*</span>
                   </label>
                   <select
-                    name="role"
-                    id="role"
+                    name="jobTitleId"
+                    id="jobTitleId"
                     required
-                    value={selectedRole}
-                    onChange={(e) => setSelectedRole(e.target.value)}
+                    value={selectedJobTitle}
+                    onChange={(e) => setSelectedJobTitle(e.target.value)}
                     className="w-full px-4 py-3 text-base border-2 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white text-slate-900 font-bold"
                   >
-                    {roles.map((role) => (
-                      <option key={role.value} value={role.value} className="text-gray-900 bg-white">
-                        {role.label}
+                    <option value="">اختر المسمى الوظيفي...</option>
+                    {jobTitles.map((jobTitle) => (
+                      <option key={jobTitle.id} value={jobTitle.id} className="text-gray-900 bg-white">
+                        {jobTitle.nameAr} ({jobTitle.name})
                       </option>
                     ))}
                   </select>
                   
-                  <RolePermissionsSummary selectedRole={selectedRole} />
-                </div>
+                  {selectedJobTitle && (
+                    <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm text-blue-800 font-bold">
+                        ✓ هذا المسمى الوظيفي يمنح {getPermissionsCount(selectedJobTitle)} صلاحية
+                      </p>
+                    </div>
+                  )}
 
-                {selectedRole === "STAFF" && jobTitles.length > 0 && (
-                  <div>
-                    <label htmlFor="jobTitleId" className="block text-base font-bold text-slate-900 mb-2">
-                      المسمى الوظيفي
-                    </label>
-                    <select
-                      name="jobTitleId"
-                      id="jobTitleId"
-                      className="w-full px-4 py-3 text-base border-2 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white text-slate-900 font-bold"
-                    >
-                      <option value="">بدون مسمى وظيفي</option>
-                      {jobTitles.map((jobTitle) => (
-                        <option key={jobTitle.id} value={jobTitle.id}>
-                          {jobTitle.nameAr} ({jobTitle.name})
-                        </option>
-                      ))}
-                    </select>
-                    <p className="mt-2 text-sm text-gray-600">
-                      اختر المسمى الوظيفي لتحديد صلاحيات محددة للموظف
+                  {jobTitles.length === 0 && (
+                    <p className="mt-2 text-sm text-red-600 font-bold">
+                      ⚠️ لا توجد مسميات وظيفية. يرجى إضافة مسمى وظيفي من صفحة "المسميات الوظيفية" أولاً.
                     </p>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>

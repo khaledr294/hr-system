@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
+import { hasPermission } from '@/lib/permissions';
 
 export async function GET(
   req: NextRequest,
@@ -44,8 +45,14 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ) {
   const session = await getSession();
-  if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'HR')) {
-    return new Response('Unauthorized - Admin or HR access required', { status: 401 });
+  if (!session?.user) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  // التحقق من صلاحية إدارة الإعدادات
+  const canManage = await hasPermission(session.user.id, 'MANAGE_SETTINGS');
+  if (!canManage) {
+    return new Response('Forbidden - ليس لديك صلاحية تعديل الرواتب', { status: 403 });
   }
   try {
     const params = await context.params;
@@ -95,8 +102,14 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   const session = await getSession();
-  if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'HR')) {
-    return new Response('Unauthorized - Admin or HR access required', { status: 401 });
+  if (!session?.user) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  // التحقق من صلاحية إدارة الإعدادات
+  const canManage = await hasPermission(session.user.id, 'MANAGE_SETTINGS');
+  if (!canManage) {
+    return new Response('Forbidden - ليس لديك صلاحية حذف الرواتب', { status: 403 });
   }
   try {
     const params = await context.params;

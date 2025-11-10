@@ -1,14 +1,21 @@
 import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { createLog } from '@/lib/logger';
+import { hasPermission } from '@/lib/permissions';
 
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getSession();
-  if (!session) {
+  if (!session?.user) {
     return new Response('Unauthorized', { status: 401 });
+  }
+
+  // التحقق من صلاحية تعديل العقود
+  const canEdit = await hasPermission(session.user.id, 'EDIT_CONTRACTS');
+  if (!canEdit) {
+    return new Response('Forbidden - ليس لديك صلاحية تعديل العقود', { status: 403 });
   }
   try {
     const { id } = await params;
@@ -43,13 +50,14 @@ export async function DELETE(
 ) {
   const session = await getSession();
 
-  if (!session) {
+  if (!session?.user) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  // التحقق من أن المستخدم مدير موارد بشرية
-  if (session.user.role !== 'HR_MANAGER') {
-    return new Response('Forbidden: Only HR managers can delete contracts', { status: 403 });
+  // التحقق من صلاحية حذف العقود
+  const canDelete = await hasPermission(session.user.id, 'DELETE_CONTRACTS');
+  if (!canDelete) {
+    return new Response('Forbidden - ليس لديك صلاحية حذف العقود', { status: 403 });
   }
 
   try {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { createLog } from '@/lib/logger';
+import { hasPermission } from '@/lib/permissions';
 
 export async function GET(
     req: NextRequest,
@@ -9,8 +10,14 @@ export async function GET(
 ) {
     try {
         const session = await auth();
-        if (!session) {
+        if (!session?.user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // التحقق من صلاحية عرض العمال
+        const canView = await hasPermission(session.user.id, 'VIEW_WORKERS');
+        if (!canView) {
+            return NextResponse.json({ error: 'Forbidden - ليس لديك صلاحية عرض العمال' }, { status: 403 });
         }
         const params = await context.params;
         const worker = await prisma.worker.findUnique({
@@ -47,12 +54,16 @@ export async function PUT(
 ) {
     try {
         const session = await auth();
-        if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'HR_MANAGER')) {
-            return NextResponse.json(
-                { error: 'Unauthorized - Admin or HR Manager access required' },
-                { status: 401 }
-            );
+        if (!session?.user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
+
+        // التحقق من صلاحية تعديل العمال
+        const canEdit = await hasPermission(session.user.id, 'EDIT_WORKERS');
+        if (!canEdit) {
+            return NextResponse.json({ error: 'Forbidden - ليس لديك صلاحية تعديل العمال' }, { status: 403 });
+        }
+
         const params = await context.params;
         const data = await req.json();
         // Check for unique residency number if it's being updated
@@ -123,12 +134,16 @@ export async function DELETE(
 ) {
     try {
         const session = await auth();
-        if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'HR_MANAGER')) {
-            return NextResponse.json(
-                { error: 'Unauthorized - Admin or HR Manager access required' },
-                { status: 401 }
-            );
+        if (!session?.user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
+
+        // التحقق من صلاحية حذف العمال
+        const canDelete = await hasPermission(session.user.id, 'DELETE_WORKERS');
+        if (!canDelete) {
+            return NextResponse.json({ error: 'Forbidden - ليس لديك صلاحية حذف العمال' }, { status: 403 });
+        }
+
         const params = await context.params;
         // Check if worker has any active contracts
         const worker = await prisma.worker.findUnique({

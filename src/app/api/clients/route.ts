@@ -1,12 +1,19 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
+import { hasPermission } from '@/lib/permissions';
 
 export async function GET(req: NextRequest) {
   const session = await getSession();
 
-  if (!session) {
+  if (!session?.user) {
     return new Response('Unauthorized', { status: 401 });
+  }
+
+  // التحقق من صلاحية عرض العملاء
+  const canView = await hasPermission(session.user.id, 'VIEW_CLIENTS');
+  if (!canView) {
+    return new Response('Forbidden - ليس لديك صلاحية عرض العملاء', { status: 403 });
   }
 
   try {
@@ -40,8 +47,14 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const session = await getSession();
 
-  if (!session) {
+  if (!session?.user) {
     return new Response('Unauthorized', { status: 401 });
+  }
+
+  // التحقق من صلاحية إنشاء عملاء
+  const canCreate = await hasPermission(session.user.id, 'CREATE_CLIENTS');
+  if (!canCreate) {
+    return new Response('Forbidden - ليس لديك صلاحية إضافة عملاء', { status: 403 });
   }
 
   try {

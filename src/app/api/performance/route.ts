@@ -10,7 +10,7 @@ import { checkDatabaseHealth } from '@/lib/query-optimization';
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session || !['ADMIN', 'GENERAL_MANAGER', 'HR_MANAGER'].includes(session.user.role)) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 403 });
     }
 
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session || !['ADMIN', 'GENERAL_MANAGER', 'HR_MANAGER'].includes(session.user.role)) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 403 });
     }
 

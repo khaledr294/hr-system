@@ -1,14 +1,21 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
+import { hasPermission } from '@/lib/permissions';
 
 export async function GET(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   const session = await getSession();
-  if (!session) {
+  if (!session?.user) {
     return new Response('Unauthorized', { status: 401 });
+  }
+
+  // التحقق من صلاحية عرض العملاء
+  const canView = await hasPermission(session.user.id, 'VIEW_CLIENTS');
+  if (!canView) {
+    return new Response('Forbidden - ليس لديك صلاحية عرض العملاء', { status: 403 });
   }
   try {
     const params = await context.params;
@@ -44,8 +51,14 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ) {
   const session = await getSession();
-  if (!session) {
+  if (!session?.user) {
     return new Response('Unauthorized', { status: 401 });
+  }
+
+  // التحقق من صلاحية تعديل العملاء
+  const canEdit = await hasPermission(session.user.id, 'EDIT_CLIENTS');
+  if (!canEdit) {
+    return new Response('Forbidden - ليس لديك صلاحية تعديل العملاء', { status: 403 });
   }
   try {
     const params = await context.params;
@@ -92,8 +105,14 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   const session = await getSession();
-  if (!session) {
+  if (!session?.user) {
     return new Response('Unauthorized', { status: 401 });
+  }
+
+  // التحقق من صلاحية حذف العملاء
+  const canDelete = await hasPermission(session.user.id, 'DELETE_CLIENTS');
+  if (!canDelete) {
+    return new Response('Forbidden - ليس لديك صلاحية حذف العملاء', { status: 403 });
   }
   try {
     const params = await context.params;

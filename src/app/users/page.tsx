@@ -6,15 +6,11 @@ import { requireHR } from "@/lib/require";
 
 export const revalidate = 20; // Cache page for 20 seconds
 
-const roleLabels = {
-  HR: "مدير الموارد البشرية",
-  GENERAL_MANAGER: "المدير العام", 
-  MARKETER: "مسوق",
-  STAFF: "موظف"
-};
-
 async function getUsers() {
   return await prisma.user.findMany({
+    include: {
+      jobTitle: true
+    },
     orderBy: {
       createdAt: 'desc'
     }
@@ -88,17 +84,15 @@ export default async function UsersPage() {
                 </div>
                 
                 <div className="mb-4">
-                  <span className={`inline-flex items-center px-3 py-1.5 text-sm font-bold border-2 ${
-                    user.role === 'HR_MANAGER' 
-                      ? 'bg-blue-200 text-blue-800 border-blue-600'
-                      : user.role === 'GENERAL_MANAGER'
-                      ? 'bg-purple-200 text-purple-800 border-purple-600'
-                      : user.role === 'MARKETER'
-                      ? 'bg-green-200 text-green-800 border-green-600'
-                      : 'bg-slate-200 text-slate-800 border-slate-600'
-                  }`}>
-                    {roleLabels[user.role as keyof typeof roleLabels] || user.role}
-                  </span>
+                  {user.jobTitle ? (
+                    <span className="inline-flex items-center px-3 py-1.5 text-sm font-bold border-2 bg-purple-200 text-purple-800 border-purple-600">
+                      {user.jobTitle.nameAr}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-3 py-1.5 text-sm font-bold border-2 bg-gray-200 text-gray-800 border-gray-600">
+                      بدون مسمى وظيفي
+                    </span>
+                  )}
                 </div>
                 
                 <div className="flex items-center justify-between pt-4 border-t-2 border-slate-300">

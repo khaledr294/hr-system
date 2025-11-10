@@ -2,12 +2,19 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
 import { createLog } from '@/lib/logger';
+import { hasPermission } from '@/lib/permissions';
 
 export async function GET(req: NextRequest) {
   const session = await getSession();
 
-  if (!session) {
+  if (!session?.user) {
     return new Response('Unauthorized', { status: 401 });
+  }
+
+  // التحقق من صلاحية عرض العقود
+  const canView = await hasPermission(session.user.id, 'VIEW_CONTRACTS');
+  if (!canView) {
+    return new Response('Forbidden - ليس لديك صلاحية عرض العقود', { status: 403 });
   }
 
   const { searchParams } = new URL(req.url);
@@ -70,8 +77,14 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const session = await getSession();
 
-  if (!session) {
+  if (!session?.user) {
     return new Response('Unauthorized', { status: 401 });
+  }
+
+  // التحقق من صلاحية إنشاء عقود
+  const canCreate = await hasPermission(session.user.id, 'CREATE_CONTRACTS');
+  if (!canCreate) {
+    return new Response('Forbidden - ليس لديك صلاحية إنشاء عقود', { status: 403 });
   }
 
   try {

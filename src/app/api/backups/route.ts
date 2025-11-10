@@ -16,7 +16,7 @@ import {
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session || !['ADMIN', 'GENERAL_MANAGER'].includes(session.user.role)) {
+    if (!session || !['ADMIN', 'GENERAL_MANAGER', 'HR_MANAGER'].includes(session.user.role)) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 403 });
     }
 
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session || !['ADMIN', 'GENERAL_MANAGER'].includes(session.user.role)) {
+    if (!session || !['ADMIN', 'GENERAL_MANAGER', 'HR_MANAGER'].includes(session.user.role)) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 403 });
     }
 

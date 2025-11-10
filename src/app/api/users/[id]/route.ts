@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from '@/lib/auth';
 import { prisma } from "@/lib/prisma";
-import { Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { hasPermission } from '@/lib/permissions';
 
 export async function PUT(
   request: Request,
@@ -11,8 +11,14 @@ export async function PUT(
   try {
     const session = await auth();
     
-    if (!session || session.user.role !== "HR_MANAGER") {
-      return NextResponse.json({ error: "غير مخول - يتطلب صلاحية مدير الموارد البشرية" }, { status: 403 });
+    if (!session?.user) {
+      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+    }
+
+    // التحقق من صلاحية تعديل المستخدمين
+    const canEdit = await hasPermission(session.user.id, 'EDIT_USERS');
+    if (!canEdit) {
+      return NextResponse.json({ error: "ليس لديك صلاحية تعديل المستخدمين" }, { status: 403 });
     }
 
     const { id } = await context.params;
@@ -21,22 +27,31 @@ export async function PUT(
     const name = formData.get("name") as string;
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
-    const role = formData.get("role") as string;
+    const jobTitleId = formData.get("jobTitleId") as string;
 
-    if (!name || !email || !role) {
+    if (!name || !email || !jobTitleId) {
       return NextResponse.json({ error: "جميع الحقول مطلوبة" }, { status: 400 });
+    }
+
+    // التحقق من وجود المسمى الوظيفي
+    const jobTitle = await prisma.jobTitle.findUnique({
+      where: { id: jobTitleId }
+    });
+
+    if (!jobTitle || !jobTitle.isActive) {
+      return NextResponse.json({ error: "المسمى الوظيفي غير صالح" }, { status: 400 });
     }
 
     // إعداد البيانات للتحديث
     const updateData: {
       name: string;
       email: string;
-      role: Role;
+      jobTitleId: string;
       password?: string;
     } = {
       name,
       email,
-      role: role as Role
+      jobTitleId
     };
 
     // إضافة كلمة المرور فقط إذا تم إدخالها
@@ -47,12 +62,21 @@ export async function PUT(
     // تحديث المستخدم
     const updatedUser = await prisma.user.update({
       where: { id },
-      data: updateData
+      data: updateData,
+      include: {
+        jobTitle: true
+      }
     });
 
     return NextResponse.json({ 
       message: "تم تحديث المستخدم بنجاح",
-      user: { id: updatedUser.id, name: updatedUser.name, email: updatedUser.email, role: updatedUser.role }
+      user: { 
+        id: updatedUser.id, 
+        name: updatedUser.name, 
+        email: updatedUser.email, 
+        jobTitleId: updatedUser.jobTitleId,
+        jobTitle: updatedUser.jobTitle 
+      }
     });
   } catch (error) {
     console.error("Error updating user:", error);
@@ -67,8 +91,14 @@ export async function DELETE(
   try {
     const session = await auth();
     
-    if (!session || session.user.role !== "HR_MANAGER") {
-      return NextResponse.json({ error: "غير مخول - يتطلب صلاحية مدير الموارد البشرية" }, { status: 403 });
+    if (!session?.user) {
+      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+    }
+
+    // التحقق من صلاحية حذف المستخدمين
+    const canDelete = await hasPermission(session.user.id, 'DELETE_USERS');
+    if (!canDelete) {
+      return NextResponse.json({ error: "ليس لديك صلاحية حذف المستخدمين" }, { status: 403 });
     }
 
     const { id } = await context.params;

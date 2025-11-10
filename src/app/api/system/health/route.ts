@@ -1,13 +1,19 @@
 import { NextRequest } from 'next/server';
 import { getSession } from '@/lib/session';
 import { healthCheck, optimizeDatabase } from '@/lib/performance';
+import { hasPermission } from '@/lib/permissions';
 
 export async function GET() {
   const session = await getSession();
 
-  // التحقق من الصلاحيات - فقط المدير يمكنه الوصول
-  if (!session || !['ADMIN', 'HR_MANAGER'].includes(session.user.role)) {
+  if (!session?.user) {
     return new Response('Unauthorized', { status: 401 });
+  }
+
+  // التحقق من صلاحية عرض النظام
+  const canView = await hasPermission(session.user.id, 'VIEW_LOGS');
+  if (!canView) {
+    return new Response('Forbidden - ليس لديك صلاحية عرض حالة النظام', { status: 403 });
   }
 
   try {
@@ -25,9 +31,14 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const session = await getSession();
 
-  // التحقق من الصلاحيات - فقط المدير يمكنه تنفيذ التحسين
-  if (!session || session.user.role !== 'ADMIN') {
+  if (!session?.user) {
     return new Response('Unauthorized', { status: 401 });
+  }
+
+  // التحقق من صلاحية إدارة الإعدادات
+  const canManage = await hasPermission(session.user.id, 'MANAGE_SETTINGS');
+  if (!canManage) {
+    return new Response('Forbidden - ليس لديك صلاحية تحسين النظام', { status: 403 });
   }
 
   const { action } = await req.json();

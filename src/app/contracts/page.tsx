@@ -5,6 +5,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 import Link from 'next/link';
 import Button from '@/components/ui/Button';
 import ContractsWithSearch from '@/components/contracts/ContractsWithSearch';
+import ArchiveExpiredButton from '@/components/contracts/ArchiveExpiredButton';
 
 export default async function ContractsPage() {
   const session = await getSession();
@@ -66,14 +67,21 @@ export default async function ContractsPage() {
     });
   });
 
+  // حساب عدد العقود المنتهية
+  const now = new Date();
+  const expiredCount = contracts.filter(c => new Date(c.endDate) < now).length;
+
   return (
     <DashboardLayout>
       <section dir="rtl" className="mb-6">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center flex-wrap gap-3">
           <h1 className="text-2xl font-extrabold text-slate-900">جميع العقود</h1>
-          <Link href="/contracts/templates">
-            <Button className="font-extrabold">📄 إدارة قوالب العقود</Button>
-          </Link>
+          <div className="flex gap-2">
+            {expiredCount > 0 && <ArchiveExpiredButton count={expiredCount} />}
+            <Link href="/contracts/templates">
+              <Button className="font-extrabold">📄 إدارة قوالب العقود</Button>
+            </Link>
+          </div>
         </div>
       </section>
       <ContractsWithSearch contracts={contracts} />

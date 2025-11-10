@@ -11,6 +11,7 @@ export type Permission =
   | "CREATE_WORKERS"
   | "EDIT_WORKERS"
   | "DELETE_WORKERS"
+  | "RESERVE_WORKERS"
   // Contracts
   | "VIEW_CONTRACTS"
   | "CREATE_CONTRACTS"
@@ -52,9 +53,14 @@ export async function hasPermission(userId: string, permission: Permission): Pro
     }
 
     // فحص الصلاحيات من المسمى الوظيفي
-    if (user.jobTitle && user.jobTitle.isActive) {
-      const permissions = JSON.parse(user.jobTitle.permissions) as Permission[];
-      return permissions.includes(permission);
+    if (user.jobTitle && user.jobTitle.isActive && user.jobTitle.permissions) {
+      try {
+        const permissions = JSON.parse(user.jobTitle.permissions) as Permission[];
+        return permissions.includes(permission);
+      } catch (parseError) {
+        console.error("Error parsing permissions JSON:", parseError);
+        return false;
+      }
     }
 
     return false;
@@ -99,7 +105,7 @@ export async function getUserPermissions(userId: string): Promise<Permission[]> 
     // HR_MANAGER و GENERAL_MANAGER لديهم جميع الصلاحيات
     if (user.role === "HR_MANAGER" || user.role === "GENERAL_MANAGER") {
       return [
-        "VIEW_WORKERS", "CREATE_WORKERS", "EDIT_WORKERS", "DELETE_WORKERS",
+        "VIEW_WORKERS", "CREATE_WORKERS", "EDIT_WORKERS", "DELETE_WORKERS", "RESERVE_WORKERS",
         "VIEW_CONTRACTS", "CREATE_CONTRACTS", "EDIT_CONTRACTS", "DELETE_CONTRACTS",
         "VIEW_CLIENTS", "CREATE_CLIENTS", "EDIT_CLIENTS", "DELETE_CLIENTS",
         "VIEW_USERS", "CREATE_USERS", "EDIT_USERS", "DELETE_USERS",
@@ -109,8 +115,13 @@ export async function getUserPermissions(userId: string): Promise<Permission[]> 
     }
 
     // الصلاحيات من المسمى الوظيفي
-    if (user.jobTitle && user.jobTitle.isActive) {
-      return JSON.parse(user.jobTitle.permissions) as Permission[];
+    if (user.jobTitle && user.jobTitle.isActive && user.jobTitle.permissions) {
+      try {
+        return JSON.parse(user.jobTitle.permissions) as Permission[];
+      } catch (parseError) {
+        console.error("Error parsing permissions JSON:", parseError);
+        return [];
+      }
     }
 
     return [];

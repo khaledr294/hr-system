@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
+import { hasPermission } from '@/lib/permissions';
 
 export const dynamic = 'force-dynamic';
 
@@ -166,8 +167,9 @@ export async function GET(request: NextRequest) {
       results.total += results.clients.length;
     }
 
-    // البحث في المستخدمين (Admin فقط)
-    if (entities.includes('users') && query && session.user.role === 'ADMIN') {
+    // البحث في المستخدمين (يتطلب صلاحية VIEW_USERS)
+    const canViewUsers = await hasPermission(session.user.id, 'VIEW_USERS');
+    if (entities.includes('users') && query && canViewUsers) {
       const userFilter: Prisma.UserWhereInput = {
         OR: [
           { name: { contains: query, mode: 'insensitive' } },

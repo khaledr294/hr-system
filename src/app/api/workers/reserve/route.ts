@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { createLog } from '@/lib/logger';
+import { hasPermission } from '@/lib/permissions';
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,6 +10,14 @@ export async function POST(request: NextRequest) {
     
     if (!session || !session.user) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+    }
+
+    // التحقق من صلاحية حجز العمال
+    const canReserve = await hasPermission(session.user.id, 'RESERVE_WORKERS');
+    if (!canReserve) {
+      return NextResponse.json({ 
+        error: 'ليس لديك صلاحية حجز العمال' 
+      }, { status: 403 });
     }
 
     const { workerId, reservationNotes } = await request.json();
@@ -70,6 +79,14 @@ export async function DELETE(request: NextRequest) {
     
     if (!session || !session.user) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+    }
+
+    // التحقق من صلاحية إلغاء حجز العمال
+    const canReserve = await hasPermission(session.user.id, 'RESERVE_WORKERS');
+    if (!canReserve) {
+      return NextResponse.json({ 
+        error: 'ليس لديك صلاحية إلغاء حجز العمال' 
+      }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);

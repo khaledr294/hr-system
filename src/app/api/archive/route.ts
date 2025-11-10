@@ -6,6 +6,7 @@ import {
   searchArchivedContracts,
   getArchiveStats 
 } from '@/lib/archive';
+import { hasPermission } from '@/lib/permissions';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +16,12 @@ export async function GET(request: NextRequest) {
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+    }
+
+    // التحقق من صلاحية عرض العقود
+    const canView = await hasPermission(session.user.id, 'VIEW_CONTRACTS');
+    if (!canView) {
+      return NextResponse.json({ error: 'ليس لديك صلاحية عرض الأرشيف' }, { status: 403 });
     }
 
     const searchParams = request.nextUrl.searchParams;
@@ -67,13 +74,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
     }
 
-    // فقط المدراء يمكنهم الأرشفة
-    if (session.user.role !== 'ADMIN' && session.user.role !== 'GENERAL_MANAGER') {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 403 });
-    }
-
     const body = await request.json();
     const { action, contractId, archivedContractId, reason } = body;
+
+    // التحقق من الصلاحيات بناءً على نوع العملية
+    if (action === 'archive') {
+      // أرشفة عقد تتطلب صلاحية حذف العقود
+      const canDelete = await hasPermission(session.user.id, 'DELETE_CONTRACTS');
+      if (!canDelete) {
+        return NextResponse.json({ error: 'ليس لديك صلاحية أرشفة العقود' }, { status: 403 });
+      }
+    } else if (action === 'restore') {
+      // استعادة عقد تتطلب صلاحية إنشاء عقود
+      const canCreate = await hasPermission(session.user.id, 'CREATE_CONTRACTS');
+      if (!canCreate) {
+        return NextResponse.json({ error: 'ليس لديك صلاحية استعادة العقود' }, { status: 403 });
+      }
+    }
 
     // أرشفة عقد
     if (action === 'archive') {

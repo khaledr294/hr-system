@@ -18,7 +18,7 @@ export default async function EditUserPage({
       id: true,
       name: true,
       email: true,
-      role: true
+      jobTitleId: true
     }
   });
   
@@ -85,7 +85,7 @@ export default async function EditUserPage({
           id: user.id,
           name: user.name,
           email: user.email || "",
-          role: user.role || "STAFF"
+          jobTitleId: user.jobTitleId
         }} />
       </div>
     </DashboardLayout>

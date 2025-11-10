@@ -5,6 +5,9 @@ import Link from 'next/link';
 import Button from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { requireSession } from '@/lib/require';
+import { getSession } from '@/lib/session';
+import { hasPermission } from '@/lib/permissions';
+import { redirect } from 'next/navigation';
 
 export const revalidate = 30; // Cache page for 30 seconds
 
@@ -70,6 +73,17 @@ async function getWorkers() {
 
 export default async function WorkersPage() {
   await requireSession(); // This will redirect if not authenticated
+  
+  // التحقق من صلاحية عرض العمال
+  const session = await getSession();
+  if (!session?.user) {
+    redirect('/login');
+  }
+  
+  const canViewWorkers = await hasPermission(session.user.id, 'VIEW_WORKERS');
+  if (!canViewWorkers) {
+    redirect('/403');
+  }
 
   const workers = await getWorkers();
 

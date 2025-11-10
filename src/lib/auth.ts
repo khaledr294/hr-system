@@ -36,9 +36,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const user = await prisma.user.findFirst({
           where: {
             OR: [
-              { email: credentials.identifier },
-              { name: credentials.identifier }
+              { email: credentials.identifier as string },
+              { name: credentials.identifier as string }
             ]
+          },
+          include: {
+            jobTitle: true
           }
         });
 
@@ -51,11 +54,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
+        // استخدام role من قاعدة البيانات أو "USER" كقيمة افتراضية
+        // إذا كان المستخدم لديه jobTitle، نستخدم role المخزن
+        const userRole = user.role || "USER";
+
         return {
           id: user.id,
           email: user.email || "",
           name: user.name,
-          role: user.role || "STAFF"
+          role: userRole
         };
       }
     })

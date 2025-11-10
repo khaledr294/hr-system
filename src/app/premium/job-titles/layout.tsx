@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import PremiumPageShell from "@/components/premium/PremiumPageShell";
+import { hasPermission } from "@/lib/permissions";
 
 export default async function JobTitlesLayout({
   children,
@@ -14,9 +15,10 @@ export default async function JobTitlesLayout({
     redirect("/api/auth/signin");
   }
 
-  // التحقق من صلاحية HR_MANAGER فقط
-  if (session.user.role !== "HR_MANAGER") {
-    redirect("/premium/dashboard");
+  // التحقق من صلاحية إدارة المسميات الوظيفية
+  const canManage = await hasPermission(session.user.id, "MANAGE_JOB_TITLES");
+  if (!canManage) {
+    redirect("/403");
   }
 
   return (

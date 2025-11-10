@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { 
-  LayoutGrid, Users, Wallet, FileText, Settings, BarChart3, Home, 
-  ClipboardList, UserCog, Briefcase, FolderKanban, ChevronDown,
+  LayoutGrid, Users, Wallet, FileText, Settings, Home, 
+  UserCog, Briefcase, FolderKanban, ChevronDown,
   Archive, HardDrive, Search, Activity, Bell, Shield
 } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -42,16 +42,9 @@ export const sections: Section[] = [
     ],
   },
   {
-    title: "التسويق",
-    items: [
-      { href: "/marketers", label: "المسوقين", icon: BarChart3 },
-      { href: "/marketers/reports", label: "تقارير التسويق", icon: ClipboardList },
-    ],
-  },
-  {
     title: "الإدارة",
     items: [
-      { href: "/reports", label: "التقارير", icon: ClipboardList },
+      { href: "/reports", label: "التقارير", icon: FileText },
       { href: "/search", label: "البحث المتقدم", icon: Search },
       { href: "/archive", label: "الأرشيف", icon: Archive },
       { href: "/backups", label: "النسخ الاحتياطية", icon: HardDrive },

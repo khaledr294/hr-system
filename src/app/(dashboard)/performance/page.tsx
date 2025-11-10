@@ -80,9 +80,37 @@ export default function PerformancePage() {
 
   if (!data) {
     return (
-      <div className="text-center py-12">
-        <Activity className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <p className="text-gray-500">لا توجد بيانات متاحة</p>
+      <div className="space-y-6">
+        <div className="p-8 bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl text-center">
+          <Activity className="w-20 h-20 text-indigo-400 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-gray-900 mb-2">صفحة مراقبة الأداء</h3>
+          <p className="text-gray-600 mb-4 max-w-2xl mx-auto">
+            هذه الصفحة تعرض معلومات حية عن أداء النظام، بما في ذلك:
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-right max-w-2xl mx-auto">
+            <div className="p-4 bg-white rounded-lg">
+              <h4 className="font-bold text-indigo-900 mb-2">📊 إحصائيات الكاش</h4>
+              <ul className="text-sm text-gray-700 space-y-1">
+                <li>• عدد العناصر المخزنة</li>
+                <li>• معدل نجاح الكاش</li>
+                <li>• استخدام الذاكرة</li>
+              </ul>
+            </div>
+            <div className="p-4 bg-white rounded-lg">
+              <h4 className="font-bold text-indigo-900 mb-2">🗄️ صحة قاعدة البيانات</h4>
+              <ul className="text-sm text-gray-700 space-y-1">
+                <li>• عدد الاتصالات النشطة</li>
+                <li>• الاستعلامات البطيئة</li>
+                <li>• متوسط زمن الاستجابة</li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg max-w-2xl mx-auto">
+            <p className="text-sm text-yellow-800">
+              <strong>ملاحظة:</strong> إذا لم تظهر البيانات، قد يكون هناك مشكلة في الاتصال بنظام الكاش أو قاعدة البيانات.
+            </p>
+          </div>
+        </div>
       </div>
     );
   }

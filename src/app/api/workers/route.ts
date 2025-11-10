@@ -2,12 +2,19 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { createLog } from '@/lib/logger';
+import { hasPermission } from '@/lib/permissions';
 
 export async function POST(req: NextRequest) {
   const session = await auth();
 
-  if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'HR_MANAGER')) {
-    return new Response('Unauthorized - Admin or HR Manager access required', { status: 401 });
+  if (!session?.user) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  // التحقق من صلاحية إنشاء عامل
+  const canCreate = await hasPermission(session.user.id, 'CREATE_WORKERS');
+  if (!canCreate) {
+    return new Response('Forbidden - ليس لديك صلاحية إضافة عمال', { status: 403 });
   }
 
   try {
@@ -96,8 +103,14 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const session = await auth();
 
-  if (!session) {
+  if (!session?.user) {
     return new Response('Unauthorized', { status: 401 });
+  }
+
+  // التحقق من صلاحية عرض العمال
+  const canView = await hasPermission(session.user.id, 'VIEW_WORKERS');
+  if (!canView) {
+    return new Response('Forbidden - ليس لديك صلاحية عرض العمال', { status: 403 });
   }
 
   try {
