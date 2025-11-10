@@ -55,6 +55,7 @@
     "@upstash/redis": "^1.35.6",
     "bcryptjs": "^3.0.2",
     "chart.js": "^4.5.0",
+    "critters": "^0.0.23",
     "docxtemplater": "^3.66.3",
     "dotenv": "^17.2.2",
     "exceljs": "^4.4.0",

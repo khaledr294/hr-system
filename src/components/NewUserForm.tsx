@@ -150,7 +150,7 @@ export default function NewUserForm() {
 
                   {jobTitles.length === 0 && (
                     <p className="mt-2 text-sm text-red-600 font-bold">
-                      ⚠️ لا توجد مسميات وظيفية. يرجى إضافة مسمى وظيفي من صفحة "المسميات الوظيفية" أولاً.
+                      ⚠️ لا توجد مسميات وظيفية. يرجى إضافة مسمى وظيفي من صفحة &quot;المسميات الوظيفية&quot; أولاً.
                     </p>
                   )}
                 </div>

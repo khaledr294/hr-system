@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/require";
+import { requireSession } from "@/lib/require";
 import { getUserPermissions } from "@/lib/permissions";
 
 // GET: استرجاع صلاحيات المستخدم الحالي
 export async function GET() {
   try {
-    const user = await requireUser();
+    const user = await requireSession();
     const permissions = await getUserPermissions(user.id);
 
     return NextResponse.json({ 

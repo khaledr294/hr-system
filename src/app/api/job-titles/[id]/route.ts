@@ -5,10 +5,11 @@ import { requireHROrManager } from "@/lib/require";
 // GET: استرجاع مسمى وظيفي واحد
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     await requireHROrManager();
+    const params = await context.params;
 
     const jobTitle = await prisma.jobTitle.findUnique({
       where: { id: params.id },
@@ -44,10 +45,11 @@ export async function GET(
 // PATCH: تحديث مسمى وظيفي
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await requireHROrManager();
+    const params = await context.params;
     const body = await request.json();
 
     const { name, nameAr, description, permissions, isActive } = body;
@@ -113,10 +115,11 @@ export async function PATCH(
 // DELETE: حذف مسمى وظيفي
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await requireHROrManager();
+    const params = await context.params;
 
     // التحقق من وجود المسمى الوظيفي
     const jobTitle = await prisma.jobTitle.findUnique({
