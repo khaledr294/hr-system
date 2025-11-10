@@ -28,7 +28,7 @@ function KpiCards() {
           transition={{ delay: i * 0.05 }}
           className="kpi card-premium shadow-soft hover:shadow-hover border-gradient p-3 sm:p-4"
         >
-          <div className={`rounded-xl sm:rounded-2xl p-2 sm:p-3 text-white bg-gradient-to-tr ${kpi.color} inline-flex min-w-[2.5rem] sm:min-w-[3rem] justify-center items-center mb-2 sm:mb-3 shadow-lg`}>
+          <div className={`rounded-xl sm:rounded-2xl p-2 sm:p-3 text-white bg-linear-to-tr ${kpi.color} inline-flex min-w-10 sm:min-w-12 justify-center items-center mb-2 sm:mb-3 shadow-lg`}>
             {kpi.hint && <div className="text-xs font-bold text-center">{kpi.hint}</div>}
           </div>
           <div className="text-lg sm:text-2xl font-extrabold tracking-tight text-slate-900">

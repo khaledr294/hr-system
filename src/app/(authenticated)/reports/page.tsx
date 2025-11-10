@@ -64,6 +64,146 @@ export default function ReportsPage() {
   const [reportType, setReportType] = useState("monthly");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [exporting, setExporting] = useState<"excel" | "pdf" | null>(null);
+
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExport = async (format: "excel" | "pdf") => {
+    if (!stats) {
+      alert("لا توجد بيانات لتصديرها حالياً.");
+      return;
+    }
+
+    setExporting(format);
+    const timestamp = new Date().toISOString().split("T")[0];
+
+    try {
+      if (format === "excel") {
+        const ExcelJS = await import("exceljs");
+        const workbook = new ExcelJS.Workbook();
+
+        const summarySheet = workbook.addWorksheet("Summary");
+        summarySheet.columns = [
+          { header: "Metric", key: "metric", width: 32 },
+          { header: "Value", key: "value", width: 18 },
+        ];
+        summarySheet.addRows([
+          { metric: "Total Contracts", value: stats.totalContracts },
+          { metric: "Active Contracts", value: stats.activeContracts },
+          { metric: "Expired Contracts", value: stats.expiredContracts },
+          { metric: "Total Revenue", value: stats.totalRevenue },
+          { metric: "Monthly Revenue", value: stats.monthlyRevenue },
+          { metric: "Total Workers", value: stats.totalWorkers },
+          { metric: "Available Workers", value: stats.availableWorkers },
+          { metric: "Reserved Workers", value: stats.reservedWorkers },
+          { metric: "Rented Workers", value: stats.rentedWorkers },
+          { metric: "Total Clients", value: stats.totalClients },
+          { metric: "Total Users", value: stats.totalUsers },
+        ]);
+
+        const revenueSheet = workbook.addWorksheet("RevenueByMonth");
+        revenueSheet.columns = [
+          { header: "Month", key: "month", width: 20 },
+          { header: "Revenue", key: "revenue", width: 18 },
+        ];
+        revenueSheet.addRows(stats.revenueByMonth);
+
+        const contractsSheet = workbook.addWorksheet("ContractsByMonth");
+        contractsSheet.columns = [
+          { header: "Month", key: "month", width: 20 },
+          { header: "Contracts", key: "count", width: 18 },
+        ];
+        contractsSheet.addRows(stats.contractsByMonth);
+
+        const nationalitySheet = workbook.addWorksheet("WorkersByNationality");
+        nationalitySheet.columns = [
+          { header: "Nationality", key: "nationality", width: 24 },
+          { header: "Workers", key: "count", width: 16 },
+        ];
+        nationalitySheet.addRows(stats.workersByNationality);
+
+        const packagesSheet = workbook.addWorksheet("ContractsByPackage");
+        packagesSheet.columns = [
+          { header: "Package", key: "package", width: 28 },
+          { header: "Contracts", key: "count", width: 16 },
+        ];
+        packagesSheet.addRows(stats.contractsByPackage);
+
+        const clientsSheet = workbook.addWorksheet("TopClients");
+        clientsSheet.columns = [
+          { header: "Client", key: "name", width: 26 },
+          { header: "Contracts", key: "contracts", width: 14 },
+          { header: "Revenue", key: "revenue", width: 18 },
+        ];
+        clientsSheet.addRows(stats.topClients);
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        downloadBlob(
+          new Blob([buffer], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          }),
+          `reports-${timestamp}.xlsx`
+        );
+      } else {
+        const { default: jsPDF } = await import("jspdf");
+        const doc = new jsPDF();
+        doc.setFontSize(16);
+        doc.text("HR Reports Summary", 14, 20);
+
+        doc.setFontSize(11);
+        const summaryLines = [
+          `Total Contracts: ${stats.totalContracts} (Active: ${stats.activeContracts}, Expired: ${stats.expiredContracts})`,
+          `Total Revenue: ${stats.totalRevenue.toLocaleString()} SAR`,
+          `Monthly Revenue: ${stats.monthlyRevenue.toLocaleString()} SAR`,
+          `Total Workers: ${stats.totalWorkers} | Available: ${stats.availableWorkers} | Reserved: ${stats.reservedWorkers} | Rented: ${stats.rentedWorkers}`,
+          `Total Clients: ${stats.totalClients}`,
+          `Total Users: ${stats.totalUsers}`,
+        ];
+
+        let yPosition = 40;
+        summaryLines.forEach((line) => {
+          doc.text(line, 14, yPosition);
+          yPosition += 14;
+        });
+
+        if (stats.revenueByMonth.length) {
+          doc.text("Revenue By Month:", 14, yPosition + 10);
+          yPosition += 24;
+          stats.revenueByMonth.slice(0, 6).forEach((item) => {
+            doc.text(`${item.month}: ${item.revenue.toLocaleString()} SAR`, 18, yPosition);
+            yPosition += 12;
+          });
+        }
+
+        if (stats.topClients.length) {
+          doc.text("Top Clients:", 14, yPosition + 10);
+          yPosition += 24;
+          stats.topClients.slice(0, 5).forEach((client) => {
+            doc.text(
+              `${client.name} — Contracts: ${client.contracts}, Revenue: ${client.revenue.toLocaleString()} SAR`,
+              18,
+              yPosition
+            );
+            yPosition += 12;
+          });
+        }
+
+        doc.save(`reports-${timestamp}.pdf`);
+      }
+    } catch (error) {
+      console.error("Error exporting report:", error);
+      alert("حدث خطأ أثناء التصدير. حاول مرة أخرى.");
+    } finally {
+      setExporting(null);
+    }
+  };
 
   const fetchReports = async () => {
     try {
@@ -254,13 +394,37 @@ export default function ReportsPage() {
         </div>
 
         <div className="flex gap-2">
-          <button className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
-            <Download size={20} />
-            تصدير Excel
+          <button
+            onClick={() => handleExport("excel")}
+            disabled={!stats || exporting !== null}
+            aria-busy={exporting === "excel"}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-white bg-green-600 hover:bg-green-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {exporting === "excel" ? (
+              <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            ) : (
+              <Download size={20} />
+            )}
+            {exporting === "excel" ? "جاري التصدير..." : "تصدير Excel"}
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
-            <Download size={20} />
-            تصدير PDF
+          <button
+            onClick={() => handleExport("pdf")}
+            disabled={!stats || exporting !== null}
+            aria-busy={exporting === "pdf"}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-white bg-red-600 hover:bg-red-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {exporting === "pdf" ? (
+              <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            ) : (
+              <Download size={20} />
+            )}
+            {exporting === "pdf" ? "جاري التصدير..." : "تصدير PDF"}
           </button>
         </div>
       </motion.div>
@@ -335,7 +499,7 @@ export default function ReportsPage() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
-          className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-lg shadow-lg text-white"
+          className="bg-linear-to-br from-blue-500 to-blue-600 p-6 rounded-lg shadow-lg text-white"
         >
           <div className="flex items-center justify-between">
             <div>
@@ -353,7 +517,7 @@ export default function ReportsPage() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3 }}
-          className="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-lg shadow-lg text-white"
+          className="bg-linear-to-br from-green-500 to-green-600 p-6 rounded-lg shadow-lg text-white"
         >
           <div className="flex items-center justify-between">
             <div>
@@ -373,7 +537,7 @@ export default function ReportsPage() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.4 }}
-          className="bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-lg shadow-lg text-white"
+          className="bg-linear-to-br from-purple-500 to-purple-600 p-6 rounded-lg shadow-lg text-white"
         >
           <div className="flex items-center justify-between">
             <div>
@@ -391,7 +555,7 @@ export default function ReportsPage() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5 }}
-          className="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-lg shadow-lg text-white"
+          className="bg-linear-to-br from-orange-500 to-orange-600 p-6 rounded-lg shadow-lg text-white"
         >
           <div className="flex items-center justify-between">
             <div>

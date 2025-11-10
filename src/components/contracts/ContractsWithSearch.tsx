@@ -70,7 +70,7 @@ export default function ContractsWithSearch({ contracts }: ContractsWithSearchPr
         </h2>
         <div className="bg-white shadow-sm rounded-lg overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gradient-to-r from-indigo-100 to-blue-100">
+            <thead className="bg-linear-to-r from-indigo-100 to-blue-100">
               <tr>
                 <th className="px-6 py-4 text-right text-base font-bold text-indigo-900 uppercase tracking-wider">رقم العقد</th>
                 <th className="px-6 py-4 text-right text-base font-bold text-indigo-900 uppercase tracking-wider">العميل</th>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ChangeEvent, type KeyboardEvent } from 'react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/loading-spinner';
@@ -22,6 +22,21 @@ export default function SearchPage() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+
+  const handleSearchInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const handleSearchTypeChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    setSearchType(event.target.value);
+  };
+
+  const handleSearchInputKeyPress = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleSearch();
+    }
+  };
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) return;
@@ -128,8 +143,8 @@ export default function SearchPage() {
                 type="text"
                 placeholder="ابحث عن أي شيء... (اسم، رقم، تفاصيل)"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                onChange={handleSearchInputChange}
+                onKeyPress={handleSearchInputKeyPress}
                 className="pr-10"
               />
             </div>
@@ -145,7 +160,7 @@ export default function SearchPage() {
             <Filter className="w-5 h-5 text-gray-400" />
             <select
               value={searchType}
-              onChange={(e) => setSearchType(e.target.value)}
+              onChange={handleSearchTypeChange}
               className="px-3 py-2 border-2 border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-indigo-500"
             >
               <option value="all">كل الأنواع</option>

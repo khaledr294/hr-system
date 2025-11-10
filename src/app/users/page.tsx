@@ -61,7 +61,7 @@ export default async function UsersPage() {
             <div key={user.id} className="bg-white border-2 border-slate-900 hover:bg-slate-50 transition-all duration-200">
               <div className="p-6">
                 <div className="flex items-center mb-4">
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <div className="h-12 w-12 bg-slate-200 border-2 border-slate-900 flex items-center justify-center">
                       <span className="text-slate-900 font-bold text-lg">
                         {user.name.charAt(0).toUpperCase()}

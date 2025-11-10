@@ -254,7 +254,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
               <div className="flex items-center ml-2 min-w-0">
                 <div className={classNames(
-                  "p-2 flex-shrink-0",
+                  "p-2 shrink-0",
                   isPremium ? "glass ring-soft" : "bg-white border-2 border-slate-900"
                 )}>
                   <svg className="h-7 w-7 text-slate-900" fill="currentColor" viewBox="0 0 24 24">
@@ -274,7 +274,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <NavLinks session={session} pathname={pathname} />
               </div>
             </div>
-            <div className="flex items-center flex-shrink-0 gap-3">
+            <div className="flex items-center shrink-0 gap-3">
               {session ? (
                 <div className="flex items-center space-x-4 space-x-reverse">
                   <div className="text-right ml-3 hidden sm:block">

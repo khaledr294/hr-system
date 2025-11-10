@@ -1,16 +1,6 @@
-import { getSession } from '@/lib/session';
-import { redirect } from 'next/navigation';
-import DashboardLayout from '@/components/DashboardLayout';
-
-export default async function GeneralSettingsPage() {
-  const session = await getSession();
-  if (!session) {
-    redirect('/auth/login');
-  }
-
+export default function GeneralSettingsPage() {
   return (
-    <DashboardLayout>
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="max-w-6xl mx-auto space-y-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900 mb-2">الإعدادات العامة</h1>
           <p className="text-slate-600">إدارة إعدادات النظام والتفضيلات العامة</p>
@@ -128,7 +118,7 @@ export default async function GeneralSettingsPage() {
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none border-2 border-slate-900 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-900 after:border after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none border-2 border-slate-900 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-slate-900 after:border after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
             </div>
             <div className="flex items-center justify-between">
@@ -138,7 +128,7 @@ export default async function GeneralSettingsPage() {
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none border-2 border-slate-900 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-900 after:border after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none border-2 border-slate-900 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-slate-900 after:border after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
             </div>
             <div className="flex items-center justify-between">
@@ -148,7 +138,7 @@ export default async function GeneralSettingsPage() {
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" className="sr-only peer" />
-                <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none border-2 border-slate-900 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-900 after:border after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none border-2 border-slate-900 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-slate-900 after:border after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
             </div>
           </div>
@@ -194,7 +184,7 @@ export default async function GeneralSettingsPage() {
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" className="sr-only peer" />
-                <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none border-2 border-slate-900 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-900 after:border after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none border-2 border-slate-900 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-slate-900 after:border after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
             </div>
             <div className="flex items-center justify-between">
@@ -204,7 +194,7 @@ export default async function GeneralSettingsPage() {
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none border-2 border-slate-900 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-900 after:border after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none border-2 border-slate-900 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-slate-900 after:border after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
             </div>
           </div>
@@ -217,6 +207,5 @@ export default async function GeneralSettingsPage() {
           </button>
         </div>
       </div>
-    </DashboardLayout>
   );
 }

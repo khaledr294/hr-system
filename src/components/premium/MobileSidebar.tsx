@@ -79,7 +79,7 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600" />
+            <div className="w-10 h-10 rounded-2xl bg-linear-to-br from-indigo-500 to-purple-600" />
             <div>
               <div className="text-sm font-bold text-slate-900">شركة ساعد</div>
               <div className="text-xs text-slate-500">القائمة الجانبية</div>
@@ -135,7 +135,7 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                                 </span>
                               </div>
                               {typeof badge === 'number' && badge > 0 && (
-                                <span className="text-xs font-bold bg-slate-800 text-white px-2 py-1 rounded-full min-w-[20px] text-center">
+                                <span className="text-xs font-bold bg-slate-800 text-white px-2 py-1 rounded-full min-w-5 text-center">
                                   {badge.toLocaleString('ar-SA')}
                                 </span>
                               )}

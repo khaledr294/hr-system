@@ -48,10 +48,11 @@ export async function POST(req: Request) {
     });
     
     return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to create user:', error);
+    const message = error instanceof Error ? error.message : "خطأ في النظام";
     return NextResponse.json({ 
-      error: error?.message || "خطأ في النظام" 
+      error: message 
     }, { status: 500 });
   }
 }

@@ -7,7 +7,7 @@ import { checkDatabaseHealth } from '@/lib/query-optimization';
  * GET /api/performance
  * معلومات الأداء والكاش
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await auth();
     if (!session || !['ADMIN', 'GENERAL_MANAGER', 'HR_MANAGER'].includes(session.user.role)) {
@@ -24,10 +24,11 @@ export async function GET(request: NextRequest) {
       database: dbHealth,
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('خطأ في GET /api/performance:', error);
+    const message = error instanceof Error ? error.message : 'حدث خطأ';
     return NextResponse.json(
-      { error: 'حدث خطأ' },
+      { error: message },
       { status: 500 }
     );
   }
@@ -44,8 +45,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 403 });
     }
 
-    const body = await request.json();
-    const { action } = body;
+  const body = (await request.json()) as { action?: string };
+  const { action } = body;
 
     switch (action) {
       case 'clear-cache': {
@@ -59,10 +60,11 @@ export async function POST(request: NextRequest) {
       default:
         return NextResponse.json({ error: 'عملية غير معروفة' }, { status: 400 });
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('خطأ في POST /api/performance:', error);
+    const message = error instanceof Error ? error.message : 'حدث خطأ';
     return NextResponse.json(
-      { error: 'حدث خطأ' },
+      { error: message },
       { status: 500 }
     );
   }

@@ -8,6 +8,7 @@ interface JobTitle {
   nameAr: string;
   name: string;
   permissions: string;
+  isActive: boolean;
 }
 
 interface EditUserFormProps {
@@ -27,18 +28,30 @@ export default function EditUserForm({ user }: EditUserFormProps) {
   const router = useRouter();
 
   useEffect(() => {
-    // جلب المسميات الوظيفية النشطة
-    fetch("/api/job-titles")
-      .then(res => res.ok ? res.json() : [])
-      .then(data => setJobTitles(data.filter((jt: any) => jt.isActive)))
-      .catch(() => setJobTitles([]));
+    const loadJobTitles = async () => {
+      try {
+        const response = await fetch("/api/job-titles");
+        if (!response.ok) {
+          setJobTitles([]);
+          return;
+        }
+
+        const data: JobTitle[] = await response.json();
+        setJobTitles(data.filter((jt) => jt.isActive));
+      } catch {
+        setJobTitles([]);
+      }
+    };
+
+    void loadJobTitles();
   }, []);
 
   const getPermissionsCount = (jobTitleId: string) => {
     const jobTitle = jobTitles.find(jt => jt.id === jobTitleId);
     if (!jobTitle) return 0;
     try {
-      return JSON.parse(jobTitle.permissions).length;
+      const parsed = JSON.parse(jobTitle.permissions) as unknown;
+      return Array.isArray(parsed) ? parsed.length : 0;
     } catch {
       return 0;
     }
@@ -74,7 +87,7 @@ export default function EditUserForm({ user }: EditUserFormProps) {
     <div className="max-w-4xl mx-auto">
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="bg-white shadow-lg rounded-xl border border-amber-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-amber-700 to-yellow-600 px-6 py-4">
+          <div className="bg-linear-to-r from-amber-700 to-yellow-600 px-6 py-4">
             <h3 className="text-xl font-bold text-white">تعديل بيانات المستخدم</h3>
             <p className="mt-1 text-amber-100">
               تحديث المعلومات الشخصية والصلاحيات
@@ -173,9 +186,9 @@ export default function EditUserForm({ user }: EditUserFormProps) {
         </div>
 
         {error && (
-          <div className="bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-200 rounded-xl p-6 shadow-lg">
+          <div className="bg-linear-to-r from-red-50 to-pink-50 border-2 border-red-200 rounded-xl p-6 shadow-lg">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <div className="bg-red-100 p-2 rounded-full">
                   <svg className="h-6 w-6 text-red-600" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
@@ -209,7 +222,7 @@ export default function EditUserForm({ user }: EditUserFormProps) {
             <button
               type="submit"
               disabled={isLoading}
-              className="inline-flex items-center justify-center px-8 py-3 border border-transparent shadow-lg text-base font-bold rounded-lg text-white bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              className="inline-flex items-center justify-center px-8 py-3 border border-transparent shadow-lg text-base font-bold rounded-lg text-white bg-linear-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
               {isLoading ? (
                 <>

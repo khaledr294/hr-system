@@ -1,6 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireHROrManager } from "@/lib/require";
+import type { Permission } from "@/lib/permissions";
+
+interface UpdateJobTitlePayload {
+  name?: string;
+  nameAr?: string;
+  description?: string | null;
+  permissions?: Permission[];
+  isActive?: boolean;
+}
 
 // GET: استرجاع مسمى وظيفي واحد
 export async function GET(
@@ -33,11 +42,12 @@ export async function GET(
     }
 
     return NextResponse.json(jobTitle);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching job title:", error);
+    const message = error instanceof Error ? error.message : "حدث خطأ أثناء استرجاع المسمى الوظيفي";
     return NextResponse.json(
-      { error: error.message || "حدث خطأ أثناء استرجاع المسمى الوظيفي" },
-      { status: error.status || 500 }
+      { error: message },
+      { status: 500 }
     );
   }
 }
@@ -50,7 +60,7 @@ export async function PATCH(
   try {
     const user = await requireHROrManager();
     const params = await context.params;
-    const body = await request.json();
+    const body = (await request.json()) as UpdateJobTitlePayload;
 
     const { name, nameAr, description, permissions, isActive } = body;
 
@@ -86,7 +96,7 @@ export async function PATCH(
         ...(name && { name }),
         ...(nameAr && { nameAr }),
         ...(description !== undefined && { description }),
-        ...(permissions && { permissions: JSON.stringify(permissions) }),
+        ...(permissions !== undefined && { permissions: JSON.stringify(permissions) }),
         ...(isActive !== undefined && { isActive })
       }
     });
@@ -103,11 +113,12 @@ export async function PATCH(
     });
 
     return NextResponse.json(jobTitle);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error updating job title:", error);
+    const message = error instanceof Error ? error.message : "حدث خطأ أثناء تحديث المسمى الوظيفي";
     return NextResponse.json(
-      { error: error.message || "حدث خطأ أثناء تحديث المسمى الوظيفي" },
-      { status: error.status || 500 }
+      { error: message },
+      { status: 500 }
     );
   }
 }
@@ -162,11 +173,12 @@ export async function DELETE(
     });
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error deleting job title:", error);
+    const message = error instanceof Error ? error.message : "حدث خطأ أثناء حذف المسمى الوظيفي";
     return NextResponse.json(
-      { error: error.message || "حدث خطأ أثناء حذف المسمى الوظيفي" },
-      { status: error.status || 500 }
+      { error: message },
+      { status: 500 }
     );
   }
 }

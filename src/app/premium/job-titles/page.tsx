@@ -214,7 +214,7 @@ export default function JobTitlesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl shadow-lg">
+          <div className="p-3 bg-linear-to-br from-purple-500 to-indigo-600 rounded-2xl shadow-lg">
             <Briefcase className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -224,7 +224,7 @@ export default function JobTitlesPage() {
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
+          className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
         >
           <Plus className="w-5 h-5" />
           <span>إضافة مسمى وظيفي</span>
@@ -405,7 +405,7 @@ export default function JobTitlesPage() {
               ) : (
                 /* Step 2: Permissions */
                 <div className="space-y-6">
-                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-2xl border-2 border-purple-200">
+                  <div className="bg-linear-to-r from-purple-50 to-indigo-50 p-6 rounded-2xl border-2 border-purple-200">
                     <div className="flex items-center gap-3 mb-3">
                       <Shield className="w-6 h-6 text-purple-600" />
                       <h3 className="text-lg font-bold text-gray-900">الصلاحيات المحددة</h3>
@@ -460,9 +460,9 @@ export default function JobTitlesPage() {
                                   }`}
                                 >
                                   {isSelected ? (
-                                    <CheckCircle className="w-5 h-5 text-purple-600 flex-shrink-0" />
+                                    <CheckCircle className="w-5 h-5 text-purple-600 shrink-0" />
                                   ) : (
-                                    <Circle className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                                    <Circle className="w-5 h-5 text-gray-400 shrink-0" />
                                   )}
                                   <span className="text-sm mr-1">{permission.icon}</span>
                                   <span className={`text-sm font-medium text-right ${
@@ -512,7 +512,7 @@ export default function JobTitlesPage() {
                         }
                         setCurrentStep(2);
                       }}
-                      className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-xl hover:shadow-lg transition-all"
+                      className="px-6 py-3 bg-linear-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-xl hover:shadow-lg transition-all"
                     >
                       التالي: اختيار الصلاحيات →
                     </button>
@@ -520,7 +520,7 @@ export default function JobTitlesPage() {
                     <button
                       type="button"
                       onClick={handleSubmit}
-                      className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-xl hover:shadow-lg transition-all"
+                      className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-green-600 to-emerald-600 text-white font-bold rounded-xl hover:shadow-lg transition-all"
                     >
                       <Save className="w-5 h-5" />
                       {editingId ? "حفظ التغييرات" : "إنشاء المسمى الوظيفي"}

@@ -515,7 +515,7 @@ export default function PayrollPage() {
         </div>
 
         {payrollData.length > 0 && (
-          <div className="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
+          <div className="mt-6 bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
             <h3 className="font-bold text-blue-800 mb-2">✨ النظام التلقائي للرواتب:</h3>
             <ul className="text-sm text-blue-700 space-y-1">
               <li>• <strong>الراتب الأساسي:</strong> يُستورد تلقائياً من جدول الجنسيات والرواتب حسب جنسية كل عاملة</li>

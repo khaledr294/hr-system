@@ -1,10 +1,8 @@
-import DashboardLayout from '@/components/DashboardLayout';
 import Link from 'next/link';
 
 export default function SettingsPage() {
   return (
-    <DashboardLayout>
-      <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900 mb-2">الإعدادات</h1>
           <p className="text-slate-600">إدارة إعدادات النظام والتخصيص</p>
@@ -95,6 +93,5 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
   );
 }

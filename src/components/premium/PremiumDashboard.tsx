@@ -20,7 +20,7 @@ export default function PremiumDashboard({
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50 transition-colors duration-300">
+  <div className="min-h-screen bg-linear-to-br from-slate-50 to-indigo-50 transition-colors duration-300">
       <div className="max-w-[1400px] mx-auto p-2 sm:p-3 md:p-6">
         <div dir="ltr" className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-3 md:gap-4">
           <div dir="rtl" className="glass rounded-2xl md:rounded-3xl shadow-soft overflow-hidden order-1 text-right">

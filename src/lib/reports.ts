@@ -1,5 +1,6 @@
 import { prisma } from './prisma';
 import ExcelJS from 'exceljs';
+import type { Prisma } from '@prisma/client';
 
 /**
  * مكتبة التقارير المتقدمة
@@ -33,7 +34,7 @@ export async function generateWorkersReport(
   startDate?: Date,
   endDate?: Date
 ): Promise<WorkersReport> {
-  const where: any = {};
+  const where: Prisma.WorkerWhereInput = {};
   if (startDate && endDate) {
     where.createdAt = { gte: startDate, lte: endDate };
   }
@@ -75,12 +76,12 @@ export async function generateWorkersReport(
       available,
       contracted,
       reserved,
-      byNationality: byNationality.map(n => ({
+      byNationality: byNationality.map((n) => ({
         nationality: n.nationality,
         count: n._count.nationality,
       })),
     },
-    details: details.map(w => ({
+    details: details.map((w) => ({
       id: w.id,
       name: w.name,
       code: w.code,
@@ -122,7 +123,7 @@ export async function generateContractsReport(
   startDate?: Date,
   endDate?: Date
 ): Promise<ContractsReport> {
-  const where: any = {};
+  const where: Prisma.ContractWhereInput = {};
   if (startDate && endDate) {
     where.createdAt = { gte: startDate, lte: endDate };
   }
@@ -171,13 +172,13 @@ export async function generateContractsReport(
       active,
       expired,
       pending,
-      byStatus: byStatus.map(s => ({
+      byStatus: byStatus.map((s) => ({
         status: s.status,
         count: s._count.status,
       })),
       totalRevenue,
     },
-    details: contracts.map(c => ({
+    details: contracts.map((c) => ({
       id: c.id,
       workerName: c.worker.name,
       workerCode: c.worker.code,
@@ -216,7 +217,7 @@ export async function generateClientsReport(
   startDate?: Date,
   endDate?: Date
 ): Promise<ClientsReport> {
-  const where: any = {};
+  const where: Prisma.ClientWhereInput = {};
   if (startDate && endDate) {
     where.createdAt = { gte: startDate, lte: endDate };
   }
@@ -234,13 +235,13 @@ export async function generateClientsReport(
     orderBy: { createdAt: 'desc' },
   });
 
-  const withActiveContracts = clients.filter((c: any) =>
-    c.contracts.some((con: any) => con.status === 'ACTIVE')
+  const withActiveContracts = clients.filter((c) =>
+    c.contracts.some((con) => con.status === 'ACTIVE')
   ).length;
 
-  const totalContracts = clients.reduce((sum: number, c: any) => sum + c.contracts.length, 0);
+  const totalContracts = clients.reduce((sum, c) => sum + c.contracts.length, 0);
   const totalRevenue = clients.reduce(
-    (sum: number, c: any) => sum + c.contracts.reduce((s: number, con: any) => s + (con.totalAmount || 0), 0),
+    (sum, c) => sum + c.contracts.reduce((acc, con) => acc + (con.totalAmount ?? 0), 0),
     0
   );
 
@@ -251,8 +252,8 @@ export async function generateClientsReport(
       totalContracts,
       totalRevenue,
     },
-    details: clients.map((c: any) => {
-      const totalSpent = c.contracts.reduce((s: number, con: any) => s + (con.totalAmount || 0), 0);
+    details: clients.map((c) => {
+      const totalSpent = c.contracts.reduce((acc, con) => acc + (con.totalAmount ?? 0), 0);
       return {
         id: c.id,
         name: c.name,

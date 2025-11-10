@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { 
   LayoutGrid, Users, Wallet, FileText, Settings, Home, 
   UserCog, Briefcase, FolderKanban, ChevronDown,
-  Archive, HardDrive, Search, Activity, Bell, Shield
+  Archive, HardDrive, Search, Activity
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -50,8 +50,7 @@ export const sections: Section[] = [
       { href: "/backups", label: "النسخ الاحتياطية", icon: HardDrive },
       { href: "/performance", label: "الأداء", icon: Activity },
       { href: "/users", label: "المستخدمون", icon: UserCog },
-      { href: "/premium/job-titles", label: "المسميات الوظيفية", icon: Briefcase },
-      { href: "/settings/two-factor", label: "المصادقة الثنائية", icon: Shield },
+  { href: "/premium/job-titles", label: "المسميات الوظيفية", icon: Briefcase },
       { href: "/settings", label: "الإعدادات", icon: Settings },
     ],
   },

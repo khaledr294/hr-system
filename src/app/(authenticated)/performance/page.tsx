@@ -81,7 +81,7 @@ export default function PerformancePage() {
   if (!data) {
     return (
       <div className="space-y-6">
-        <div className="p-8 bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl text-center">
+  <div className="p-8 bg-linear-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl text-center">
           <Activity className="w-20 h-20 text-indigo-400 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-gray-900 mb-2">صفحة مراقبة الأداء</h3>
           <p className="text-gray-600 mb-4 max-w-2xl mx-auto">
@@ -235,7 +235,7 @@ export default function PerformancePage() {
         className="p-6 bg-indigo-50 border-2 border-indigo-200 rounded-lg"
       >
         <div className="flex items-start gap-3">
-          <TrendingUp className="w-6 h-6 text-indigo-600 flex-shrink-0 mt-1" />
+          <TrendingUp className="w-6 h-6 text-indigo-600 shrink-0 mt-1" />
           <div>
             <h4 className="font-bold text-indigo-900 mb-2">نصائح لتحسين الأداء</h4>
             <ul className="text-sm text-indigo-800 space-y-1">

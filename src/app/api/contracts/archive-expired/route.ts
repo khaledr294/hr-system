@@ -125,10 +125,11 @@ export async function POST() {
       archivedCount,
       message: `تم نقل ${archivedCount} عقد إلى الأرشيف`
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error archiving expired contracts:", error);
+    const message = error instanceof Error ? error.message : "حدث خطأ أثناء نقل العقود";
     return NextResponse.json(
-      { error: error?.message || "حدث خطأ أثناء نقل العقود" },
+      { error: message },
       { status: 500 }
     );
   }

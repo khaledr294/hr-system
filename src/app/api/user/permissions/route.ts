@@ -12,11 +12,17 @@ export async function GET() {
       permissions,
       role: user.role 
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching user permissions:", error);
+    const message = error instanceof Error ? error.message : "حدث خطأ أثناء استرجاع الصلاحيات";
+    const status =
+      typeof (error as { status?: number }).status === "number"
+        ? (error as { status?: number }).status
+        : 500;
+
     return NextResponse.json(
-      { error: error.message || "حدث خطأ أثناء استرجاع الصلاحيات" },
-      { status: error.status || 500 }
+      { error: message },
+      { status }
     );
   }
 }

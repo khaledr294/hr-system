@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ChangeEvent } from 'react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/loading-spinner';
@@ -50,6 +50,7 @@ export default function ArchivePage() {
     try {
       const params = new URLSearchParams();
       if (filterReason !== 'all') params.append('archiveReason', filterReason);
+      if (filterDate !== 'all') params.append('dateRange', filterDate);
 
       const [contractsRes, statsRes] = await Promise.all([
         fetch(`/api/archive?${params.toString()}`),
@@ -76,6 +77,18 @@ export default function ArchivePage() {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterReason, filterDate]);
+
+  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const handleReasonChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    setFilterReason(event.target.value);
+  };
+
+  const handleDateChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    setFilterDate(event.target.value);
+  };
 
   const handleRestore = async (contractId: string) => {
     if (!confirm('هل أنت متأكد من رغبتك في استعادة هذا العقد من الأرشيف؟')) return;
@@ -195,7 +208,7 @@ export default function ArchivePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 rounded-lg"
+            className="p-6 bg-linear-to-br from-blue-50 to-blue-100 border-2 border-blue-200 rounded-lg"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -212,7 +225,7 @@ export default function ArchivePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="p-6 bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-200 rounded-lg"
+            className="p-6 bg-linear-to-br from-red-50 to-red-100 border-2 border-red-200 rounded-lg"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -229,7 +242,7 @@ export default function ArchivePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="p-6 bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-200 rounded-lg"
+            className="p-6 bg-linear-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-200 rounded-lg"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -246,7 +259,7 @@ export default function ArchivePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="p-6 bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200 rounded-lg"
+            className="p-6 bg-linear-to-br from-green-50 to-green-100 border-2 border-green-200 rounded-lg"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -270,7 +283,7 @@ export default function ArchivePage() {
               type="text"
               placeholder="بحث بالاسم، الرقم، أو رقم العقد..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
               className="pr-10"
             />
           </div>
@@ -279,7 +292,7 @@ export default function ArchivePage() {
             <Filter className="w-5 h-5 text-gray-400" />
             <select
               value={filterReason}
-              onChange={(e) => setFilterReason(e.target.value)}
+              onChange={handleReasonChange}
               className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">كل الأسباب</option>
@@ -293,7 +306,7 @@ export default function ArchivePage() {
             <Calendar className="w-5 h-5 text-gray-400" />
             <select
               value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
+              onChange={handleDateChange}
               className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">كل الفترات</option>

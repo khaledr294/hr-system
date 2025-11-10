@@ -32,6 +32,7 @@ export default function ArchiveExpiredButton({ count }: ArchiveExpiredButtonProp
         alert(data.error || "حدث خطأ أثناء نقل العقود");
       }
     } catch (error) {
+      console.error('Error archiving expired contracts:', error);
       alert("حدث خطأ أثناء نقل العقود");
     } finally {
       setLoading(false);

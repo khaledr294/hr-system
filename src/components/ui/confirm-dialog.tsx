@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, AlertTriangle, CheckCircle, Info, XCircle } from 'lucide-react';
 

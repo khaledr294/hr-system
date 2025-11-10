@@ -1,4 +1,5 @@
 import { prisma } from './prisma';
+import type { Prisma } from '@prisma/client';
 
 /**
  * Query optimization utilities
@@ -28,18 +29,31 @@ export interface PaginatedResult<T> {
   };
 }
 
-export async function paginate<T>(
-  model: any,
+type SortOrderRecord = Record<string, Prisma.SortOrder>;
+
+interface PaginateDelegate<T, Where, Include> {
+  count: (args?: { where?: Where }) => Promise<number>;
+  findMany: (args: {
+    where?: Where;
+    include?: Include;
+    skip?: number;
+    take?: number;
+    orderBy?: SortOrderRecord;
+  }) => Promise<T[]>;
+}
+
+export async function paginate<T, Where = unknown, Include = unknown>(
+  model: PaginateDelegate<T, Where, Include>,
   params: PaginationParams,
-  where: any = {},
-  include: any = {}
+  where?: Where,
+  include?: Include
 ): Promise<PaginatedResult<T>> {
   const page = params.page || 1;
   const pageSize = params.pageSize || 20;
   const skip = (page - 1) * pageSize;
 
   // الحصول على إجمالي العدد
-  const total = await model.count({ where });
+  const total = await model.count(where ? { where } : undefined);
 
   // جلب البيانات
   const data = await model.findMany({
@@ -47,9 +61,9 @@ export async function paginate<T>(
     include,
     skip,
     take: pageSize,
-    orderBy: params.sortBy
+    orderBy: (params.sortBy
       ? { [params.sortBy]: params.sortOrder || 'desc' }
-      : { createdAt: 'desc' },
+      : { createdAt: 'desc' }) as SortOrderRecord,
   });
 
   const totalPages = Math.ceil(total / pageSize);
@@ -72,7 +86,9 @@ export async function paginate<T>(
  * تنفيذ عمليات دفعية لتحسين الأداء
  */
 export async function batchCreate<T>(
-  model: any,
+  model: {
+    createMany: (args: { data: T[]; skipDuplicates?: boolean }) => Promise<{ count: number }>;
+  },
   data: T[],
   batchSize: number = 100
 ): Promise<number> {

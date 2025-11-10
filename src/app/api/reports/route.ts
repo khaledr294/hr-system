@@ -5,11 +5,11 @@ import {
   generateWorkersReport,
   generateContractsReport,
   generateClientsReport,
-  generateMonthlyReport,
   exportWorkersToExcel,
   exportContractsToExcel,
 } from '@/lib/reports';
 import { prisma } from '@/lib/prisma';
+import type { Prisma } from '@prisma/client';
 
 /**
  * GET /api/reports
@@ -43,7 +43,8 @@ export async function GET(request: NextRequest) {
         
         if (format === 'excel') {
           const buffer = await exportWorkersToExcel(report);
-          return new NextResponse(buffer as any, {
+          const uint8Array = new Uint8Array(buffer);
+          return new NextResponse(uint8Array, {
             headers: {
               'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
               'Content-Disposition': `attachment; filename="workers-report-${new Date().toISOString().split('T')[0]}.xlsx"`,
@@ -59,7 +60,8 @@ export async function GET(request: NextRequest) {
         
         if (format === 'excel') {
           const buffer = await exportContractsToExcel(report);
-          return new NextResponse(buffer as any, {
+          const uint8Array = new Uint8Array(buffer);
+          return new NextResponse(uint8Array, {
             headers: {
               'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
               'Content-Disposition': `attachment; filename="contracts-report-${new Date().toISOString().split('T')[0]}.xlsx"`,
@@ -107,7 +109,7 @@ export async function GET(request: NextRequest) {
           prisma.user.count(),
 
           // الإيرادات الشهرية (آخر 12 شهر)
-          prisma.$queryRaw<Array<{ month: string; revenue: number }>>`
+          prisma.$queryRaw<Array<{ month: string; revenue: Prisma.Decimal | number }>>`
             SELECT 
               TO_CHAR(DATE_TRUNC('month', "startDate"), 'YYYY-MM') as month,
               COALESCE(SUM("totalAmount"), 0)::numeric as revenue
@@ -119,7 +121,7 @@ export async function GET(request: NextRequest) {
           `,
 
           // العقود الشهرية (آخر 12 شهر)
-          prisma.$queryRaw<Array<{ month: string; count: number }>>`
+          prisma.$queryRaw<Array<{ month: string; count: bigint | number }>>`
             SELECT 
               TO_CHAR(DATE_TRUNC('month', "startDate"), 'YYYY-MM') as month,
               COUNT(*)::integer as count
@@ -190,22 +192,29 @@ export async function GET(request: NextRequest) {
           rentedWorkers,
           totalClients,
           totalUsers,
-          revenueByMonth: revenueByMonth.map((r: any) => ({
-            month: r.month,
-            revenue: Number(r.revenue),
-          })).reverse(),
-          contractsByMonth: contractsByMonth.map((c: any) => ({
-            month: c.month,
-            count: c.count,
-          })).reverse(),
+          revenueByMonth: revenueByMonth
+            .map((r) => ({
+              month: r.month,
+              revenue: Number(r.revenue),
+            }))
+            .reverse(),
+          contractsByMonth: contractsByMonth
+            .map((c) => ({
+              month: c.month,
+              count: Number(c.count),
+            }))
+            .reverse(),
           workersByNationality: workersByNationality.map((w) => ({
             nationality: w.nationality,
             count: w._count.nationality,
           })),
-          topClients: topClients.map((c: any) => ({
-            name: c.name,
-            contracts: c._count.contracts,
-            revenue: c.contracts.reduce((sum: number, con: any) => sum + (con.totalAmount || 0), 0),
+          topClients: topClients.map((client) => ({
+            name: client.name,
+            contracts: client._count.contracts,
+            revenue: client.contracts.reduce(
+              (sum, contract) => sum + Number(contract.totalAmount ?? 0),
+              0
+            ),
           })),
         });
       }

@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { v4 as uuidv4 } from 'uuid';
+import type { Prisma } from '@prisma/client';
 
 /**
  * أرشفة عقد منتهي
@@ -116,8 +117,9 @@ export async function autoArchiveExpiredContracts(daysAfterExpiry: number = 90) 
       try {
         await archiveContract(contract.id, 'SYSTEM', 'AUTO_ARCHIVE');
         archivedCount++;
-      } catch (error: any) {
-        errors.push(`فشل أرشفة العقد ${contract.id}: ${error.message}`);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'سبب غير معروف';
+        errors.push(`فشل أرشفة العقد ${contract.id}: ${message}`);
       }
     }
 
@@ -220,7 +222,7 @@ export async function searchArchivedContracts(query: {
   limit?: number;
 }) {
   try {
-    const where: any = {};
+  const where: Prisma.ArchivedContractWhereInput = {};
 
     if (query.workerName) {
       where.workerName = {
@@ -237,11 +239,11 @@ export async function searchArchivedContracts(query: {
     }
 
     if (query.startDate) {
-      where.startDate = { gte: query.startDate };
+  where.startDate = { gte: query.startDate };
     }
 
     if (query.endDate) {
-      where.endDate = { lte: query.endDate };
+  where.endDate = { lte: query.endDate };
     }
 
     if (query.archiveReason) {
@@ -300,11 +302,12 @@ export async function getArchiveStats() {
     return {
       totalArchived,
       archivedThisMonth,
-      byReason: byReason.reduce((acc: any, item) => {
-        acc[item.archiveReason] = item._count;
+      byReason: byReason.reduce<Record<string, number>>((acc, item) => {
+        const key = item.archiveReason ?? 'UNKNOWN';
+        acc[key] = item._count;
         return acc;
       }, {}),
-      recentLogs
+      recentLogs,
     };
   } catch (error) {
     console.error('خطأ في الحصول على إحصائيات الأرشيف:', error);

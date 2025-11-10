@@ -320,7 +320,7 @@ export default function ContractTemplatesPage() {
           </div>
 
           {/* نصائح للاستخدام */}
-          <div className="mt-8 p-6 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl">
+          <div className="mt-8 p-6 bg-linear-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl">
             <div className="flex items-center mb-4">
               <span className="text-2xl ml-3">💡</span>
               <h4 className="text-lg font-bold text-purple-900">نصائح مهمة للاستخدام</h4>

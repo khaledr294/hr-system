@@ -27,7 +27,7 @@ export default function Table<T>({
         <thead className={
           [
             'bg-white/70',
-            stickyHeader ? 'sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-white/60' : ''
+            stickyHeader ? 'sticky top-0 z-10 backdrop-blur supports-backdrop-filter:bg-white/60' : ''
           ].join(' ').trim()
         }>
           <tr>

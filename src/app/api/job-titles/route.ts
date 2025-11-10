@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireHROrManager } from "@/lib/require";
+import type { Permission } from "@/lib/permissions";
+
+interface CreateJobTitlePayload {
+  name: string;
+  nameAr: string;
+  description?: string | null;
+  permissions?: Permission[];
+}
 
 // GET: استرجاع جميع المسميات الوظيفية
 export async function GET() {
@@ -17,11 +25,12 @@ export async function GET() {
     });
 
     return NextResponse.json(jobTitles);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching job titles:", error);
+    const message = error instanceof Error ? error.message : "حدث خطأ أثناء استرجاع المسميات الوظيفية";
     return NextResponse.json(
-      { error: error.message || "حدث خطأ أثناء استرجاع المسميات الوظيفية" },
-      { status: error.status || 500 }
+      { error: message },
+      { status: 500 }
     );
   }
 }
@@ -30,7 +39,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const user = await requireHROrManager();
-    const body = await request.json();
+    const body = (await request.json()) as CreateJobTitlePayload;
 
     const { name, nameAr, description, permissions } = body;
 
@@ -74,11 +83,12 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(jobTitle, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating job title:", error);
+    const message = error instanceof Error ? error.message : "حدث خطأ أثناء إنشاء المسمى الوظيفي";
     return NextResponse.json(
-      { error: error.message || "حدث خطأ أثناء إنشاء المسمى الوظيفي" },
-      { status: error.status || 500 }
+      { error: message },
+      { status: 500 }
     );
   }
 }

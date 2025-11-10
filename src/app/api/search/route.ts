@@ -6,6 +6,57 @@ import { hasPermission } from '@/lib/permissions';
 
 export const dynamic = 'force-dynamic';
 
+interface WorkerSearchResult {
+  id: string;
+  name: string;
+  code: number;
+  nationality: string;
+  status: string;
+  passportNumber: string | null;
+  contractsCount: number;
+  type: 'worker';
+}
+
+interface ContractSearchResult {
+  id: string;
+  workerName: string;
+  workerCode: number;
+  clientName: string;
+  startDate: Date;
+  endDate: Date;
+  status: string;
+  totalAmount: number;
+  type: 'contract';
+}
+
+interface ClientSearchResult {
+  id: string;
+  name: string;
+  phone: string;
+  idNumber: string;
+  email: string | null;
+  contractsCount: number;
+  type: 'client';
+}
+
+interface UserSearchResult {
+  id: string;
+  name: string;
+  email: string | null;
+  role: string | null;
+  createdAt: Date;
+  type: 'user';
+}
+
+interface SearchResponse {
+  query: string;
+  total: number;
+  workers: WorkerSearchResult[];
+  contracts: ContractSearchResult[];
+  clients: ClientSearchResult[];
+  users: UserSearchResult[];
+}
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
@@ -15,8 +66,9 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams;
     const query = searchParams.get('q') || '';
-    const entities = searchParams.get('entities')?.split(',') || ['workers', 'contracts', 'clients', 'users'];
-    const limit = parseInt(searchParams.get('limit') || '10');
+  const entities = searchParams.get('entities')?.split(',') || ['workers', 'contracts', 'clients', 'users'];
+  const parsedLimit = Number.parseInt(searchParams.get('limit') || '10', 10);
+  const limit = Number.isNaN(parsedLimit) ? 10 : parsedLimit;
     
     // فلاتر إضافية
     const status = searchParams.get('status');
@@ -30,7 +82,7 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const results: any = {
+    const results: SearchResponse = {
       query,
       total: 0,
       workers: [],
@@ -50,7 +102,7 @@ export async function GET(request: NextRequest) {
       };
 
       if (status) {
-        workerFilter.status = status as any;
+        workerFilter.status = status;
       }
       if (nationality) {
         workerFilter.nationality = nationality;
@@ -68,15 +120,15 @@ export async function GET(request: NextRequest) {
         }
       });
 
-      results.workers = workers.map((w: any) => ({
+      results.workers = workers.map((w) => ({
         id: w.id,
         name: w.name,
         code: w.code,
         nationality: w.nationality,
         status: w.status,
-        passportNumber: w.passportNumber,
+        passportNumber: w.passportNumber ?? null,
         contractsCount: w.contracts.length,
-        type: 'worker'
+        type: 'worker' as const,
       }));
       results.total += results.workers.length;
     }
@@ -93,7 +145,7 @@ export async function GET(request: NextRequest) {
       }
 
       if (status) {
-        contractFilter.status = status as any;
+        contractFilter.status = status;
       }
 
       if (startDate) {
@@ -118,7 +170,7 @@ export async function GET(request: NextRequest) {
         }
       });
 
-      results.contracts = contracts.map((c: any) => ({
+      results.contracts = contracts.map((c) => ({
         id: c.id,
         workerName: c.worker.name,
         workerCode: c.worker.code,
@@ -127,7 +179,7 @@ export async function GET(request: NextRequest) {
         endDate: c.endDate,
         status: c.status,
         totalAmount: c.totalAmount,
-        type: 'contract'
+        type: 'contract' as const,
       }));
       results.total += results.contracts.length;
     }
@@ -155,14 +207,14 @@ export async function GET(request: NextRequest) {
         }
       });
 
-      results.clients = clients.map((c: any) => ({
+      results.clients = clients.map((c) => ({
         id: c.id,
         name: c.name,
         phone: c.phone,
         idNumber: c.idNumber,
-        email: c.email,
+        email: c.email ?? null,
         contractsCount: c.contracts.length,
-        type: 'client'
+        type: 'client' as const,
       }));
       results.total += results.clients.length;
     }
@@ -190,18 +242,23 @@ export async function GET(request: NextRequest) {
         }
       });
 
-      results.users = users.map((u: any) => ({
-        ...u,
-        type: 'user'
+      results.users = users.map((u) => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        createdAt: u.createdAt,
+        type: 'user' as const,
       }));
       results.total += results.users.length;
     }
 
     return NextResponse.json(results);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('خطأ في البحث:', error);
+    const message = error instanceof Error ? error.message : 'فشل في تنفيذ البحث';
     return NextResponse.json(
-      { error: 'فشل في تنفيذ البحث' },
+      { error: message },
       { status: 500 }
     );
   }

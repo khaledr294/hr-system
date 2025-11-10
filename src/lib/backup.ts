@@ -27,7 +27,7 @@ export async function createDatabaseBackup(type: 'manual' | 'automatic' = 'autom
     const backupDir = path.join(process.cwd(), 'backups');
     try {
       await fs.mkdir(backupDir, { recursive: true });
-    } catch (error) {
+    } catch {
       console.log('مجلد النسخ الاحتياطي موجود بالفعل');
     }
 
@@ -41,9 +41,6 @@ export async function createDatabaseBackup(type: 'manual' | 'automatic' = 'autom
     if (!databaseUrl) {
       throw new Error('DATABASE_URL غير موجود في متغيرات البيئة');
     }
-
-    // استخراج معلومات الاتصال من URL
-    const dbInfo = parseDatabaseUrl(databaseUrl);
 
     // تنفيذ pg_dump لإنشاء النسخة الاحتياطية
     const pgDumpCommand = `pg_dump "${databaseUrl}" > "${filePath}"`;
@@ -100,33 +97,6 @@ export async function createDatabaseBackup(type: 'manual' | 'automatic' = 'autom
 }
 
 /**
- * استخراج معلومات الاتصال من DATABASE_URL
- */
-function parseDatabaseUrl(url: string) {
-  try {
-    // إزالة البروتوكول
-    const withoutProtocol = url.replace(/^(postgres|postgresql):\/\//, '');
-    
-    // فصل المعلومات
-    const parts = withoutProtocol.split('@');
-    const credentials = parts[0].split(':');
-    const hostAndDb = parts[1].split('/');
-    const hostInfo = hostAndDb[0].split(':');
-
-    return {
-      user: credentials[0],
-      password: credentials[1],
-      host: hostInfo[0],
-      port: hostInfo[1] || '5432',
-      database: hostAndDb[1].split('?')[0],
-    };
-  } catch (error) {
-    console.error('خطأ في تحليل DATABASE_URL:', error);
-    throw new Error('تنسيق DATABASE_URL غير صحيح');
-  }
-}
-
-/**
  * الحصول على قائمة النسخ الاحتياطية
  */
 export async function getBackups(): Promise<BackupInfo[]> {
@@ -138,10 +108,10 @@ export async function getBackups(): Promise<BackupInfo[]> {
       take: 50,
     });
 
-    return backups.map((backup: any) => ({
+    return backups.map((backup) => ({
       id: backup.id,
       filename: backup.filename,
-      size: Number(backup.size),
+      size: Number(backup.size ?? 0),
       createdAt: backup.createdAt,
       type: backup.type as 'manual' | 'automatic',
       status: backup.status as 'completed' | 'failed' | 'in_progress',
@@ -169,8 +139,8 @@ export async function deleteBackup(backupId: string): Promise<boolean> {
     const filePath = path.join(process.cwd(), 'backups', backup.filename);
     try {
       await fs.unlink(filePath);
-    } catch (error) {
-      console.log('الملف غير موجود أو تم حذفه مسبقاً');
+    } catch (unlinkError) {
+      console.warn('الملف غير موجود أو تم حذفه مسبقاً', unlinkError);
     }
 
     // حذف من قاعدة البيانات

@@ -312,7 +312,7 @@ a:not(.inline-flex):not(.inline-block):hover {
   background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
 }
 
-.dark .bg-gradient-to-br {
+.dark .bg-linear-to-br {
   background: linear-gradient(to bottom right, #0f172a, #1e293b);
 }
 
