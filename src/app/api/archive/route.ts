@@ -34,13 +34,13 @@ export async function GET(request: NextRequest) {
     }
 
     // البحث في الأرشيف
-    const query: any = {};
+    const query: Record<string, string | Date | number> = {};
     
     if (searchParams.get('workerName')) {
-      query.workerName = searchParams.get('workerName');
+      query.workerName = searchParams.get('workerName')!;
     }
     if (searchParams.get('clientName')) {
-      query.clientName = searchParams.get('clientName');
+      query.clientName = searchParams.get('clientName')!;
     }
     if (searchParams.get('startDate')) {
       query.startDate = new Date(searchParams.get('startDate')!);
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
       query.endDate = new Date(searchParams.get('endDate')!);
     }
     if (searchParams.get('archiveReason')) {
-      query.archiveReason = searchParams.get('archiveReason');
+      query.archiveReason = searchParams.get('archiveReason')!;
     }
     if (searchParams.get('limit')) {
       query.limit = parseInt(searchParams.get('limit')!);
@@ -139,10 +139,10 @@ export async function POST(request: NextRequest) {
       { error: 'إجراء غير معروف' },
       { status: 400 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error('خطأ في أرشفة/استرجاع:', error);
     return NextResponse.json(
-      { error: error.message || 'فشل في تنفيذ العملية' },
+      { error: error instanceof Error ? error.message : 'فشل في تنفيذ العملية' },
       { status: 500 }
     );
   }

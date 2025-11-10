@@ -6,7 +6,7 @@ import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import EmptyState from '@/components/ui/empty-state';
 import { motion } from 'framer-motion';
-import { Search, Filter, User, FileText, Users, Calendar } from 'lucide-react';
+import { Search, Filter, User, FileText, Users } from 'lucide-react';
 
 interface SearchResult {
   id: string;
@@ -41,7 +41,7 @@ export default function SearchPage() {
         const allResults: SearchResult[] = [];
         
         if (data.workers) {
-          data.workers.forEach((w: any) => {
+          data.workers.forEach((w: { id: string; name: string; nationality: string; status: string; passportNumber?: string }) => {
             allResults.push({
               id: w.id,
               type: 'worker',
@@ -53,7 +53,7 @@ export default function SearchPage() {
         }
         
         if (data.clients) {
-          data.clients.forEach((c: any) => {
+          data.clients.forEach((c: { id: string; name: string; phone: string; idNumber: string; contractsCount: number }) => {
             allResults.push({
               id: c.id,
               type: 'client',
@@ -65,7 +65,7 @@ export default function SearchPage() {
         }
         
         if (data.contracts) {
-          data.contracts.forEach((c: any) => {
+          data.contracts.forEach((c: { id: string; workerName: string; clientName: string; status: string; totalAmount: number; startDate: string }) => {
             allResults.push({
               id: c.id,
               type: 'contract',

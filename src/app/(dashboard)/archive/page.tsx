@@ -45,10 +45,6 @@ export default function ArchivePage() {
   const [filterDate, setFilterDate] = useState('all');
   const [restoring, setRestoring] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchData();
-  }, [filterReason, filterDate]);
-
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -75,6 +71,11 @@ export default function ArchivePage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterReason, filterDate]);
 
   const handleRestore = async (contractId: string) => {
     if (!confirm('هل أنت متأكد من رغبتك في استعادة هذا العقد من الأرشيف؟')) return;

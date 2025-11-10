@@ -21,7 +21,6 @@ import {
   TrendingUp,
   Users,
   DollarSign,
-  Calendar,
   Download,
   Filter,
 } from "lucide-react";
@@ -66,10 +65,6 @@ export default function ReportsPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  useEffect(() => {
-    fetchReports();
-  }, [reportType, startDate, endDate]);
-
   const fetchReports = async () => {
     try {
       setLoading(true);
@@ -88,6 +83,11 @@ export default function ReportsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchReports();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reportType, startDate, endDate]);
 
   // إعدادات الألوان
   const colors = {
