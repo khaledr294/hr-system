@@ -157,15 +157,15 @@ export default function NewClientPage() {
           </div>
 
           <div>
-            <label className="block text-base font-bold text-indigo-900 mb-2">تاريخ الميلاد</label>
+            <label className="block text-base font-bold text-indigo-900 mb-2">تاريخ الميلاد (هجري)</label>
             <div className="flex gap-2">
               <Input
-                label="سنة"
+                label="سنة هجرية"
                 type="number"
-                min={1900}
-                max={new Date().getFullYear()}
+                min={1300}
+                max={1500}
                 required
-                placeholder="YYYY"
+                placeholder="مثال: 1420"
                 maxLength={4}
                 className="text-right"
                 inputMode="numeric"
@@ -205,7 +205,7 @@ export default function NewClientPage() {
                 label="يوم"
                 type="number"
                 min={1}
-                max={31}
+                max={30}
                 required
                 placeholder="DD"
                 maxLength={2}
@@ -216,6 +216,7 @@ export default function NewClientPage() {
                 error={errors.birthDay?.message}
               />
             </div>
+            <p className="text-sm text-gray-600 mt-1">* التاريخ بالهجري (مثال: 01/05/1420)</p>
           </div>
 
           <div className="flex justify-end flex-row-reverse gap-3">

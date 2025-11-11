@@ -31,7 +31,7 @@ model Package {
 model Worker {
   id                  String             @id @default(cuid())
   name                String
-  code                Int                @unique
+  code                String             @unique
   nationality         String
   residencyNumber     String             @unique
   dateOfBirth         DateTime
@@ -164,7 +164,7 @@ model ArchivedContract {
   originalId     String   @unique
   workerId       String
   workerName     String
-  workerCode     Int
+  workerCode     String
   clientId       String
   clientName     String
   startDate      DateTime
