@@ -10,9 +10,25 @@ export async function GET(req: NextRequest) {
     start = new Date(year, m - 1, 1);
     end = new Date(year, m, 1);
   }
-  const marketers = await prisma.marketer.findMany({
+
+  // جلب المسمى الوظيفي "مسوق"
+  const marketerJobTitle = await prisma.jobTitle.findFirst({
+    where: { nameAr: 'مسوق' }
+  });
+
+  if (!marketerJobTitle) {
+    return new Response(JSON.stringify([]), { 
+      headers: { 'Content-Type': 'application/json' } 
+    });
+  }
+
+  // جلب المستخدمين المسوقين مع عقودهم
+  const marketers = await prisma.user.findMany({
+    where: {
+      jobTitleId: marketerJobTitle.id
+    },
     include: {
-      contracts: month && start && end ? {
+      marketedContracts: month && start && end ? {
         where: {
           startDate: { gte: start, lt: end },
         },
@@ -20,12 +36,16 @@ export async function GET(req: NextRequest) {
     },
     orderBy: { name: 'asc' },
   });
+
   const result = marketers.map(m => ({
     id: m.id,
     name: m.name,
     phone: m.phone,
     email: m.email,
-    contractCount: m.contracts.length,
+    contractCount: m.marketedContracts.length,
   }));
-  return new Response(JSON.stringify(result), { headers: { 'Content-Type': 'application/json' } });
+
+  return new Response(JSON.stringify(result), { 
+    headers: { 'Content-Type': 'application/json' } 
+  });
 }

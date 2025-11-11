@@ -4,18 +4,38 @@ import { getSession } from '@/lib/session';
 
 export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const params = await context.params;
-  const marketer = await prisma.marketer.findUnique({ where: { id: params.id } });
-  if (!marketer) return new Response('Not found', { status: 404 });
-  return new Response(JSON.stringify(marketer), { headers: { 'Content-Type': 'application/json' } });
+  
+  // إعادة توجيه إلى /api/users/[id]
+  const user = await prisma.user.findUnique({ 
+    where: { id: params.id },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      createdAt: true,
+      jobTitle: {
+        select: {
+          nameAr: true
+        }
+      }
+    }
+  });
+  
+  if (!user) return new Response('Not found', { status: 404 });
+  return new Response(JSON.stringify(user), { headers: { 'Content-Type': 'application/json' } });
 }
 
 export async function PUT(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const session = await getSession();
   if (!session) return new Response('Unauthorized', { status: 401 });
-  const params = await context.params;
-  const data = await req.json();
-  const marketer = await prisma.marketer.update({ where: { id: params.id }, data });
-  return new Response(JSON.stringify(marketer), { headers: { 'Content-Type': 'application/json' } });
+  
+  return new Response(JSON.stringify({ 
+    error: 'هذا الـ endpoint لم يعد مدعوماً. يرجى استخدام /api/users/[id]' 
+  }), { 
+    status: 410,
+    headers: { 'Content-Type': 'application/json' } 
+  });
 }
 
 export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
@@ -42,9 +62,12 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
       );
     }
     
-    // حذف المسوق إذا لم تكن هناك عقود مرتبطة
-    await prisma.marketer.delete({ where: { id: params.id } });
-    return new Response(null, { status: 204 });
+    return new Response(JSON.stringify({ 
+      error: 'هذا الـ endpoint لم يعد مدعوماً. المسوقون الآن جزء من Users' 
+    }), { 
+      status: 410,
+      headers: { 'Content-Type': 'application/json' } 
+    });
     
   } catch (error) {
     console.error('Error deleting marketer:', error);

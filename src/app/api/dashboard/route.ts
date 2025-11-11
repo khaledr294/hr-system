@@ -6,12 +6,19 @@ export async function GET() {
   const data = await cacheAside(
     CacheKeys.DASHBOARD_STATS,
     async () => {
+      // جلب المسمى الوظيفي "مسوق"
+      const marketerJobTitle = await prisma.jobTitle.findFirst({
+        where: { nameAr: 'مسوق' }
+      });
+
       // إجمالي الأعداد
       const [workers, clients, contracts, marketers] = await Promise.all([
         prisma.worker.count(),
         prisma.client.count(),
         prisma.contract.count(),
-        prisma.marketer.count(),
+        marketerJobTitle 
+          ? prisma.user.count({ where: { jobTitleId: marketerJobTitle.id } })
+          : 0,
       ]);
 
       // عقود اليوم
