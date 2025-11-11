@@ -115,7 +115,7 @@ async function main() {
   const workers = [
     {
       name: 'سوجاتا شارما',
-      code: 1001,
+      code: '1001',
       nationality: 'الفلبين',
       residencyNumber: '1234567890',
       dateOfBirth: new Date('1990-01-15'),
@@ -125,7 +125,7 @@ async function main() {
     },
     {
       name: 'فاطمة باتل',
-      code: 1002,
+      code: '1002',
       nationality: 'إندونيسيا', 
       residencyNumber: '0987654321',
       dateOfBirth: new Date('1988-05-20'),
@@ -135,7 +135,7 @@ async function main() {
     },
     {
       name: 'ماريا سانتوس',
-      code: 1003,
+      code: '1003',
       nationality: 'الفلبين',
       residencyNumber: '1122334455',
       dateOfBirth: new Date('1992-03-10'),
