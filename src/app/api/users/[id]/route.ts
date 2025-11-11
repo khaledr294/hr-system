@@ -4,6 +4,49 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { hasPermission } from '@/lib/permissions';
 
+export async function GET(
+  request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth();
+    
+    if (!session?.user) {
+      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+    }
+
+    const { id } = await context.params;
+    
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        phone: true,
+        jobTitle: {
+          select: {
+            id: true,
+            name: true,
+            nameAr: true,
+            permissions: true
+          }
+        }
+      }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "المستخدم غير موجود" }, { status: 404 });
+    }
+
+    return NextResponse.json(user);
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    return NextResponse.json({ error: "حدث خطأ أثناء جلب بيانات المستخدم" }, { status: 500 });
+  }
+}
+
 export async function PUT(
   request: Request,
   context: { params: Promise<{ id: string }> }

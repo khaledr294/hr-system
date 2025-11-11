@@ -11,6 +11,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useSession } from 'next-auth/react';
 import DashboardLayout from '@/components/DashboardLayout';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
@@ -36,6 +37,7 @@ type ContractFormData = z.infer<typeof contractSchema>;
 function NewContractForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: session } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [availableWorkers, setAvailableWorkers] = useState<Array<{ id: string; name: string; code: string; status: string }>>([]);
   const [workerSearch, setWorkerSearch] = useState('');
@@ -47,6 +49,8 @@ function NewContractForm() {
   const [contractPrice, setContractPrice] = useState<number>(1000);
   const [customEndDate, setCustomEndDate] = useState<boolean>(false);
   const [endDateValue, setEndDateValue] = useState<string>('');
+  const [currentUserJobTitle, setCurrentUserJobTitle] = useState<string | null>(null);
+  const [isCurrentUserMarketer, setIsCurrentUserMarketer] = useState(false);
 
   const clientId = searchParams.get('clientId');
 
@@ -107,19 +111,39 @@ function NewContractForm() {
       }
     };
     fetchAvailableWorkers();
+    
+    // جلب المسوقين من Users حسب JobTitle
     const fetchMarketers = async () => {
       try {
-        const response = await fetch('/api/marketers');
+        const response = await fetch('/api/users/marketers');
         if (response.ok) {
           const marketersList = await response.json();
           setMarketers(marketersList);
+          
+          // التحقق من JobTitle للمستخدم الحالي
+          if (session?.user?.id) {
+            const userResponse = await fetch(`/api/users/${session.user.id}`);
+            if (userResponse.ok) {
+              const userData = await userResponse.json();
+              setCurrentUserJobTitle(userData.jobTitle?.nameAr || null);
+              
+              // إذا كان المستخدم الحالي مسوقاً
+              const isMarketer = userData.jobTitle?.nameAr === 'مسوق';
+              setIsCurrentUserMarketer(isMarketer);
+              
+              if (isMarketer) {
+                // تعيين المسوق الحالي تلقائياً
+                setValue('marketerId', session.user.id);
+              }
+            }
+          }
         }
       } catch (error) {
         console.error('Error fetching marketers:', error);
       }
     };
     fetchMarketers();
-  }, []);
+  }, [session, setValue]);
 
   useEffect(() => {
     const fetchClient = async () => {
@@ -264,16 +288,28 @@ function NewContractForm() {
           </div>
           <div>
             <label className="block text-base font-bold text-indigo-900 mb-2">اسم المسوق</label>
-            <Select
-              label="اسم المسوق"
-              className="text-right"
-              {...register('marketerId')}
-              error={errors.marketerId?.message}
-              options={marketers.map(marketer => ({
-                value: marketer.id,
-                label: marketer.name,
-              }))}
-            />
+            {isCurrentUserMarketer ? (
+              // إذا كان المستخدم مسوقاً: إظهار اسمه فقط (غير قابل للتغيير)
+              <div className="block w-full rounded-md border-2 border-gray-300 bg-gray-100 shadow-sm px-3 py-2 text-lg font-semibold text-gray-700">
+                {session?.user?.name || 'المسوق الحالي'}
+              </div>
+            ) : (
+              // إذا كان HR_MANAGER: يختار من القائمة
+              <Select
+                label="اسم المسوق"
+                className="text-right"
+                {...register('marketerId')}
+                error={errors.marketerId?.message}
+                disabled={isCurrentUserMarketer}
+                options={marketers.map(marketer => ({
+                  value: marketer.id,
+                  label: marketer.name,
+                }))}
+              />
+            )}
+            {errors.marketerId && (
+              <p className="mt-1 text-sm text-red-600">{errors.marketerId.message}</p>
+            )}
           </div>
           <div>
             <label className="block text-base font-bold text-indigo-900 mb-2">تاريخ بداية العقد</label>

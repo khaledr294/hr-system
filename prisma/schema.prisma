@@ -96,6 +96,7 @@ model User {
   jobTitle             JobTitle?      @relation("UserJobTitle", fields: [jobTitleId], references: [id])
   logs                 Log[]          @relation("UserLogs")
   Notification         Notification[]
+  marketedContracts    Contract[]     @relation("UserMarketer")
 }
 
 model Client {
@@ -112,13 +113,12 @@ model Client {
 }
 
 model Marketer {
-  id        String     @id @default(cuid())
+  id        String   @id @default(cuid())
   name      String
   phone     String
   email     String?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  contracts Contract[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Contract {
@@ -141,7 +141,7 @@ model Contract {
   penaltyAmount  Float?    @default(0)
   penaltyRate    Float?    @default(120)
   client         Client    @relation(fields: [clientId], references: [id])
-  marketer       Marketer? @relation(fields: [marketerId], references: [id])
+  marketer       User?     @relation("UserMarketer", fields: [marketerId], references: [id])
   worker         Worker    @relation(fields: [workerId], references: [id])
 }
 

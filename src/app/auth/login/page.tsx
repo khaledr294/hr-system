@@ -148,8 +148,7 @@ export default function LoginPage() {
             <p className="text-xs text-gray-600 text-center mb-2">بيانات تجريبية للاختبار:</p>
             <div className="grid grid-cols-1 gap-1 text-xs text-gray-700">
               <div className="flex justify-between">
-                <span>👤 مدير النظام:</span>
-                <span>admin / 123456</span>
+
               </div>
               <div className="flex justify-between">
                 <span>👨‍💼 مدير موارد بشرية:</span>
