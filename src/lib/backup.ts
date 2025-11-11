@@ -1,11 +1,6 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import fs from 'fs/promises';
-import path from 'path';
 import { prisma } from './prisma';
 import { v4 as uuidv4 } from 'uuid';
-
-const execAsync = promisify(exec);
+import pako from 'pako';
 
 export interface BackupInfo {
   id: string;
@@ -16,67 +11,125 @@ export interface BackupInfo {
   status: 'completed' | 'failed' | 'in_progress';
 }
 
-/**
- * إنشاء نسخة احتياطية من قاعدة البيانات
- */
-export async function createDatabaseBackup(type: 'manual' | 'automatic' = 'automatic'): Promise<BackupInfo> {
+export interface BackupData {
+  metadata: {
+    version: string;
+    timestamp: string;
+    tables: string[];
+  };
+  data: {
+    users: any[];
+    workers: any[];
+    clients: any[];
+    contracts: any[];
+    packages: any[];
+    nationalitySalaries: any[];
+    logs: any[];
+    backups: any[];
+  };
+}
+
+export async function createDatabaseBackup(type: 'manual' | 'automatic' = 'automatic'): Promise<{
+  backup: BackupInfo;
+  data: string;
+}> {
   try {
     console.log('🔄 بدء عملية النسخ الاحتياطي...');
 
-    // إنشاء مجلد backups إذا لم يكن موجوداً
-    const backupDir = path.join(process.cwd(), 'backups');
-    try {
-      await fs.mkdir(backupDir, { recursive: true });
-    } catch {
-      console.log('مجلد النسخ الاحتياطي موجود بالفعل');
-    }
+    const timestamp = new Date().toISOString();
 
-    // اسم الملف مع التاريخ والوقت
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const filename = `backup-${timestamp}.sql`;
-    const filePath = path.join(backupDir, filename);
-
-    // الحصول على DATABASE_URL من متغيرات البيئة
-    const databaseUrl = process.env.DATABASE_URL;
-    if (!databaseUrl) {
-      throw new Error('DATABASE_URL غير موجود في متغيرات البيئة');
-    }
-
-    // تنفيذ pg_dump لإنشاء النسخة الاحتياطية
-    const pgDumpCommand = `pg_dump "${databaseUrl}" > "${filePath}"`;
+    console.log('📦 جاري تصدير البيانات...');
     
-    console.log('📦 جاري تصدير قاعدة البيانات...');
-    await execAsync(pgDumpCommand);
+    const [
+      users,
+      workers,
+      clients,
+      contracts,
+      packages,
+      nationalitySalaries,
+      logs,
+      backups,
+    ] = await Promise.all([
+      prisma.user.findMany(),
+      prisma.worker.findMany({ include: { nationalitySalary: true } }),
+      prisma.client.findMany(),
+      prisma.contract.findMany({ include: { worker: true, client: true } }),
+      prisma.package.findMany(),
+      prisma.nationalitySalary.findMany(),
+      prisma.log.findMany({ orderBy: { createdAt: 'desc' }, take: 1000 }),
+      prisma.backup.findMany({ orderBy: { createdAt: 'desc' }, take: 10 }),
+    ]);
 
-    // الحصول على حجم الملف
-    const stats = await fs.stat(filePath);
-    const sizeInMB = (stats.size / (1024 * 1024)).toFixed(2);
+    const backupData: BackupData = {
+      metadata: {
+        version: '1.0',
+        timestamp,
+        tables: [
+          'users',
+          'workers',
+          'clients',
+          'contracts',
+          'packages',
+          'nationalitySalaries',
+          'logs',
+          'backups',
+        ],
+      },
+      data: {
+        users,
+        workers,
+        clients,
+        contracts,
+        packages,
+        nationalitySalaries,
+        logs,
+        backups,
+      },
+    };
 
-    console.log(`✅ تم إنشاء النسخة الاحتياطية بنجاح: ${filename} (${sizeInMB} MB)`);
+    const jsonString = JSON.stringify(backupData, (key, value) =>
+      typeof value === 'bigint' ? value.toString() : value
+    );
 
-    // حفظ معلومات النسخة الاحتياطية في قاعدة البيانات
+    const compressed = pako.gzip(jsonString);
+    const base64Data = Buffer.from(compressed).toString('base64');
+
+    const originalSize = Buffer.byteLength(jsonString, 'utf8');
+    const compressedSize = compressed.length;
+    const compressionRatio = ((1 - compressedSize / originalSize) * 100).toFixed(2);
+
+    console.log(`📊 الحجم الأصلي: ${(originalSize / 1024 / 1024).toFixed(2)} MB`);
+    console.log(`📦 الحجم المضغوط: ${(compressedSize / 1024 / 1024).toFixed(2)} MB`);
+    console.log(`🎯 نسبة الضغط: ${compressionRatio}%`);
+
+    const filename = `backup-${timestamp.replace(/[:.]/g, '-')}.gz`;
+
     const backup = await prisma.backup.create({
       data: {
         id: uuidv4(),
         filename,
-        size: BigInt(stats.size),
+        size: BigInt(compressedSize),
         type,
         status: 'completed',
       },
     });
 
+    console.log(`✅ تم إنشاء النسخة الاحتياطية بنجاح: ${filename}`);
+
     return {
-      id: backup.id,
-      filename: backup.filename,
-      size: Number(backup.size),
-      createdAt: backup.createdAt,
-      type: backup.type as 'manual' | 'automatic',
-      status: backup.status as 'completed' | 'failed' | 'in_progress',
+      backup: {
+        id: backup.id,
+        filename: backup.filename,
+        size: Number(backup.size),
+        createdAt: backup.createdAt,
+        type: backup.type as 'manual' | 'automatic',
+        status: backup.status as 'completed' | 'failed' | 'in_progress',
+      },
+      data: base64Data,
     };
   } catch (error) {
     console.error('❌ فشل في إنشاء النسخة الاحتياطية:', error);
     
-    // حفظ حالة الفشل
     try {
       await prisma.backup.create({
         data: {
@@ -96,9 +149,6 @@ export async function createDatabaseBackup(type: 'manual' | 'automatic' = 'autom
   }
 }
 
-/**
- * الحصول على قائمة النسخ الاحتياطية
- */
 export async function getBackups(): Promise<BackupInfo[]> {
   try {
     const backups = await prisma.backup.findMany({
@@ -122,33 +172,13 @@ export async function getBackups(): Promise<BackupInfo[]> {
   }
 }
 
-/**
- * حذف نسخة احتياطية قديمة
- */
 export async function deleteBackup(backupId: string): Promise<boolean> {
   try {
-    const backup = await prisma.backup.findUnique({
-      where: { id: backupId },
-    });
-
-    if (!backup) {
-      throw new Error('النسخة الاحتياطية غير موجودة');
-    }
-
-    // حذف الملف من نظام الملفات
-    const filePath = path.join(process.cwd(), 'backups', backup.filename);
-    try {
-      await fs.unlink(filePath);
-    } catch (unlinkError) {
-      console.warn('الملف غير موجود أو تم حذفه مسبقاً', unlinkError);
-    }
-
-    // حذف من قاعدة البيانات
     await prisma.backup.delete({
       where: { id: backupId },
     });
 
-    console.log(`✅ تم حذف النسخة الاحتياطية: ${backup.filename}`);
+    console.log(`✅ تم حذف النسخة الاحتياطية: ${backupId}`);
     return true;
   } catch (error) {
     console.error('خطأ في حذف النسخة الاحتياطية:', error);
@@ -156,133 +186,66 @@ export async function deleteBackup(backupId: string): Promise<boolean> {
   }
 }
 
-/**
- * حذف النسخ الاحتياطية القديمة (أقدم من X أيام)
- */
-export async function cleanupOldBackups(daysToKeep: number = 30): Promise<number> {
+export async function cleanupOldBackups(): Promise<number> {
   try {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
-
-    const oldBackups = await prisma.backup.findMany({
-      where: {
-        createdAt: {
-          lt: cutoffDate,
-        },
-        type: 'automatic', // حذف النسخ التلقائية فقط
+    const allBackups = await prisma.backup.findMany({
+      orderBy: {
+        createdAt: 'desc',
       },
     });
 
-    let deletedCount = 0;
-    for (const backup of oldBackups) {
-      const deleted = await deleteBackup(backup.id);
-      if (deleted) deletedCount++;
+    if (allBackups.length <= 10) {
+      return 0;
     }
 
-    console.log(`🗑️ تم حذف ${deletedCount} نسخة احتياطية قديمة`);
-    return deletedCount;
+    const backupsToDelete = allBackups.slice(10);
+    
+    for (const backup of backupsToDelete) {
+      await prisma.backup.delete({
+        where: { id: backup.id },
+      });
+    }
+
+    console.log(`✅ تم حذف ${backupsToDelete.length} نسخة احتياطية قديمة`);
+    return backupsToDelete.length;
   } catch (error) {
-    console.error('خطأ في تنظيف النسخ الاحتياطية القديمة:', error);
+    console.error('خطأ في تنظيف النسخ الاحتياطية:', error);
     return 0;
   }
 }
 
-/**
- * تنزيل نسخة احتياطية
- */
-export async function getBackupFile(backupId: string): Promise<Buffer | null> {
-  try {
-    const backup = await prisma.backup.findUnique({
-      where: { id: backupId },
-    });
-
-    if (!backup) {
-      throw new Error('النسخة الاحتياطية غير موجودة');
-    }
-
-    const filePath = path.join(process.cwd(), 'backups', backup.filename);
-    const fileBuffer = await fs.readFile(filePath);
-
-    return fileBuffer;
-  } catch (error) {
-    console.error('خطأ في قراءة ملف النسخة الاحتياطية:', error);
-    return null;
-  }
-}
-
-/**
- * استعادة قاعدة البيانات من نسخة احتياطية
- * ⚠️ خطير: هذا سيمسح البيانات الحالية!
- */
-export async function restoreBackup(backupId: string): Promise<boolean> {
-  try {
-    console.log('⚠️ بدء عملية الاستعادة...');
-
-    const backup = await prisma.backup.findUnique({
-      where: { id: backupId },
-    });
-
-    if (!backup) {
-      throw new Error('النسخة الاحتياطية غير موجودة');
-    }
-
-    const filePath = path.join(process.cwd(), 'backups', backup.filename);
-    const databaseUrl = process.env.DATABASE_URL;
-
-    if (!databaseUrl) {
-      throw new Error('DATABASE_URL غير موجود');
-    }
-
-    // تنفيذ psql لاستعادة البيانات
-    const restoreCommand = `psql "${databaseUrl}" < "${filePath}"`;
-    
-    console.log('♻️ جاري استعادة قاعدة البيانات...');
-    await execAsync(restoreCommand);
-
-    console.log('✅ تم استعادة قاعدة البيانات بنجاح');
-    return true;
-  } catch (error) {
-    console.error('❌ فشل في استعادة قاعدة البيانات:', error);
-    return false;
-  }
-}
-
-/**
- * الحصول على إحصائيات النسخ الاحتياطية
- */
 export async function getBackupStats() {
   try {
-    const total = await prisma.backup.count();
-    const successful = await prisma.backup.count({
-      where: { status: 'completed' },
-    });
-    const failed = await prisma.backup.count({
-      where: { status: 'failed' },
-    });
-    
-    const totalSize = await prisma.backup.aggregate({
-      _sum: { size: true },
-      where: { status: 'completed' },
-    });
+    const backups = await prisma.backup.findMany();
 
-    const lastBackup = await prisma.backup.findFirst({
-      orderBy: { createdAt: 'desc' },
-      where: { status: 'completed' },
-    });
+    const totalSize = backups.reduce((sum, b) => sum + Number(b.size ?? 0), 0);
+    const completedCount = backups.filter(b => b.status === 'completed').length;
+    const failedCount = backups.filter(b => b.status === 'failed').length;
 
     return {
-      total,
-      successful,
-      failed,
-      totalSizeBytes: Number(totalSize._sum.size || 0),
-      totalSizeMB: ((Number(totalSize._sum.size) || 0) / (1024 * 1024)).toFixed(2),
-      lastBackup: lastBackup ? {
-        date: lastBackup.createdAt,
-        filename: lastBackup.filename,
-      } : null,
+      totalBackups: backups.length,
+      completedBackups: completedCount,
+      failedBackups: failedCount,
+      totalSize: totalSize,
+      totalSizeMB: (totalSize / 1024 / 1024).toFixed(2),
     };
   } catch (error) {
     console.error('خطأ في جلب إحصائيات النسخ الاحتياطية:', error);
-    return null;
+    return {
+      totalBackups: 0,
+      completedBackups: 0,
+      failedBackups: 0,
+      totalSize: 0,
+      totalSizeMB: '0',
+    };
   }
+}
+
+export async function getBackupFile(backupId: string): Promise<Buffer | null> {
+  console.log('getBackupFile is deprecated - use direct download from API');
+  return null;
+}
+
+export async function restoreBackup(backupId: string): Promise<void> {
+  throw new Error('استعادة النسخ الاحتياطية غير مدعومة حالياً');
 }

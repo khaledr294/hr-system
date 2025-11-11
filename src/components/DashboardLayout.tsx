@@ -296,7 +296,40 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </svg>
                   </div>
                   <button
-                    onClick={() => signOut()}
+                    onClick={async () => {
+                      const confirmed = window.confirm('هل ترغب في إنشاء نسخة احتياطية قبل تسجيل الخروج؟');
+                      if (confirmed) {
+                        try {
+                          const response = await fetch('/api/backups', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'create' }),
+                          });
+                          if (response.ok) {
+                            const result = await response.json();
+                            const byteCharacters = atob(result.data);
+                            const byteNumbers = new Array(byteCharacters.length);
+                            for (let i = 0; i < byteCharacters.length; i++) {
+                              byteNumbers[i] = byteCharacters.charCodeAt(i);
+                            }
+                            const byteArray = new Uint8Array(byteNumbers);
+                            const blob = new Blob([byteArray], { type: 'application/gzip' });
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = result.backup.filename;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            window.URL.revokeObjectURL(url);
+                            alert('تم إنشاء النسخة الاحتياطية وتنزيلها بنجاح!');
+                          }
+                        } catch (error) {
+                          console.error('Error:', error);
+                        }
+                      }
+                      signOut();
+                    }}
                     className={classNames(
                       "inline-flex items-center text-slate-900 px-4 py-2.5 font-bold text-sm transition-all duration-200",
                       isPremium ? "glass hover-scale" : "bg-white hover:bg-slate-200 border-2 border-slate-900"
