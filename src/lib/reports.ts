@@ -21,7 +21,7 @@ export interface WorkersReport {
   details: Array<{
     id: string;
     name: string;
-    code: number;
+    code: string;
     nationality: string;
     status: string;
     salary: number | null;
@@ -109,7 +109,7 @@ export interface ContractsReport {
   details: Array<{
     id: string;
     workerName: string;
-    workerCode: number;
+    workerCode: string;
     clientName: string;
     startDate: Date;
     endDate: Date;

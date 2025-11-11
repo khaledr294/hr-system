@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 interface WorkerSearchResult {
   id: string;
   name: string;
-  code: number;
+  code: string;
   nationality: string;
   status: string;
   passportNumber: string | null;
@@ -20,7 +20,7 @@ interface WorkerSearchResult {
 interface ContractSearchResult {
   id: string;
   workerName: string;
-  workerCode: number;
+  workerCode: string;
   clientName: string;
   startDate: Date;
   endDate: Date;
