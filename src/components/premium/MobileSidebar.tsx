@@ -101,7 +101,11 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
               return (
                 <div key={section.title} className="space-y-2">
                   <button
-                    onClick={() => toggle(section.title)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggle(section.title);
+                    }}
                     className="flex items-center justify-between w-full p-2 text-right rounded-lg hover:bg-slate-50 transition-colors"
                   >
                     <span className="font-semibold text-slate-800 text-sm">{section.title}</span>
@@ -119,7 +123,17 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                         const badge = getBadgeFor(href);
                         
                         return (
-                          <Link key={href} href={href} onClick={onClose}>
+                          <Link 
+                            key={href} 
+                            href={href} 
+                            onClick={(e) => {
+                              // Let the Link handle navigation
+                              e.stopPropagation();
+                              // Close mobile sidebar after clicking
+                              setTimeout(() => onClose(), 100);
+                            }}
+                            prefetch={true}
+                          >
                             <motion.div 
                               whileTap={{ scale: 0.98 }}
                               className={`flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${
