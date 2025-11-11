@@ -1,90 +1,264 @@
+'use client';
 
-"use client";
-
-import DashboardLayout from "@/components/DashboardLayout";
-import React from "react";
-import { use } from "react";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { use } from 'react';
+import DashboardLayout from '@/components/DashboardLayout';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
 
 interface Client {
   id: string;
   name: string;
   phone: string;
-  email?: string;
-  address?: string;
-  idNumber?: string;
+  email?: string | null;
+  address?: string | null;
+  idNumber?: string | null;
+  dateOfBirth?: string | null;
 }
 
 export default function EditClientPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const [client, setClient] = React.useState<Client | null>(null);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState("");
+  const router = useRouter();
+  const [client, setClient] = useState<Client | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-  React.useEffect(() => {
-    fetch(`/api/clients/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setClient(data);
+  useEffect(() => {
+    const loadClient = async () => {
+      try {
+        const response = await fetch(`/api/clients/${id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setClient(data);
+        } else {
+          setError('تعذر تحميل بيانات العميل');
+        }
+      } catch (err) {
+        console.error('Failed to load client:', err);
+        setError('حدث خطأ في تحميل البيانات');
+      } finally {
         setLoading(false);
-      })
-      .catch(() => {
-        setError("تعذر تحميل بيانات العميل");
-        setLoading(false);
-      });
+      }
+    };
+    loadClient();
   }, [id]);
 
-  if (loading) return <DashboardLayout><div className="max-w-xl mx-auto bg-white p-8 rounded shadow text-center">جاري التحميل...</div></DashboardLayout>;
-  if (error || !client) return <DashboardLayout><div className="max-w-xl mx-auto bg-white p-8 rounded shadow text-center text-red-600">{error || "العميل غير موجود"}</div></DashboardLayout>;
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError('');
+
+    const formData = new FormData(e.currentTarget);
+
+    const name = (formData.get('name') as string)?.trim();
+    const idNumber = (formData.get('idNumber') as string)?.trim();
+    const phone = (formData.get('phone') as string)?.trim();
+    const email = (formData.get('email') as string)?.trim();
+    const address = (formData.get('address') as string)?.trim();
+    const birthYear = formData.get('birthYear') as string;
+    const birthMonth = formData.get('birthMonth') as string;
+    const birthDay = formData.get('birthDay') as string;
+
+    // Validation
+    if (!name || !phone) {
+      setError('الاسم ورقم الجوال مطلوبان');
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Format date of birth if provided
+    let dateOfBirth = null;
+    if (birthYear && birthMonth && birthDay) {
+      dateOfBirth = `${birthYear}-${birthMonth.padStart(2, '0')}-${birthDay.padStart(2, '0')}`;
+    }
+
+    try {
+      const payload = {
+        name,
+        idNumber: idNumber || null,
+        phone,
+        email: email || null,
+        address: address || null,
+        dateOfBirth,
+      };
+
+      const response = await fetch(`/api/clients/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        router.push(`/clients/${id}`);
+        router.refresh();
+      } else {
+        const errorText = await response.text();
+        setError(errorText || 'حدث خطأ في تحديث بيانات العميل');
+      }
+    } catch (err) {
+      console.error('Error updating client:', err);
+      setError('حدث خطأ في الاتصال بالخادم');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="max-w-2xl mx-auto text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">جاري التحميل...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (error && !client) {
+    return (
+      <DashboardLayout>
+        <div className="max-w-2xl mx-auto text-center py-12">
+          <p className="text-red-600">{error}</p>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => router.back()}
+            className="mt-4"
+          >
+            رجوع
+          </Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!client) {
+    return null;
+  }
+
+  // Parse date of birth if exists
+  const dateOfBirth = client.dateOfBirth ? new Date(client.dateOfBirth) : null;
+  const birthYear = dateOfBirth?.getFullYear().toString() || '';
+  const birthMonth = dateOfBirth ? (dateOfBirth.getMonth() + 1).toString() : '';
+  const birthDay = dateOfBirth?.getDate().toString() || '';
 
   return (
     <DashboardLayout>
-      <div className="max-w-xl mx-auto bg-white p-8 rounded shadow">
-        <h1 className="text-3xl font-extrabold mb-8 text-indigo-700 text-center">تعديل بيانات العميل</h1>
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault();
-            const form = e.currentTarget;
-            const formData = new FormData(form);
-            const data = {
-              name: formData.get('name'),
-              idNumber: formData.get('idNumber'),
-              phone: formData.get('phone'),
-              email: formData.get('email'),
-              address: formData.get('address'),
-            };
-            const res = await fetch(`/api/clients/${client.id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(data),
-            });
-            if (res.ok) {
-              window.location.href = `/clients/${client.id}`;
-            } else {
-              alert('تعذر حفظ التعديلات. تحقق من صحة البيانات.');
-            }
-          }}
-        >
-          <div className="mb-4">
-            <label className="block mb-1 text-indigo-700 font-bold">اسم العميل</label>
-            <input name="name" type="text" defaultValue={client.name} className="w-full border rounded px-4 py-2 text-gray-900 font-semibold bg-indigo-50 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:text-indigo-900 focus:outline-none" />
+      <div dir="rtl" className="max-w-2xl mx-auto text-right">
+        <h1 className="text-2xl font-semibold text-gray-900 mb-6">تعديل بيانات العميل</h1>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-lg">
+            <p className="text-red-800 font-semibold">{error}</p>
           </div>
-          <div className="mb-4">
-            <label className="block mb-1 text-indigo-700 font-bold">رقم الهوية</label>
-            <input name="idNumber" type="text" defaultValue={client.idNumber} className="w-full border rounded px-4 py-2 text-gray-900 font-semibold bg-indigo-50 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:text-indigo-900 focus:outline-none" />
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <Input
+            label="اسم العميل"
+            name="name"
+            type="text"
+            required
+            placeholder="أدخل اسم العميل"
+            defaultValue={client.name}
+            className="text-right"
+          />
+
+          <Input
+            label="رقم الهوية"
+            name="idNumber"
+            type="text"
+            placeholder="أدخل رقم الهوية"
+            defaultValue={client.idNumber || ''}
+            className="text-right"
+            inputMode="numeric"
+            pattern="[0-9]*"
+          />
+
+          <Input
+            label="رقم الجوال"
+            name="phone"
+            type="tel"
+            required
+            placeholder="أدخل رقم الجوال"
+            defaultValue={client.phone}
+            className="text-right"
+            inputMode="numeric"
+            pattern="[0-9]*"
+          />
+
+          <div>
+            <label className="block text-base font-bold text-indigo-900 mb-2">تاريخ الميلاد (هجري)</label>
+            <div className="grid grid-cols-3 gap-4">
+              <Input
+                label="سنة هجرية"
+                name="birthYear"
+                type="number"
+                min={1300}
+                max={1500}
+                placeholder="مثال: 1420"
+                defaultValue={birthYear}
+                className="text-right"
+              />
+              <Input
+                label="شهر"
+                name="birthMonth"
+                type="number"
+                min={1}
+                max={12}
+                placeholder="MM"
+                defaultValue={birthMonth}
+                className="text-right"
+              />
+              <Input
+                label="يوم"
+                name="birthDay"
+                type="number"
+                min={1}
+                max={30}
+                placeholder="DD"
+                defaultValue={birthDay}
+                className="text-right"
+              />
+            </div>
+            <p className="mt-2 text-sm text-gray-600">* التاريخ بالهجري (مثال: 01/05/1420)</p>
           </div>
-          <div className="mb-4">
-            <label className="block mb-1 text-indigo-700 font-bold">رقم الجوال</label>
-            <input name="phone" type="text" defaultValue={client.phone} className="w-full border rounded px-4 py-2 text-gray-900 font-semibold bg-indigo-50 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:text-indigo-900 focus:outline-none" />
+
+          <Input
+            label="البريد الإلكتروني"
+            name="email"
+            type="email"
+            placeholder="أدخل البريد الإلكتروني"
+            defaultValue={client.email || ''}
+            className="text-right"
+          />
+
+          <Input
+            label="العنوان"
+            name="address"
+            type="text"
+            placeholder="أدخل العنوان"
+            defaultValue={client.address || ''}
+            className="text-right"
+          />
+
+          <div className="flex justify-end flex-row-reverse gap-3 pt-6">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => router.back()}
+              disabled={isSubmitting}
+            >
+              إلغاء
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'جاري الحفظ...' : 'حفظ التعديلات'}
+            </Button>
           </div>
-          <div className="mb-4">
-            <label className="block mb-1 text-indigo-700 font-bold">البريد الإلكتروني</label>
-            <input name="email" type="email" defaultValue={client.email ?? ''} className="w-full border rounded px-4 py-2 text-gray-900 font-semibold bg-indigo-50 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:text-indigo-900 focus:outline-none" />
-          </div>
-          <div className="mb-4">
-            <label className="block mb-1 text-indigo-700 font-bold">العنوان</label>
-            <input name="address" type="text" defaultValue={client.address} className="w-full border rounded px-4 py-2 text-gray-900 font-semibold bg-indigo-50 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:text-indigo-900 focus:outline-none" />
-          </div>
-          <button type="submit" className="bg-indigo-600 text-white px-6 py-2 rounded font-bold text-lg shadow hover:bg-indigo-700">حفظ التعديلات</button>
         </form>
       </div>
     </DashboardLayout>
