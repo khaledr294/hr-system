@@ -1,14 +1,25 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { 
-  LayoutGrid, Users, Wallet, FileText, Settings, Home, 
-  UserCog, Briefcase, FolderKanban, ChevronDown,
-  Archive, HardDrive, Search, Activity
+  LayoutGrid, 
+  Users, 
+  Wallet, 
+  FileText, 
+  Settings, 
+  Home, 
+  UserCog, 
+  Briefcase, 
+  FolderKanban, 
+  ChevronDown,
+  Archive, 
+  HardDrive, 
+  Search, 
+  Activity
 } from "lucide-react";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 export type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }> };
@@ -37,7 +48,8 @@ export const sections: Section[] = [
   {
     title: "المالية",
     items: [
-      { href: "/payroll", label: "الرواتب", icon: Wallet },
+      { href: "/payroll", label: "حساب الرواتب", icon: Wallet },
+      { href: "/payroll/delivery", label: "تسليم الرواتب", icon: Wallet },
       { href: "/nationality-salary", label: "الجنسيات والرواتب", icon: Wallet },
     ],
   },
