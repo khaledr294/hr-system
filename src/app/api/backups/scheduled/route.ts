@@ -19,19 +19,19 @@ export async function POST(request: NextRequest) {
     console.log('🕐 بدء النسخ الاحتياطي المجدول...');
 
     // إنشاء نسخة احتياطية تلقائية
-    const backup = await createDatabaseBackup('automatic');
+    const result = await createDatabaseBackup('automatic');
 
-    // تنظيف النسخ القديمة (أقدم من 30 يوماً)
-    const deletedCount = await cleanupOldBackups(30);
+    // تنظيف النسخ القديمة
+    const deletedCount = await cleanupOldBackups();
 
     return NextResponse.json({
       success: true,
       message: 'تم إنشاء النسخة الاحتياطية بنجاح',
       backup: {
-        id: backup.id,
-        filename: backup.filename,
-        size: `${(backup.size / (1024 * 1024)).toFixed(2)} MB`,
-        createdAt: backup.createdAt,
+        id: result.backup.id,
+        filename: result.backup.filename,
+        size: `${(result.backup.size / (1024 * 1024)).toFixed(2)} MB`,
+        createdAt: result.backup.createdAt,
       },
       cleanup: {
         deletedCount,
