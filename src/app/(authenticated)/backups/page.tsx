@@ -40,7 +40,7 @@ export default function BackupsPage() {
   };
 
   const createBackup = async () => {
-    if (!confirm('هل أنت متأكد من رغبتك في إنشاء نسخة احتياطية؟ قد تستغرق هذه العملية عدة دقائق.')) return;
+    if (!confirm('هل أنت متأكد من رغبتك في إنشاء نسخة احتياطية؟ سيتم تنزيل الملف مباشرة على جهازك.')) return;
     
     setCreating(true);
     try {
@@ -51,15 +51,37 @@ export default function BackupsPage() {
       });
 
       if (response.ok) {
+        const result = await response.json();
+        console.log('Backup created:', result);
+        
+        // تنزيل الملف
+        if (result.data) {
+          const byteCharacters = atob(result.data);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], { type: 'application/gzip' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = result.backup.filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        }
+        
         await fetchBackups();
-        alert('تم إنشاء النسخة الاحتياطية بنجاح');
+        alert('تم إنشاء النسخة الاحتياطية وتنزيلها بنجاح!');
       } else {
         const error = await response.json();
-        alert(error.error || 'حدث خطأ أثناء إنشاء النسخة الاحتياطية.\n\nملاحظة: تتطلب هذه الميزة تثبيت PostgreSQL client (pg_dump) على السيرفر.');
+        alert(error.error || 'حدث خطأ أثناء إنشاء النسخة الاحتياطية');
       }
     } catch (error) {
       console.error('Error creating backup:', error);
-      alert('حدث خطأ أثناء إنشاء النسخة الاحتياطية.\n\nملاحظة: تتطلب هذه الميزة تثبيت PostgreSQL client (pg_dump) على السيرفر.');
+      alert('حدث خطأ أثناء إنشاء النسخة الاحتياطية: ' + (error instanceof Error ? error.message : 'خطأ غير معروف'));
     } finally {
       setCreating(false);
     }

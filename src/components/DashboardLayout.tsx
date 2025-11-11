@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
@@ -207,6 +207,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { data: session, status } = useSession();
   const isPremium = true; // Always use Premium theme
 
+  // إضافة beforeunload event للتنبيه عند إغلاق المتصفح
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (session) {
+        e.preventDefault();
+        e.returnValue = 'هل ترغب في إنشاء نسخة احتياطية قبل الخروج؟';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [session]);
+
   // إذا كانت الجلسة قيد التحميل، أظهر شاشة تحميل
   if (status === "loading") {
     return (
@@ -307,28 +324,38 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                           });
                           if (response.ok) {
                             const result = await response.json();
-                            const byteCharacters = atob(result.data);
-                            const byteNumbers = new Array(byteCharacters.length);
-                            for (let i = 0; i < byteCharacters.length; i++) {
-                              byteNumbers[i] = byteCharacters.charCodeAt(i);
+                            console.log('Backup result:', result);
+                            
+                            if (result.data) {
+                              const byteCharacters = atob(result.data);
+                              const byteNumbers = new Array(byteCharacters.length);
+                              for (let i = 0; i < byteCharacters.length; i++) {
+                                byteNumbers[i] = byteCharacters.charCodeAt(i);
+                              }
+                              const byteArray = new Uint8Array(byteNumbers);
+                              const blob = new Blob([byteArray], { type: 'application/gzip' });
+                              const url = window.URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = result.backup.filename;
+                              document.body.appendChild(a);
+                              a.click();
+                              document.body.removeChild(a);
+                              window.URL.revokeObjectURL(url);
+                              alert('تم إنشاء النسخة الاحتياطية وتنزيلها بنجاح!');
+                            } else {
+                              alert('تم إنشاء النسخة الاحتياطية ولكن فشل التنزيل');
                             }
-                            const byteArray = new Uint8Array(byteNumbers);
-                            const blob = new Blob([byteArray], { type: 'application/gzip' });
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = result.backup.filename;
-                            document.body.appendChild(a);
-                            a.click();
-                            document.body.removeChild(a);
-                            window.URL.revokeObjectURL(url);
-                            alert('تم إنشاء النسخة الاحتياطية وتنزيلها بنجاح!');
+                          } else {
+                            const error = await response.json();
+                            alert('فشل في إنشاء النسخة الاحتياطية: ' + (error.error || 'خطأ غير معروف'));
                           }
                         } catch (error) {
                           console.error('Error:', error);
+                          alert('حدث خطأ: ' + (error instanceof Error ? error.message : 'خطأ غير معروف'));
                         }
                       }
-                      signOut();
+                      await signOut();
                     }}
                     className={classNames(
                       "inline-flex items-center text-slate-900 px-4 py-2.5 font-bold text-sm transition-all duration-200",
