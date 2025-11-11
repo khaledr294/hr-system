@@ -207,22 +207,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { data: session, status } = useSession();
   const isPremium = true; // Always use Premium theme
 
-  // إضافة beforeunload event للتنبيه عند إغلاق المتصفح
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (session) {
-        e.preventDefault();
-        e.returnValue = 'هل ترغب في إنشاء نسخة احتياطية قبل الخروج؟';
-        return e.returnValue;
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [session]);
+  // تم إزالة beforeunload لأنه يسبب مشاكل في التنقل
+  // النسخ الاحتياطي متاح فقط من زر تسجيل الخروج
 
   // إذا كانت الجلسة قيد التحميل، أظهر شاشة تحميل
   if (status === "loading") {
@@ -314,9 +300,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   </div>
                   <button
                     onClick={async () => {
+                      console.log('Logout button clicked');
                       const confirmed = window.confirm('هل ترغب في إنشاء نسخة احتياطية قبل تسجيل الخروج؟');
+                      console.log('User confirmation:', confirmed);
                       if (confirmed) {
                         try {
+                          console.log('Starting backup creation...');
                           const response = await fetch('/api/backups', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
