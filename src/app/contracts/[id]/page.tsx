@@ -10,6 +10,15 @@ import PenaltyCalculator from '@/components/contracts/PenaltyCalculator';
 import ExtendContractButton from '@/components/contracts/ExtendContractButton';
 import React from 'react';
 
+// Helper function to format date without timezone issues
+function formatDate(date: Date): string {
+  const d = new Date(date);
+  const year = d.getUTCFullYear();
+  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  return `${day}/${month}/${year}`;
+}
+
 // نوع مؤقت للعقد مع الحقول الجديدة (اختياري للتوافق مع النسخة القديمة)
 type ContractWithPenalty = {
   delayDays?: number;
@@ -127,13 +136,13 @@ export default async function ContractDetailsPage({
             <div>
               <dt className="text-sm font-medium text-gray-500">تاريخ البداية</dt>
               <dd className="mt-1 text-sm text-gray-900">
-                {new Date(new Date(contract.startDate).toISOString().split('T')[0] + 'T12:00:00').toLocaleDateString('ar-SA', { year: 'numeric', month: '2-digit', day: '2-digit' })}
+                {formatDate(contract.startDate)}
               </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">تاريخ النهاية</dt>
               <dd className="mt-1 text-sm text-gray-900">
-                {new Date(new Date(contract.endDate).toISOString().split('T')[0] + 'T12:00:00').toLocaleDateString('ar-SA', { year: 'numeric', month: '2-digit', day: '2-digit' })}
+                {formatDate(contract.endDate)}
               </dd>
             </div>
             <div>
