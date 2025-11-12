@@ -98,7 +98,7 @@ export default function EditWorkerPage({ params }: { params: Promise<{ id: strin
     const residenceBranch = (formData.get('residenceBranch') as string)?.trim();
 
     // Validation
-    if (!name || !nationality || !residencyNumber || !phone || !birthYear || !birthMonth || !birthDay) {
+    if (!name || !nationality || !residencyNumber || !birthYear || !birthMonth || !birthDay) {
       setError('جميع الحقول الأساسية مطلوبة');
       setIsSubmitting(false);
       return;
@@ -308,10 +308,9 @@ export default function EditWorkerPage({ params }: { params: Promise<{ id: strin
           </div>
 
           <Input
-            label="رقم الجوال"
+            label="رقم الجوال (اختياري)"
             name="phone"
             type="tel"
-            required
             placeholder="أدخل رقم الجوال"
             defaultValue={worker.phone}
             className="text-right"
@@ -376,7 +375,7 @@ export default function EditWorkerPage({ params }: { params: Promise<{ id: strin
               />
 
               <Input
-                label="IBAN"
+                label="IBAN (اختياري)"
                 name="iban"
                 type="text"
                 placeholder="أدخل رقم IBAN (مثال: SA0000000000000000000000)"

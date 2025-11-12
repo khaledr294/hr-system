@@ -302,10 +302,9 @@ export default function NewWorkerPage() {
           </div>
 
           <Input
-            label="رقم الجوال"
+            label="رقم الجوال (اختياري)"
             name="phone"
             type="tel"
-            required
             placeholder="أدخل رقم الجوال"
             className="text-right"
             inputMode="numeric"
@@ -364,7 +363,7 @@ export default function NewWorkerPage() {
               />
 
               <Input
-                label="IBAN"
+                label="IBAN (اختياري)"
                 name="iban"
                 type="text"
                 placeholder="أدخل رقم IBAN (مثال: SA0000000000000000000000)"
