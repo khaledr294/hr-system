@@ -126,11 +126,15 @@ export default async function ContractDetailsPage({
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">تاريخ البداية</dt>
-              <dd className="mt-1 text-sm text-gray-900">{new Date(contract.startDate).toLocaleDateString('ar-SA-u-ca-gregory')}</dd>
+              <dd className="mt-1 text-sm text-gray-900">
+                {new Date(contract.startDate.toString().split('T')[0] + 'T12:00:00').toLocaleDateString('ar-SA', { year: 'numeric', month: '2-digit', day: '2-digit' })}
+              </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">تاريخ النهاية</dt>
-              <dd className="mt-1 text-sm text-gray-900">{new Date(contract.endDate).toLocaleDateString('ar-SA-u-ca-gregory')}</dd>
+              <dd className="mt-1 text-sm text-gray-900">
+                {new Date(contract.endDate.toString().split('T')[0] + 'T12:00:00').toLocaleDateString('ar-SA', { year: 'numeric', month: '2-digit', day: '2-digit' })}
+              </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">نوع الباقة</dt>

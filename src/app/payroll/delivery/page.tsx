@@ -163,11 +163,11 @@ export default function PayrollDeliveryPage() {
         const periodStart = contractStart > monthStart ? contractStart : monthStart;
         const periodEnd = contractEnd < monthEnd ? contractEnd : monthEnd;
 
-        if (periodStart < periodEnd) {
+        if (periodStart <= periodEnd) {
           const startOfDay = new Date(periodStart.getFullYear(), periodStart.getMonth(), periodStart.getDate());
           const endOfDay = new Date(periodEnd.getFullYear(), periodEnd.getMonth(), periodEnd.getDate());
           const timeDifference = endOfDay.getTime() - startOfDay.getTime();
-          const daysDifference = Math.floor(timeDifference / (1000 * 3600 * 24));
+          const daysDifference = Math.floor(timeDifference / (1000 * 3600 * 24)) + 1; // +1 لتضمين اليوم الأخير
           totalWorkingDays += daysDifference;
         }
       });

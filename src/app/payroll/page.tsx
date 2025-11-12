@@ -154,14 +154,14 @@ export default function PayrollPage() {
           validPeriod: periodStart < periodEnd
         });
 
-        if (periodStart < periodEnd) {
-          // حساب الأيام مثل الفنادق: الفرق بين اليومين بدون شمول يوم النهاية
+        if (periodStart <= periodEnd) {
+          // حساب الأيام: الفرق بين اليومين + 1 لتضمين يوم النهاية
           const startOfDay = new Date(periodStart.getFullYear(), periodStart.getMonth(), periodStart.getDate());
           const endOfDay = new Date(periodEnd.getFullYear(), periodEnd.getMonth(), periodEnd.getDate());
 
           const timeDifference = endOfDay.getTime() - startOfDay.getTime();
-          const daysDifference = Math.floor(timeDifference / (1000 * 3600 * 24)); // بدون +1
-          console.log(`🎯 أيام العمل لهذا العقد (بدون شمول يوم النهاية): ${daysDifference}`);
+          const daysDifference = Math.floor(timeDifference / (1000 * 3600 * 24)) + 1; // +1 لتضمين يوم النهاية
+          console.log(`🎯 أيام العمل لهذا العقد (مع شمول يوم النهاية): ${daysDifference}`);
           totalWorkingDays += daysDifference;
         }
       });
