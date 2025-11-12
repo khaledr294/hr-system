@@ -4,6 +4,10 @@ import { auth } from '@/lib/auth';
 import { createLog } from '@/lib/logger';
 import { hasPermission } from '@/lib/permissions';
 
+// Force dynamic rendering and disable caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function POST(req: NextRequest) {
   const session = await auth();
 
@@ -107,7 +111,10 @@ export async function POST(req: NextRequest) {
 
     return new Response(JSON.stringify(worker), {
       status: 201,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
+      },
     });
   } catch (error) {
     console.error('Failed to create worker:', error);
@@ -223,7 +230,11 @@ export async function GET(req: NextRequest) {
     }));
 
     return new Response(JSON.stringify(workers), {
-      headers: { 'Content-Type': 'application/json' },
+      status: 200,
+      headers: { 
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
+      },
     });
   } catch (error) {
     console.error('Failed to fetch workers:', error);

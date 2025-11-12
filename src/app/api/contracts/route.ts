@@ -4,6 +4,10 @@ import { getSession } from '@/lib/session';
 import { createLog } from '@/lib/logger';
 import { hasPermission } from '@/lib/permissions';
 
+// Force dynamic rendering and disable caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(req: NextRequest) {
   const session = await getSession();
 
@@ -66,7 +70,10 @@ export async function GET(req: NextRequest) {
 
     return new Response(JSON.stringify(contracts), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
+      },
     });
   } catch (error) {
     console.error('Failed to fetch contracts:', error);

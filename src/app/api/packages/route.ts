@@ -3,6 +3,10 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
 import { hasPermission } from '@/lib/permissions';
 
+// Force dynamic rendering and disable caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   const packages = await prisma.package.findMany({ orderBy: { createdAt: 'desc' } });
   return new Response(JSON.stringify(packages), {

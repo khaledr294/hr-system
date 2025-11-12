@@ -2,6 +2,10 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
 
+// Force dynamic rendering and disable caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   // جلب المستخدمين الذين لديهم المسمى الوظيفي "مسوق"
   const marketerJobTitle = await prisma.jobTitle.findFirst({
