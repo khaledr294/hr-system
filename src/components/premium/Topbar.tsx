@@ -3,9 +3,26 @@
 import { Bell, Search, User2, Menu, LogOut } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSession, signOut } from "next-auth/react";
+import { useState, type KeyboardEvent } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Topbar({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
   const { data: session } = useSession();
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const handleSearch = () => {
+    if (searchTerm.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
+    }
+  };
+
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   return (
     <div dir="rtl" className="flex items-center justify-between p-3 sm:p-4 gap-2 sm:gap-3 text-right border-b border-slate-200/50">
       <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-start">
@@ -17,8 +34,17 @@ export default function Topbar({ onToggleSidebar }: { onToggleSidebar?: () => vo
           <Menu className="w-5 h-5 text-slate-700" />
         </button>
         <div className="glass shadow-soft rounded-xl sm:rounded-2xl flex items-center px-3 sm:px-4 py-2 w-full max-w-xs sm:max-w-xl border border-slate-200/50">
-          <Search className="w-4 h-4 sm:w-5 sm:h-5 text-slate-500" />
+          <button
+            onClick={handleSearch}
+            className="hover:text-blue-600 transition-colors"
+            aria-label="بحث"
+          >
+            <Search className="w-4 h-4 sm:w-5 sm:h-5 text-slate-500" />
+          </button>
           <input
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyPress={handleKeyPress}
             className="bg-transparent outline-none px-2 sm:px-3 py-1 w-full text-slate-700 text-right text-sm sm:text-base placeholder:text-sm sm:placeholder:text-base placeholder:text-slate-400"
             placeholder="ابحث..."
           />

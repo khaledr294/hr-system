@@ -9,7 +9,8 @@ import { getSession } from '@/lib/session';
 import { hasPermission } from '@/lib/permissions';
 import { redirect } from 'next/navigation';
 
-export const revalidate = 30; // Cache page for 30 seconds
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 async function getWorkers() {
   // جلب العمالة مع العقود - مع معالجة الحقول المفقودة
