@@ -48,7 +48,7 @@ export default function NewWorkerPage() {
 
     // Combine birth date fields
     const name = (formData.get('name') as string)?.trim();
-    const codeStr = (formData.get('code') as string)?.trim();
+    const code = (formData.get('code') as string)?.trim(); // code is now string (alphanumeric)
     const nationality = (formData.get('nationality') as string)?.trim();
     const residencyNumber = (formData.get('residencyNumber') as string)?.trim();
     const birthYear = (formData.get('birthYear') as string)?.trim();
@@ -64,16 +64,23 @@ export default function NewWorkerPage() {
       dateOfBirthStr = `${birthYear}-${mm}-${dd}`;
     }
 
-    if (!name || !codeStr || !nationality || !residencyNumber || !birthYear || !birthMonth || !birthDay) {
+    // Validation
+    if (!name || !code || !nationality || !residencyNumber || !birthYear || !birthMonth || !birthDay) {
       setError('جميع الحقول المطلوبة يجب ملؤها');
       setIsSubmitting(false);
       return;
     }
 
-    // Validate and convert code
-    const code = parseInt(codeStr);
-    if (isNaN(code) || code <= 0) {
-      setError('رقم العاملة يجب أن يكون رقماً صحيحاً أكبر من صفر');
+    // Validate code is not empty
+    if (!code || code.length === 0) {
+      setError('رقم العاملة مطلوب');
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Validate residency number (10 digits max)
+    if (residencyNumber.length > 10 || !/^\d+$/.test(residencyNumber)) {
+      setError('رقم الإقامة يجب أن يكون أرقام فقط (10 خانات كحد أقصى)');
       setIsSubmitting(false);
       return;
     }
@@ -94,6 +101,22 @@ export default function NewWorkerPage() {
     const religion = (formData.get('religion') as string)?.trim();
     const iban = (formData.get('iban') as string)?.trim();
     const residenceBranch = (formData.get('residenceBranch') as string)?.trim();
+
+    // Validate border number (10 digits max, numbers only)
+    if (borderNumber && (borderNumber.length > 10 || !/^\d+$/.test(borderNumber))) {
+      setError('رقم الحدود يجب أن يكون أرقام فقط (10 خانات كحد أقصى)');
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Validate IBAN format (SA + 22 digits = 24 characters)
+    if (iban) {
+      if (!/^SA\d{22}$/.test(iban)) {
+        setError('رقم الآيبان يجب أن يكون بالصيغة: SA متبوعة بـ 22 رقم (مثال: SA0000000000000000000000)');
+        setIsSubmitting(false);
+        return;
+      }
+    }
 
     // تحويل تاريخ الوصول إلى Date إذا كان موجوداً
     let arrivalDate = null;
@@ -193,12 +216,10 @@ export default function NewWorkerPage() {
           <Input
             label="رقم العاملة"
             name="code"
-            type="number"
+            type="text"
             required
-            placeholder="أدخل رقم العاملة (مثال: 1001)"
+            placeholder="أدخل رقم العاملة (أرقام أو حروف، مثال: 1001 أو A001)"
             className="text-right"
-            inputMode="numeric"
-            pattern="[0-9]*"
           />
 
           <Select
@@ -217,8 +238,11 @@ export default function NewWorkerPage() {
             name="residencyNumber"
             type="text"
             required
-            placeholder="أدخل رقم الإقامة"
+            placeholder="أدخل رقم الإقامة (10 أرقام كحد أقصى)"
             className="text-right"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={10}
           />
 
           <div className="flex gap-2">
@@ -297,8 +321,11 @@ export default function NewWorkerPage() {
                 label="رقم الحدود"
                 name="borderNumber"
                 type="text"
-                placeholder="أدخل رقم الحدود (اختياري)"
+                placeholder="أدخل رقم الحدود (10 أرقام كحد أقصى - اختياري)"
                 className="text-right"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={10}
               />
 
               <Input
@@ -325,11 +352,14 @@ export default function NewWorkerPage() {
                 className="text-right"
               />
 
-              <Input
+              <Select
                 label="الديانة"
                 name="religion"
-                type="text"
-                placeholder="أدخل الديانة (اختياري)"
+                options={[
+                  { value: '', label: 'اختر الديانة (اختياري)' },
+                  { value: 'الإسلام', label: 'الإسلام' },
+                  { value: 'غير الإسلام', label: 'غير الإسلام' }
+                ]}
                 className="text-right"
               />
 
@@ -337,8 +367,32 @@ export default function NewWorkerPage() {
                 label="IBAN"
                 name="iban"
                 type="text"
-                placeholder="أدخل رقم الحساب البنكي IBAN (اختياري)"
+                placeholder="أدخل رقم IBAN (مثال: SA0000000000000000000000)"
                 className="text-right"
+                maxLength={24}
+                pattern="SA[0-9]{22}"
+                onInput={(e) => {
+                  const input = e.target as HTMLInputElement;
+                  let value = input.value.toUpperCase();
+                  
+                  // إذا لم يبدأ بـ SA، أضف SA
+                  if (value.length > 0 && !value.startsWith('SA')) {
+                    if (value.startsWith('S')) {
+                      value = 'SA' + value.substring(1);
+                    } else {
+                      value = 'SA' + value;
+                    }
+                  }
+                  
+                  // احتفظ بـ SA واسمح فقط بالأرقام بعدها
+                  if (value.startsWith('SA')) {
+                    const numbers = value.substring(2).replace(/\D/g, '');
+                    value = 'SA' + numbers;
+                  }
+                  
+                  // حد أقصى 24 حرف
+                  input.value = value.substring(0, 24);
+                }}
               />
 
               <Input

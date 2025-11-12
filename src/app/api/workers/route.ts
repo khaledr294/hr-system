@@ -36,9 +36,24 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Validate code is a number
-    if (isNaN(data.code) || data.code <= 0) {
-      return new Response('Invalid worker code', { status: 400 });
+    // Validate code is a non-empty string (can be alphanumeric)
+    if (typeof data.code !== 'string' || data.code.trim().length === 0) {
+      return new Response('Invalid worker code - code must be a non-empty string', { status: 400 });
+    }
+
+    // Validate residency number (10 digits max, numbers only)
+    if (!/^\d{1,10}$/.test(data.residencyNumber)) {
+      return new Response('Invalid residency number - must be 1-10 digits', { status: 400 });
+    }
+
+    // Validate border number if provided (10 digits max, numbers only)
+    if (data.borderNumber && !/^\d{1,10}$/.test(data.borderNumber)) {
+      return new Response('Invalid border number - must be 1-10 digits', { status: 400 });
+    }
+
+    // Validate IBAN if provided (SA + 22 digits)
+    if (data.iban && !/^SA\d{22}$/.test(data.iban)) {
+      return new Response('Invalid IBAN format - must be SA followed by 22 digits', { status: 400 });
     }
 
     // Validate date of birth

@@ -104,6 +104,27 @@ export default function EditWorkerPage({ params }: { params: Promise<{ id: strin
       return;
     }
 
+    // Validate residency number (10 digits max)
+    if (residencyNumber.length > 10 || !/^\d+$/.test(residencyNumber)) {
+      setError('رقم الإقامة يجب أن يكون أرقام فقط (10 خانات كحد أقصى)');
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Validate border number if provided (10 digits max, numbers only)
+    if (borderNumber && (borderNumber.length > 10 || !/^\d+$/.test(borderNumber))) {
+      setError('رقم الحدود يجب أن يكون أرقام فقط (10 خانات كحد أقصى)');
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Validate IBAN format if provided (SA + 22 digits = 24 characters)
+    if (iban && !/^SA\d{22}$/.test(iban)) {
+      setError('رقم الآيبان يجب أن يكون بالصيغة: SA متبوعة بـ 22 رقم');
+      setIsSubmitting(false);
+      return;
+    }
+
     // Format date of birth
     const dateOfBirth = `${birthYear}-${birthMonth.padStart(2, '0')}-${birthDay.padStart(2, '0')}`;
 
@@ -239,11 +260,12 @@ export default function EditWorkerPage({ params }: { params: Promise<{ id: strin
             name="residencyNumber"
             type="text"
             required
-            placeholder="أدخل رقم الإقامة"
+            placeholder="أدخل رقم الإقامة (10 أرقام كحد أقصى)"
             defaultValue={worker.residencyNumber}
             className="text-right"
             inputMode="numeric"
             pattern="[0-9]*"
+            maxLength={10}
           />
 
           <div>
@@ -306,9 +328,12 @@ export default function EditWorkerPage({ params }: { params: Promise<{ id: strin
                 label="رقم الحدود"
                 name="borderNumber"
                 type="text"
-                placeholder="أدخل رقم الحدود (اختياري)"
+                placeholder="أدخل رقم الحدود (10 أرقام كحد أقصى - اختياري)"
                 defaultValue={worker.borderNumber || ''}
                 className="text-right"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={10}
               />
 
               <Input
@@ -338,11 +363,14 @@ export default function EditWorkerPage({ params }: { params: Promise<{ id: strin
                 className="text-right"
               />
 
-              <Input
+              <Select
                 label="الديانة"
                 name="religion"
-                type="text"
-                placeholder="أدخل الديانة (اختياري)"
+                options={[
+                  { value: '', label: 'اختر الديانة (اختياري)' },
+                  { value: 'الإسلام', label: 'الإسلام' },
+                  { value: 'غير الإسلام', label: 'غير الإسلام' }
+                ]}
                 defaultValue={worker.religion || ''}
                 className="text-right"
               />
@@ -351,9 +379,33 @@ export default function EditWorkerPage({ params }: { params: Promise<{ id: strin
                 label="IBAN"
                 name="iban"
                 type="text"
-                placeholder="أدخل رقم الحساب البنكي IBAN (اختياري)"
+                placeholder="أدخل رقم IBAN (مثال: SA0000000000000000000000)"
                 defaultValue={worker.iban || ''}
                 className="text-right"
+                maxLength={24}
+                pattern="SA[0-9]{22}"
+                onInput={(e) => {
+                  const input = e.target as HTMLInputElement;
+                  let value = input.value.toUpperCase();
+                  
+                  // إذا لم يبدأ بـ SA، أضف SA
+                  if (value.length > 0 && !value.startsWith('SA')) {
+                    if (value.startsWith('S')) {
+                      value = 'SA' + value.substring(1);
+                    } else {
+                      value = 'SA' + value;
+                    }
+                  }
+                  
+                  // احتفظ بـ SA واسمح فقط بالأرقام بعدها
+                  if (value.startsWith('SA')) {
+                    const numbers = value.substring(2).replace(/\D/g, '');
+                    value = 'SA' + numbers;
+                  }
+                  
+                  // حد أقصى 24 حرف
+                  input.value = value.substring(0, 24);
+                }}
               />
 
               <Input
