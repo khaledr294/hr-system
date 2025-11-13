@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { getCurrentUser } from '@/lib/session';
+import { getCurrentUser, getSession as getSessionFromLib } from '@/lib/session';
 
 export type UserRole = 'HR_MANAGER' | 'GENERAL_MANAGER' | 'MARKETER';
 
@@ -7,6 +7,14 @@ export interface SessionUser {
   id: string;
   email: string;
   role: string;
+}
+
+/**
+ * Gets the current session without redirecting
+ * @returns The current session or null
+ */
+export async function getSession() {
+  return await getSessionFromLib();
 }
 
 /**
