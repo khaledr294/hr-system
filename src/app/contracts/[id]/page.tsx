@@ -8,6 +8,7 @@ import DeleteContractButton from '@/components/contracts/DeleteContractButton';
 import GenerateWordButton from '@/components/contracts/GenerateWordButton';
 import PenaltyCalculator from '@/components/contracts/PenaltyCalculator';
 import ExtendContractButton from '@/components/contracts/ExtendContractButton';
+import ArchiveContractButton from '@/components/contracts/ArchiveContractButton';
 import React from 'react';
 
 // Helper function to format date without timezone issues
@@ -72,6 +73,18 @@ export default async function ContractDetailsPage({
                 <TerminateContractButton contractId={contract.id} />
               </>
             )}
+            
+            {/* زر الأرشفة - يظهر فقط للعقود المنتهية أو المكتملة */}
+            {(contract.status === 'EXPIRED' || contract.status === 'COMPLETED') && (
+              <ArchiveContractButton
+                contractId={contract.id}
+                contractStatus={contract.status}
+                workerName={contract.worker.name}
+                clientName={contract.client.name}
+                contractNumber={contract.contractNumber}
+              />
+            )}
+            
             <div className="flex gap-3">
               <GenerateWordButton 
                 contractId={contract.id}
