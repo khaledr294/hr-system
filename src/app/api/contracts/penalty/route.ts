@@ -58,14 +58,24 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    // تحديث حالة العاملة إلى "متاحة" عند إنهاء العقد
+    await prisma.worker.update({
+      where: { id: contract.workerId },
+      data: { 
+        status: 'AVAILABLE',
+        reservedAt: null,
+        reservedBy: null
+      }
+    });
+
     return NextResponse.json({
       contract: updatedContract,
       delayDays,
       penaltyAmount,
       totalAmount: updatedContract.totalAmount,
       message: delayDays > 0 
-        ? `تم حساب غرامة التأخير: ${delayDays} أيام × ${contract.penaltyRate || 120} ريال = ${penaltyAmount} ريال. المبلغ الإجمالي الجديد: ${updatedContract.totalAmount.toLocaleString()} ريال`
-        : 'تم إنهاء العقد دون غرامة تأخير'
+        ? `تم حساب غرامة التأخير: ${delayDays} أيام × ${contract.penaltyRate || 120} ريال = ${penaltyAmount} ريال. المبلغ الإجمالي الجديد: ${updatedContract.totalAmount.toLocaleString()} ريال. تم تحديث حالة العاملة إلى "متاحة".`
+        : 'تم إنهاء العقد دون غرامة تأخير. تم تحديث حالة العاملة إلى "متاحة".'
     });
 
   } catch (error) {

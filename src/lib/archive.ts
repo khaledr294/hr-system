@@ -26,10 +26,16 @@ export async function archiveContract(contractId: string, userId?: string, reaso
       throw new Error('لا يمكن أرشفة هذا العقد. يمكن أرشفة العقود المكتملة أو الملغاة فقط.\n\nإذا كان العقد منتهياً (EXPIRED)، يرجى:\n1. إنهاء العقد رسمياً من خلال زر "إنهاء العقد"\n2. سيتم احتساب غرامة التأخير إن وجدت\n3. بعدها يمكن أرشفته');
     }
 
-    // التحقق من حالة العاملة - يجب ألا تكون محجوزة أو مؤجرة
-    if (contract.worker.status === 'RESERVED' || contract.worker.status === 'CONTRACTED') {
-      throw new Error('لا يمكن أرشفة العقد. العاملة لا تزال في حالة نشطة. يرجى تحديث حالتها أولاً.');
-    }
+    // تحديث حالة العاملة تلقائياً عند أرشفة العقد
+    // إذا كان العقد مكتمل أو ملغى، نعيد العاملة لحالة "متاحة"
+    await prisma.worker.update({
+      where: { id: contract.workerId },
+      data: { 
+        status: 'AVAILABLE',
+        reservedAt: null,
+        reservedBy: null
+      }
+    });
 
     // نسخ العقد إلى الأرشيف
     const archivedContract = await prisma.archivedContract.create({
