@@ -96,7 +96,7 @@ export default function EditWorkerPage({ params }: { params: Promise<{ id: strin
     const religion = (formData.get('religion') as string)?.trim();
     const iban = (formData.get('iban') as string)?.trim();
     const residenceBranch = (formData.get('residenceBranch') as string)?.trim();
-    const medicalStatus = (formData.get('medicalStatus') as string)?.trim() || 'PENDING_REPORT';
+    // const medicalStatus = (formData.get('medicalStatus') as string)?.trim() || 'PENDING_REPORT';
 
     // Validation
     if (!name || !nationality || !residencyNumber || !birthYear || !birthMonth || !birthDay) {
@@ -143,7 +143,7 @@ export default function EditWorkerPage({ params }: { params: Promise<{ id: strin
         religion: religion || null,
         iban: iban || null,
         residenceBranch: residenceBranch || null,
-        medicalStatus: medicalStatus,
+        // medicalStatus: medicalStatus,
       };
 
       const response = await fetch(`/api/workers/${id}`, {
@@ -376,6 +376,7 @@ export default function EditWorkerPage({ params }: { params: Promise<{ id: strin
                 className="text-right"
               />
 
+              {/* Temporarily disabled until medicalStatus column is added to database
               <Select
                 label="حالة الفحص الطبي"
                 name="medicalStatus"
@@ -387,6 +388,7 @@ export default function EditWorkerPage({ params }: { params: Promise<{ id: strin
                 defaultValue={(worker as Worker & { medicalStatus?: string }).medicalStatus || 'PENDING_REPORT'}
                 className="text-right"
               />
+              */}
 
               <Input
                 label="IBAN (اختياري)"

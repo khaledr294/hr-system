@@ -101,7 +101,7 @@ export default function NewWorkerPage() {
     const religion = (formData.get('religion') as string)?.trim();
     const iban = (formData.get('iban') as string)?.trim();
     const residenceBranch = (formData.get('residenceBranch') as string)?.trim();
-    const medicalStatus = (formData.get('medicalStatus') as string)?.trim() || 'PENDING_REPORT';
+    // const medicalStatus = (formData.get('medicalStatus') as string)?.trim() || 'PENDING_REPORT';
 
     // Validate border number (10 digits max, numbers only)
     if (borderNumber && (borderNumber.length > 10 || !/^\d+$/.test(borderNumber))) {
@@ -144,7 +144,7 @@ export default function NewWorkerPage() {
       religion: religion || null,
       iban: iban || null,
       residenceBranch: residenceBranch || null,
-      medicalStatus: medicalStatus,
+      // medicalStatus: medicalStatus,
     };
 
     try {
@@ -364,6 +364,7 @@ export default function NewWorkerPage() {
                 className="text-right"
               />
 
+              {/* Temporarily disabled until medicalStatus column is added to database
               <Select
                 label="حالة الفحص الطبي"
                 name="medicalStatus"
@@ -374,6 +375,7 @@ export default function NewWorkerPage() {
                 ]}
                 className="text-right"
               />
+              */}
 
               <Input
                 label="IBAN (اختياري)"

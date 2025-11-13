@@ -34,12 +34,20 @@ export default function MigrationPage() {
         <h1 className="text-2xl font-bold mb-6 text-gray-900">تشغيل Migration للحقول الجديدة</h1>
         
         <div className="mb-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+          <p className="text-blue-800 font-bold mb-2">
+            ℹ️ حول هذه الصفحة:
+          </p>
           <p className="text-blue-800">
             هذه الصفحة تقوم بإضافة حقل <code className="bg-blue-100 px-2 py-1 rounded">medicalStatus</code> إلى جدول العاملات.
           </p>
           <p className="text-blue-700 mt-2 text-sm">
             الحقل يتتبع حالة الفحص الطبي: لائق، غير لائق، أو بانتظار التقرير.
           </p>
+          <div className="mt-3 p-3 bg-yellow-50 border border-yellow-300 rounded">
+            <p className="text-yellow-800 text-sm font-semibold">
+              ⚠️ ملاحظة: إذا فشل التنفيذ التلقائي، ستحتاج لإضافة الحقل يدوياً عبر Prisma Studio
+            </p>
+          </div>
         </div>
 
         <button
@@ -66,21 +74,73 @@ export default function MigrationPage() {
             </p>
             
             {result.manualSQL && (
-              <div className="mt-4 p-3 bg-gray-100 rounded border border-gray-300">
-                <p className="text-sm text-gray-700 font-semibold mb-2">
-                  يرجى تنفيذ هذا الأمر يدوياً في console.prisma.io:
-                </p>
-                <code className="block p-2 bg-white rounded text-xs overflow-x-auto">
-                  {result.manualSQL}
-                </code>
-                <a 
-                  href="https://console.prisma.io" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-block mt-2 text-blue-600 hover:text-blue-800 underline text-sm"
-                >
-                  افتح Prisma Console →
-                </a>
+              <div className="mt-4 p-4 bg-gray-50 rounded border-2 border-gray-300">
+                <h4 className="text-sm text-gray-900 font-bold mb-3">
+                  📋 دليل إضافة الحقل يدوياً عبر Prisma Studio:
+                </h4>
+                
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-start gap-2">
+                    <span className="font-bold text-blue-600 min-w-[24px]">1.</span>
+                    <div>
+                      <p className="text-gray-800">افتح مشروعك في Prisma:</p>
+                      <a 
+                        href="https://console.prisma.io" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-block mt-1 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs"
+                      >
+                        فتح Prisma Console →
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2">
+                    <span className="font-bold text-blue-600 min-w-[24px]">2.</span>
+                    <p className="text-gray-800">اضغط على مشروعك ثم اختر <strong>"Data Browser"</strong></p>
+                  </div>
+
+                  <div className="flex items-start gap-2">
+                    <span className="font-bold text-blue-600 min-w-[24px]">3.</span>
+                    <p className="text-gray-800">من القائمة الجانبية، اضغط على <strong>"Worker"</strong></p>
+                  </div>
+
+                  <div className="flex items-start gap-2">
+                    <span className="font-bold text-blue-600 min-w-[24px]">4.</span>
+                    <div className="flex-1">
+                      <p className="text-gray-800 mb-2">في أعلى الصفحة، ابحث عن زر <strong>"Add field"</strong> أو <strong>"+"</strong></p>
+                      <div className="p-2 bg-white border border-gray-300 rounded text-xs">
+                        <p className="text-gray-600 mb-1">أضف الحقل بهذه الإعدادات:</p>
+                        <ul className="list-disc list-inside space-y-1 text-gray-700">
+                          <li><strong>Field name:</strong> medicalStatus</li>
+                          <li><strong>Type:</strong> String (Text)</li>
+                          <li><strong>Default value:</strong> "PENDING_REPORT"</li>
+                          <li><strong>Optional:</strong> نعم (اختياري)</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2">
+                    <span className="font-bold text-blue-600 min-w-[24px]">5.</span>
+                    <p className="text-gray-800">احفظ التغييرات واضغط <strong>"Apply Changes"</strong></p>
+                  </div>
+
+                  <div className="mt-4 p-3 bg-green-50 border border-green-300 rounded">
+                    <p className="text-green-800 text-xs">
+                      ✅ بعد إضافة الحقل، قم بتحديث الصفحة وجرب زر "تشغيل Migration" مرة أخرى
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 p-3 bg-gray-100 rounded border border-gray-300">
+                  <p className="text-xs text-gray-600 font-semibold mb-2">
+                    بديل: إذا لم تجد خيار Add field، استخدم هذا الأمر SQL:
+                  </p>
+                  <code className="block p-2 bg-white rounded text-xs overflow-x-auto font-mono">
+                    {result.manualSQL}
+                  </code>
+                </div>
               </div>
             )}
           </div>
