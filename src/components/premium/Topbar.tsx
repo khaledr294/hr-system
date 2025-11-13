@@ -26,15 +26,19 @@ export default function Topbar({ onToggleSidebar }: { onToggleSidebar?: () => vo
   return (
     <div dir="rtl" className="flex items-center justify-between p-3 sm:p-4 gap-2 sm:gap-3 text-right border-b border-slate-200/50">
       <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-start">
-        <button 
-          aria-label="فتح القائمة" 
-          onClick={onToggleSidebar} 
-          className="lg:hidden glass shadow-soft rounded-xl sm:rounded-2xl p-2 hover:bg-white/80 transition-colors"
-        >
-          <Menu className="w-5 h-5 text-slate-700" />
-        </button>
+        {onToggleSidebar && (
+          <button 
+            type="button"
+            aria-label="فتح القائمة" 
+            onClick={onToggleSidebar} 
+            className="lg:hidden glass shadow-soft rounded-xl sm:rounded-2xl p-2 hover:bg-white/80 transition-colors"
+          >
+            <Menu className="w-5 h-5 text-slate-700" />
+          </button>
+        )}
         <div className="glass shadow-soft rounded-xl sm:rounded-2xl flex items-center px-3 sm:px-4 py-2 w-full max-w-xs sm:max-w-xl border border-slate-200/50">
           <button
+            type="button"
             onClick={handleSearch}
             className="hover:text-blue-600 transition-colors"
             aria-label="بحث"

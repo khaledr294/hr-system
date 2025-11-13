@@ -101,6 +101,7 @@ export default function NewWorkerPage() {
     const religion = (formData.get('religion') as string)?.trim();
     const iban = (formData.get('iban') as string)?.trim();
     const residenceBranch = (formData.get('residenceBranch') as string)?.trim();
+    const medicalStatus = (formData.get('medicalStatus') as string)?.trim() || 'PENDING_REPORT';
 
     // Validate border number (10 digits max, numbers only)
     if (borderNumber && (borderNumber.length > 10 || !/^\d+$/.test(borderNumber))) {
@@ -143,6 +144,7 @@ export default function NewWorkerPage() {
       religion: religion || null,
       iban: iban || null,
       residenceBranch: residenceBranch || null,
+      medicalStatus: medicalStatus,
     };
 
     try {
@@ -358,6 +360,17 @@ export default function NewWorkerPage() {
                   { value: '', label: 'اختر الديانة (اختياري)' },
                   { value: 'الإسلام', label: 'الإسلام' },
                   { value: 'غير الإسلام', label: 'غير الإسلام' }
+                ]}
+                className="text-right"
+              />
+
+              <Select
+                label="حالة الفحص الطبي"
+                name="medicalStatus"
+                options={[
+                  { value: 'PENDING_REPORT', label: 'بانتظار التقرير' },
+                  { value: 'FIT', label: 'لائق' },
+                  { value: 'UNFIT', label: 'غير لائق' }
                 ]}
                 className="text-right"
               />

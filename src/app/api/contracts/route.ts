@@ -56,17 +56,108 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    const contracts = await prisma.contract.findMany({
-      where: whereClause,
-      include: {
-        client: true,
-        worker: true,
-        marketer: true,
+    // Fetch both active and archived contracts
+    const [activeContracts, archivedContracts] = await Promise.all([
+      prisma.contract.findMany({
+        where: whereClause,
+        include: {
+          client: true,
+          worker: true,
+          marketer: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      prisma.archivedContract.findMany({
+        where: whereClause,
+        orderBy: {
+          archivedAt: 'desc',
+        },
+      }),
+    ]);
+
+    // Transform archived contracts to match Contract structure
+    const transformedArchivedContracts = archivedContracts.map(archived => ({
+      id: archived.id,
+      workerId: archived.workerId,
+      clientId: archived.clientId,
+      startDate: archived.startDate,
+      endDate: archived.endDate,
+      packageType: archived.packageType,
+      packageName: archived.packageName,
+      totalAmount: archived.totalAmount,
+      status: archived.status,
+      contractNumber: archived.contractNumber,
+      notes: archived.notes,
+      delayDays: archived.delayDays,
+      penaltyAmount: archived.penaltyAmount,
+      penaltyRate: null,
+      marketerId: archived.marketerId,
+      createdAt: archived.archivedAt,
+      updatedAt: archived.archivedAt,
+      client: {
+        id: archived.clientId,
+        name: archived.clientName,
+        idNumber: '',
+        phone: '',
+        dateOfBirth: null,
+        address: null,
+        createdAt: archived.archivedAt,
+        updatedAt: archived.archivedAt,
       },
-      orderBy: {
-        createdAt: 'desc',
+      worker: {
+        id: archived.workerId,
+        name: archived.workerName,
+        code: archived.workerCode,
+        nationality: '',
+        residencyNumber: '',
+        dateOfBirth: archived.archivedAt,
+        phone: '',
+        status: 'AVAILABLE',
+        salary: null,
+        createdAt: archived.archivedAt,
+        updatedAt: archived.archivedAt,
+        nationalitySalaryId: null,
+        arrivalDate: null,
+        borderNumber: null,
+        iban: null,
+        officeName: null,
+        passportNumber: null,
+        religion: null,
+        reservationNotes: null,
+        reservedAt: null,
+        reservedBy: null,
+        residenceBranch: null,
       },
-    });
+      marketer: archived.marketerId ? {
+        id: archived.marketerId,
+        name: archived.marketerName || '',
+        email: null,
+        password: null,
+        role: 'STAFF',
+        jobTitleId: null,
+        nationality: null,
+        nationalitySalaryId: null,
+        residencyNumber: null,
+        dateOfBirth: null,
+        phone: null,
+        status: 'AVAILABLE',
+        salary: null,
+        createdAt: archived.archivedAt,
+        updatedAt: archived.archivedAt,
+        twoFactorBackupCodes: null,
+        twoFactorEnabled: false,
+        twoFactorSecret: null,
+      } : null,
+      isArchived: true,
+    }));
+
+    // Combine both arrays
+    const contracts = [
+      ...activeContracts.map(c => ({ ...c, isArchived: false })),
+      ...transformedArchivedContracts,
+    ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
     return new Response(JSON.stringify(contracts), {
       status: 200,

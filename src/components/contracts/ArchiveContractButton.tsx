@@ -25,8 +25,8 @@ export default function ArchiveContractButton({
   const [isArchiving, setIsArchiving] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // إظهار الزر فقط للعقود المنتهية أو المكتملة
-  if (contractStatus !== 'EXPIRED' && contractStatus !== 'COMPLETED') {
+  // إظهار الزر فقط للعقود المكتملة أو الملغاة (وليس المنتهية)
+  if (contractStatus !== 'COMPLETED' && contractStatus !== 'CANCELLED') {
     return null;
   }
 
@@ -39,7 +39,7 @@ export default function ArchiveContractButton({
         body: JSON.stringify({
           action: 'archive',
           contractId,
-          reason: contractStatus === 'COMPLETED' ? 'COMPLETED' : 'EXPIRED'
+          reason: contractStatus === 'CANCELLED' ? 'CANCELLED' : 'COMPLETED'
         })
       });
 

@@ -74,8 +74,8 @@ export default async function ContractDetailsPage({
               </>
             )}
             
-            {/* زر الأرشفة - يظهر فقط للعقود المنتهية أو المكتملة */}
-            {(contract.status === 'EXPIRED' || contract.status === 'COMPLETED') && (
+            {/* زر الأرشفة - يظهر فقط للعقود المكتملة أو الملغاة */}
+            {(contract.status === 'COMPLETED' || contract.status === 'CANCELLED') && (
               <ArchiveContractButton
                 contractId={contract.id}
                 contractStatus={contract.status}
@@ -85,14 +85,12 @@ export default async function ContractDetailsPage({
               />
             )}
             
-            <div className="flex gap-3">
-              <GenerateWordButton 
-                contractId={contract.id}
-                className="px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-md transition-colors"
-              >
-                📄 إنتاج وثيقة العقد (Word)
-              </GenerateWordButton>
-            </div>
+            <GenerateWordButton 
+              contractId={contract.id}
+              className="px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-md transition-colors"
+            >
+              📄 إنتاج وثيقة العقد (Word)
+            </GenerateWordButton>
           </div>
         </div>
 
@@ -170,17 +168,23 @@ export default async function ContractDetailsPage({
               <dt className="text-sm font-medium text-gray-500">الحالة</dt>
               <dd className="mt-1">
                 <span
-                  className={`inline-flex px-2 py-1 text-xs rounded ${
+                  className={`inline-flex px-3 py-1.5 text-sm font-bold rounded-full ${
                     contract.status === 'ACTIVE'
-                      ? 'bg-green-100 text-green-800'
+                      ? 'bg-green-100 text-green-800 border-2 border-green-300'
+                      : contract.status === 'EXPIRED'
+                      ? 'bg-yellow-100 text-yellow-800 border-2 border-yellow-300'
                       : contract.status === 'COMPLETED'
-                      ? 'bg-gray-100 text-gray-800'
-                      : 'bg-red-100 text-red-800'
+                      ? 'bg-blue-100 text-blue-800 border-2 border-blue-300'
+                      : contract.status === 'CANCELLED'
+                      ? 'bg-red-100 text-red-800 border-2 border-red-300'
+                      : 'bg-gray-100 text-gray-800'
                   }`}
                 >
-                  {contract.status === 'ACTIVE' ? 'نشط'
-                   : contract.status === 'COMPLETED' ? 'منتهي'
-                   : 'ملغي'}
+                  {contract.status === 'ACTIVE' ? '🟢 نشط'
+                   : contract.status === 'EXPIRED' ? '⏰ منتهي (يحتاج إنهاء رسمي)'
+                   : contract.status === 'COMPLETED' ? '✅ مكتمل'
+                   : contract.status === 'CANCELLED' ? '❌ ملغي'
+                   : contract.status}
                 </span>
               </dd>
             </div>

@@ -1,78 +1,33 @@
 ﻿import { prisma } from '@/lib/prisma';
 
 /**
- * تحديث العقود المنتهية وحالة العاملات المرتبطة بها
+ * تحديث العقود المنتهية فقط (بدون تغيير حالة العاملات)
+ * العاملة تبقى CONTRACTED حتى يتم إنهاء العقد رسمياً عبر زر "إنهاء العقد"
  */
 export async function updateExpiredContracts() {
   const today = new Date();
   
   try {
-    // البحث عن العقود المنتهية التي لم يتم تحديث حالتها
-    const expiredContracts = await prisma.contract.findMany({
+    // البحث عن العقود النشطة التي تجاوزت تاريخ الانتهاء
+    const result = await prisma.contract.updateMany({
       where: {
-        endDate: {
-          lt: today
-        },
-        status: {
-          not: 'EXPIRED'
-        }
+        endDate: { lt: today },
+        status: 'ACTIVE'  // فقط العقود النشطة
       },
-      select: {
-        id: true,
-        workerId: true
+      data: {
+        status: 'EXPIRED'  // تحديث الحالة إلى منتهي
+        // ⚠️ لا نغير حالة العاملة - تبقى CONTRACTED
+        // سيتم تغييرها عند إنهاء العقد رسمياً (terminate)
       }
     });
 
-    if (expiredContracts.length === 0) {
-      return {
-        success: true,
-        updatedCount: 0,
-        message: 'No contracts to update'
-      };
-    }
-
-    // تحديث حالة العقود والعاملات في معاملة واحدة
-    const workerIds = expiredContracts.map(c => c.workerId);
-    
-    await prisma.$transaction([
-      // تحديث حالة العقود إلى منتهية
-      prisma.contract.updateMany({
-        where: {
-          id: {
-            in: expiredContracts.map(c => c.id)
-          }
-        },
-        data: {
-          status: 'EXPIRED'
-        }
-      }),
-      
-      // تحديث حالة العاملات إلى متاحة
-      // فقط للعاملات التي لا توجد لهن عقود نشطة أخرى
-      prisma.worker.updateMany({
-        where: {
-          id: {
-            in: workerIds
-          },
-          // التأكد من عدم وجود عقود نشطة أخرى
-          contracts: {
-            none: {
-              status: 'ACTIVE'
-            }
-          }
-        },
-        data: {
-          status: 'AVAILABLE'
-        }
-      })
-    ]);
-
-    console.log(`✅ تم تحديث ${expiredContracts.length} عقد منتهي وحالة العاملات المرتبطة`);
+    console.log(`✅ تم تحديث ${result.count} عقد من ACTIVE إلى EXPIRED`);
+    console.log(`⚠️  ملاحظة: العاملات تبقى بحالة CONTRACTED حتى يتم إنهاء العقود رسمياً`);
 
     return {
       success: true,
-      updatedCount: expiredContracts.length,
-      message: 'Contracts and worker statuses updated successfully'
+      updatedCount: result.count,
+      message: `Updated ${result.count} contracts to EXPIRED status`
     };
   } catch (error) {
     console.error('❌ خطأ في تحديث العقود المنتهية:', error);

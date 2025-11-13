@@ -1,0 +1,60 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { getSession } from '@/lib/session';
+import { createLog } from '@/lib/logger';
+
+export async function PATCH(
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  const session = await getSession();
+
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { id } = await context.params;
+  const { status } = await req.json();
+
+  // Validate status
+  const allowedStatuses = ['AVAILABLE', 'CONTRACTED', 'RESERVED', 'SICK', 'RUNAWAY'];
+  if (!allowedStatuses.includes(status)) {
+    return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+  }
+
+  // Check permissions for special statuses
+  if ((status === 'SICK' || status === 'RUNAWAY') && session.user.role !== 'HR_MANAGER') {
+    return NextResponse.json(
+      { error: 'Only HR Manager can set worker status to SICK or RUNAWAY' },
+      { status: 403 }
+    );
+  }
+
+  // Prevent manual change to CONTRACTED or RESERVED (system-managed)
+  if (status === 'CONTRACTED' || status === 'RESERVED') {
+    return NextResponse.json(
+      { error: 'This status is managed automatically by the system' },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const worker = await prisma.worker.update({
+      where: { id },
+      data: { status },
+    });
+
+    await createLog(
+      session.user.id,
+      'UPDATE_WORKER_STATUS',
+      'Worker',
+      id,
+      `تغيير حالة العاملة ${worker.name} إلى ${status}`
+    );
+
+    return NextResponse.json(worker);
+  } catch (error) {
+    console.error('Failed to update worker status:', error);
+    return NextResponse.json({ error: 'Failed to update worker status' }, { status: 500 });
+  }
+}

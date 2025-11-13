@@ -96,6 +96,7 @@ export default function EditWorkerPage({ params }: { params: Promise<{ id: strin
     const religion = (formData.get('religion') as string)?.trim();
     const iban = (formData.get('iban') as string)?.trim();
     const residenceBranch = (formData.get('residenceBranch') as string)?.trim();
+    const medicalStatus = (formData.get('medicalStatus') as string)?.trim() || 'PENDING_REPORT';
 
     // Validation
     if (!name || !nationality || !residencyNumber || !birthYear || !birthMonth || !birthDay) {
@@ -142,6 +143,7 @@ export default function EditWorkerPage({ params }: { params: Promise<{ id: strin
         religion: religion || null,
         iban: iban || null,
         residenceBranch: residenceBranch || null,
+        medicalStatus: medicalStatus,
       };
 
       const response = await fetch(`/api/workers/${id}`, {
@@ -371,6 +373,18 @@ export default function EditWorkerPage({ params }: { params: Promise<{ id: strin
                   { value: 'غير الإسلام', label: 'غير الإسلام' }
                 ]}
                 defaultValue={worker.religion || ''}
+                className="text-right"
+              />
+
+              <Select
+                label="حالة الفحص الطبي"
+                name="medicalStatus"
+                options={[
+                  { value: 'PENDING_REPORT', label: 'بانتظار التقرير' },
+                  { value: 'FIT', label: 'لائق' },
+                  { value: 'UNFIT', label: 'غير لائق' }
+                ]}
+                defaultValue={(worker as Worker & { medicalStatus?: string }).medicalStatus || 'PENDING_REPORT'}
                 className="text-right"
               />
 

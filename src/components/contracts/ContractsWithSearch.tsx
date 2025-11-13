@@ -47,20 +47,50 @@ export default function ContractsWithSearch({ contracts }: ContractsWithSearchPr
 
   // تقسيم العقود المفلترة
   const now = new Date();
-  const expiringSoon = filteredContracts.filter(contract => {
-    const end = new Date(contract.endDate);
-    const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    return contract.status === 'ACTIVE' && diff <= 3 && diff >= 0;
-  });
-
-  const active = filteredContracts.filter(contract => {
-    const end = new Date(contract.endDate);
-    return contract.status === 'ACTIVE' && (end > now) && !expiringSoon.includes(contract);
-  });
-
-  const completed = filteredContracts.filter(contract => 
-    contract.status === 'COMPLETED' || new Date(contract.endDate) < now
-  );
+  
+  // عقود على وشك الانتهاء (أقل من 3 أيام)
+  const expiringSoon = useMemo(() => {
+    return filteredContracts.filter(contract => {
+      if (contract.status !== 'ACTIVE') return false;
+      const end = new Date(contract.endDate);
+      const diffTime = end.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays >= 0 && diffDays <= 3;
+    });
+  }, [filteredContracts]);
+  
+  // عقود نشطة (باستثناء التي على وشك الانتهاء)
+  const active = useMemo(() => {
+    return filteredContracts.filter(contract => {
+      if (contract.status !== 'ACTIVE') return false;
+      const end = new Date(contract.endDate);
+      const diffTime = end.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays > 3;
+    });
+  }, [filteredContracts]);
+  
+  // عقود منتهية (تاريخياً لكن لم يتم إنهاؤها رسمياً)
+  const expired = useMemo(() => {
+    return filteredContracts.filter(contract => 
+      contract.status === 'EXPIRED' || 
+      (contract.status === 'ACTIVE' && new Date(contract.endDate) < now)
+    );
+  }, [filteredContracts]);
+  
+  // عقود مكتملة (تم إنهاؤها رسمياً)
+  const completed = useMemo(() => {
+    return filteredContracts.filter(contract => 
+      contract.status === 'COMPLETED'
+    );
+  }, [filteredContracts]);
+  
+  // عقود ملغاة
+  const cancelled = useMemo(() => {
+    return filteredContracts.filter(contract => 
+      contract.status === 'CANCELLED'
+    );
+  }, [filteredContracts]);
 
   function renderTable(list: Contract[], title: string) {
     return (
@@ -113,17 +143,23 @@ export default function ContractsWithSearch({ contracts }: ContractsWithSearchPr
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
-                      className={`inline-flex px-2 py-1 text-xs rounded ${
+                      className={`inline-flex px-3 py-1 text-xs font-bold rounded-full ${
                         contract.status === 'ACTIVE'
-                          ? 'bg-green-100 text-green-800'
+                          ? 'bg-green-100 text-green-800 border border-green-300'
+                          : contract.status === 'EXPIRED'
+                          ? 'bg-yellow-100 text-yellow-800 border border-yellow-300'
                           : contract.status === 'COMPLETED'
-                          ? 'bg-gray-100 text-gray-800'
-                          : 'bg-red-100 text-red-800'
+                          ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                          : contract.status === 'CANCELLED'
+                          ? 'bg-red-100 text-red-800 border border-red-300'
+                          : 'bg-gray-100 text-gray-800'
                       }`}
                     >
-                      {contract.status === 'ACTIVE' ? 'نشط'
-                        : contract.status === 'COMPLETED' ? 'منتهي'
-                        : 'ملغي'}
+                      {contract.status === 'ACTIVE' ? '🟢 نشط'
+                        : contract.status === 'EXPIRED' ? '⏰ منتهي'
+                        : contract.status === 'COMPLETED' ? '✅ مكتمل'
+                        : contract.status === 'CANCELLED' ? '❌ ملغي'
+                        : contract.status}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -204,9 +240,11 @@ export default function ContractsWithSearch({ contracts }: ContractsWithSearchPr
         </div>
       ) : (
         <>
-          {renderTable(expiringSoon, 'عقود على وشك الانتهاء (متبقي 3 أيام أو أقل)')}
-          {renderTable(active, 'العقود النشطة')}
-          {renderTable(completed, 'العقود المنتهية')}
+          {expiringSoon.length > 0 && renderTable(expiringSoon, '⚠️ عقود على وشك الانتهاء (متبقي 3 أيام أو أقل)')}
+          {renderTable(active, '✅ العقود النشطة')}
+          {renderTable(expired, '⏰ العقود المنتهية (تحتاج إنهاء رسمي)')}
+          {renderTable(completed, '✔️ العقود المكتملة (تم إنهاؤها رسمياً)')}
+          {renderTable(cancelled, '❌ العقود الملغاة')}
         </>
       )}
     </section>

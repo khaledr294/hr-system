@@ -21,9 +21,9 @@ export async function archiveContract(contractId: string, userId?: string, reaso
       throw new Error('العقد غير موجود');
     }
 
-    // التحقق من أن العقد منتهي أو ملغي
-    if (contract.status !== 'EXPIRED' && contract.status !== 'CANCELLED' && contract.status !== 'COMPLETED') {
-      throw new Error('لا يمكن أرشفة عقد نشط. يجب إنهاء العقد أولاً.');
+    // التحقق من أن العقد مكتمل فقط (وليس منتهي)
+    if (contract.status !== 'COMPLETED' && contract.status !== 'CANCELLED') {
+      throw new Error('لا يمكن أرشفة هذا العقد. يمكن أرشفة العقود المكتملة أو الملغاة فقط.\n\nإذا كان العقد منتهياً (EXPIRED)، يرجى:\n1. إنهاء العقد رسمياً من خلال زر "إنهاء العقد"\n2. سيتم احتساب غرامة التأخير إن وجدت\n3. بعدها يمكن أرشفته');
     }
 
     // التحقق من حالة العاملة - يجب ألا تكون محجوزة أو مؤجرة

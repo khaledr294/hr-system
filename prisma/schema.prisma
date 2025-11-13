@@ -36,6 +36,7 @@ model Worker {
   dateOfBirth         DateTime
   phone               String
   status              String             @default("AVAILABLE")
+  medicalStatus       String?            @default("PENDING_REPORT") // لائق, غير لائق, بانتظار التقرير
   salary              Float?
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt

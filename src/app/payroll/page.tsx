@@ -117,6 +117,11 @@ export default function PayrollPage() {
       
       const contracts = await response.json();
       console.log(`📋 العقود الموجودة للعامل ${workerId}:`, contracts.length);
+      console.log(`📋 تفاصيل العقود:`, contracts.map((c: { contractNumber: string; status: string; isArchived?: boolean }) => ({
+        contractNumber: c.contractNumber,
+        status: c.status,
+        isArchived: c.isArchived || false
+      })));
       
       if (!contracts || contracts.length === 0) {
         console.log(`⚠️ لا توجد عقود نشطة للعامل ${workerId}`);

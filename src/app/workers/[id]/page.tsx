@@ -2,7 +2,8 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 import WorkerActions from '../../../components/workers/WorkerActions';
-import { requireSession } from '@/lib/require';
+import WorkerStatusManager from '@/components/workers/WorkerStatusManager';
+import { requireSession, getSession } from '@/lib/require';
 
 export default async function WorkerDetailsPage({
   params,
@@ -10,6 +11,7 @@ export default async function WorkerDetailsPage({
   params: Promise<{ id: string }>;
 }) {
   await requireSession(); // This will redirect if not authenticated
+  const session = await getSession();
 
   const { id } = await params;
   const worker = await prisma.worker.findUnique({
@@ -193,6 +195,15 @@ export default async function WorkerDetailsPage({
               </div>
             </dl>
           </div>
+        </div>
+
+        {/* مكون إدارة حالة العاملة */}
+        <div className="mt-8">
+          <WorkerStatusManager 
+            workerId={worker.id} 
+            currentStatus={worker.status}
+            isHRManager={session?.user?.role === 'HR_MANAGER'}
+          />
         </div>
       </div>
     </DashboardLayout>

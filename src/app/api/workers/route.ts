@@ -95,6 +95,7 @@ export async function POST(req: NextRequest) {
         phone: data.phone,
         nationalitySalaryId: nationalitySalary?.id,
         status: 'AVAILABLE', // Set default status for new workers
+        medicalStatus: data.medicalStatus || 'PENDING_REPORT',
         // حقول جديدة
         borderNumber: data.borderNumber,
         officeName: data.officeName,
