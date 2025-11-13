@@ -67,43 +67,50 @@ export async function POST() {
       });
     }
 
-    // نقل العقود للأرشيف
+    // نقل العقود للأرشيف مع تحديث حالة العاملات
     let archivedCount = 0;
     for (const contract of contractsToArchive) {
       try {
-        // إنشاء نسخة في الأرشيف
-        await prisma.archivedContract.create({
-          data: {
-            id: contract.id,
-            originalId: contract.id,
-            workerId: contract.workerId,
-            workerName: contract.worker.name,
-            workerCode: contract.worker.code,
-            clientId: contract.clientId,
-            clientName: contract.client.name,
-            startDate: contract.startDate,
-            endDate: contract.endDate,
-            packageType: contract.packageType,
-            packageName: contract.packageName,
-            totalAmount: contract.totalAmount,
-            status: contract.status,
-            contractNumber: contract.contractNumber,
-            notes: contract.notes,
-            marketerId: contract.marketerId,
-            archivedAt: now,
-            archivedBy: session.user.id,
-            archiveReason: "EXPIRED"
-          }
-        });
+        // التحقق من حالة العاملة - يجب أن تكون متاحة للأرشفة
+        if (contract.worker.status === 'RESERVED' || contract.worker.status === 'CONTRACTED') {
+          console.warn(`⚠️ تخطي أرشفة العقد ${contract.id} - العاملة ${contract.worker.name} في حالة نشطة: ${contract.worker.status}`);
+          continue;
+        }
 
-        // حذف العقد الأصلي
-        await prisma.contract.delete({
-          where: { id: contract.id }
-        });
+        // إنشاء نسخة في الأرشيف وحذف العقد الأصلي في معاملة واحدة
+        await prisma.$transaction([
+          prisma.archivedContract.create({
+            data: {
+              id: contract.id,
+              originalId: contract.id,
+              workerId: contract.workerId,
+              workerName: contract.worker.name,
+              workerCode: contract.worker.code,
+              clientId: contract.clientId,
+              clientName: contract.client.name,
+              startDate: contract.startDate,
+              endDate: contract.endDate,
+              packageType: contract.packageType,
+              packageName: contract.packageName,
+              totalAmount: contract.totalAmount,
+              status: contract.status,
+              contractNumber: contract.contractNumber,
+              notes: contract.notes,
+              marketerId: contract.marketerId,
+              archivedAt: now,
+              archivedBy: session.user.id,
+              archiveReason: "EXPIRED"
+            }
+          }),
+          // حذف العقد الأصلي
+          prisma.contract.delete({
+            where: { id: contract.id }
+          })
+        ]);
 
         archivedCount++;
       } catch (error) {
-        console.error(`Failed to archive contract ${contract.id}:`, error);
+        console.error(`❌ فشل أرشفة العقد ${contract.id}:`, error);
       }
     }
 

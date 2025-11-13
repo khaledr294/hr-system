@@ -22,8 +22,13 @@ export async function archiveContract(contractId: string, userId?: string, reaso
     }
 
     // التحقق من أن العقد منتهي أو ملغي
-    if (contract.status !== 'EXPIRED' && contract.status !== 'CANCELLED') {
-      throw new Error('لا يمكن أرشفة عقد نشط');
+    if (contract.status !== 'EXPIRED' && contract.status !== 'CANCELLED' && contract.status !== 'COMPLETED') {
+      throw new Error('لا يمكن أرشفة عقد نشط. يجب إنهاء العقد أولاً.');
+    }
+
+    // التحقق من حالة العاملة - يجب ألا تكون محجوزة أو مؤجرة
+    if (contract.worker.status === 'RESERVED' || contract.worker.status === 'CONTRACTED') {
+      throw new Error('لا يمكن أرشفة العقد. العاملة لا تزال في حالة نشطة. يرجى تحديث حالتها أولاً.');
     }
 
     // نسخ العقد إلى الأرشيف
@@ -148,39 +153,71 @@ export async function restoreContract(archivedContractId: string, userId?: strin
       throw new Error('العقد المؤرشف غير موجود');
     }
 
-    // التحقق من أن العقد الأصلي غير موجود
-    const existingContract = await prisma.contract.findFirst({
-      where: {
-        OR: [
-          { id: archived.originalId },
-          { contractNumber: archived.contractNumber || undefined }
-        ]
-      }
+    // التحقق من أن العقد الأصلي غير موجود في جدول العقود النشطة
+    const existingContract = await prisma.contract.findUnique({
+      where: { id: archived.originalId }
     });
 
     if (existingContract) {
-      throw new Error('العقد موجود بالفعل في النظام');
+      throw new Error('العقد موجود بالفعل في النظام النشط. لا يمكن استعادته.');
     }
 
-    // استعادة العقد
-    const restoredContract = await prisma.contract.create({
-      data: {
-        id: archived.originalId,
-        workerId: archived.workerId,
-        clientId: archived.clientId,
-        startDate: archived.startDate,
-        endDate: archived.endDate,
-        packageType: archived.packageType,
-        packageName: archived.packageName,
-        totalAmount: archived.totalAmount,
-        status: archived.status,
-        contractNumber: archived.contractNumber,
-        notes: archived.notes,
-        delayDays: archived.delayDays,
-        penaltyAmount: archived.penaltyAmount,
-        marketerId: archived.marketerId
+    // التحقق من وجود عقد آخر بنفس رقم العقد (إذا كان موجوداً)
+    if (archived.contractNumber) {
+      const duplicateContract = await prisma.contract.findFirst({
+        where: {
+          contractNumber: archived.contractNumber,
+          id: { not: archived.originalId }
+        }
+      });
+
+      if (duplicateContract) {
+        throw new Error(`يوجد عقد آخر برقم ${archived.contractNumber}. يرجى تعديل رقم العقد قبل الاستعادة.`);
       }
+    }
+
+    // التحقق من حالة العاملة - يجب أن تكون متاحة للاستعادة
+    const worker = await prisma.worker.findUnique({
+      where: { id: archived.workerId },
+      select: { status: true, name: true }
     });
+
+    if (!worker) {
+      throw new Error('العاملة غير موجودة في النظام');
+    }
+
+    if (worker.status !== 'AVAILABLE') {
+      throw new Error(`لا يمكن استعادة العقد. العاملة ${worker.name} في حالة "${worker.status}". يجب أن تكون متاحة للاستعادة.`);
+    }
+
+    // استعادة العقد وتحديث حالة العاملة في معاملة واحدة
+    const [restoredContract] = await prisma.$transaction([
+      prisma.contract.create({
+        data: {
+          id: archived.originalId,
+          workerId: archived.workerId,
+          clientId: archived.clientId,
+          startDate: archived.startDate,
+          endDate: archived.endDate,
+          packageType: archived.packageType,
+          packageName: archived.packageName,
+          totalAmount: archived.totalAmount,
+          status: archived.status,
+          contractNumber: archived.contractNumber,
+          notes: archived.notes,
+          delayDays: archived.delayDays,
+          penaltyAmount: archived.penaltyAmount,
+          marketerId: archived.marketerId
+        }
+      }),
+      // تحديث حالة العاملة بناءً على حالة العقد المستعاد
+      prisma.worker.update({
+        where: { id: archived.workerId },
+        data: {
+          status: archived.status === 'ACTIVE' ? 'CONTRACTED' : 'AVAILABLE'
+        }
+      })
+    ]);
 
     // حذف من الأرشيف
     await prisma.archivedContract.delete({
