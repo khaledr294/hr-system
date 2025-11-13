@@ -225,10 +225,11 @@ export default function PayrollPage() {
         });
 
         if (periodStart <= periodEnd) {
-          // حساب الأيام: الفرق بين اليومين + 1 لتضمين يوم النهاية
+          // حساب الأيام: الفرق بين اليومين بدون شمول يوم النهاية (مثل حساب الفنادق)
+          // يوم التسليم لا يُحسب كيوم عمل
           const timeDifference = periodEnd.getTime() - periodStart.getTime();
-          const daysDifference = Math.floor(timeDifference / (1000 * 3600 * 24)) + 1; // +1 لتضمين يوم النهاية
-          console.log(`🎯 أيام العمل لهذا العقد (مع شمول يوم النهاية): ${daysDifference}`);
+          const daysDifference = Math.floor(timeDifference / (1000 * 3600 * 24));
+          console.log(`🎯 أيام العمل لهذا العقد (بدون يوم التسليم): ${daysDifference}`);
           totalWorkingDays += daysDifference;
         }
       });
