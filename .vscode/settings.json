@@ -22,6 +22,12 @@
   "editor.formatOnSave": false,
   "mssql.enabled": false,
   "files.associations": {
-    "**/*.sql": "plaintext"
+    "**/*.sql": "plaintext",
+    "**/migrations/**/*.sql": "plaintext",
+    "**/prisma/**/*.sql": "plaintext"
+  },
+  "sqltools.useNodeRuntime": false,
+  "[sql]": {
+    "editor.defaultFormatter": null
   }
 }

@@ -46,12 +46,13 @@ export async function POST(request: NextRequest) {
       penaltyAmount = delayDays * penaltyRate;
     }
 
-    // تحديث العقد بحساب الغرامة
+    // تحديث العقد بحساب الغرامة وإضافتها للمبلغ الإجمالي
     const updatedContract = await prisma.contract.update({
       where: { id: contractId },
       data: {
         delayDays,
         penaltyAmount,
+        totalAmount: contract.totalAmount + penaltyAmount, // إضافة الغرامة للمبلغ الإجمالي
         status: 'COMPLETED', // تحديث حالة العقد إلى منتهي
         updatedAt: new Date(),
       }
@@ -61,8 +62,9 @@ export async function POST(request: NextRequest) {
       contract: updatedContract,
       delayDays,
       penaltyAmount,
+      totalAmount: updatedContract.totalAmount,
       message: delayDays > 0 
-        ? `تم حساب غرامة التأخير: ${delayDays} أيام × ${contract.penaltyRate || 120} ريال = ${penaltyAmount} ريال`
+        ? `تم حساب غرامة التأخير: ${delayDays} أيام × ${contract.penaltyRate || 120} ريال = ${penaltyAmount} ريال. المبلغ الإجمالي الجديد: ${updatedContract.totalAmount.toLocaleString()} ريال`
         : 'تم إنهاء العقد دون غرامة تأخير'
     });
 
