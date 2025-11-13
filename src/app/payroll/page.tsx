@@ -70,9 +70,13 @@ export default function PayrollPage() {
   const calculatePayroll = async (workersData: Worker[]) => {
     console.log('🔄 بدء حساب الرواتب للشهر:', selectedMonth);
     console.log('👥 عدد العمال:', workersData.length);
-    
+    const [targetYear, targetMonth] = selectedMonth.split('-').map(Number);
+    const daysInMonth = Number.isFinite(targetYear) && Number.isFinite(targetMonth)
+      ? new Date(Date.UTC(targetYear, targetMonth, 0)).getUTCDate()
+      : 30;
+
     const payrollCalculations = await Promise.all(workersData.map(async (worker) => {
-      const baseSalary = worker.nationalitySalary?.salary || worker.salary || 0;
+      const baseSalary = worker.salary ?? worker.nationalitySalary?.salary ?? 0;
       console.log(`💰 ${worker.name}: الراتب الأساسي = ${baseSalary}`);
       
       // Calculate working days from contracts in the selected month
@@ -83,7 +87,8 @@ export default function PayrollPage() {
       const bonuses = 0; // Default no bonuses
       
       // Calculate total salary
-      const dailySalary = baseSalary / 30;
+      const divisor = daysInMonth > 0 ? daysInMonth : 30;
+      const dailySalary = baseSalary / divisor;
       const totalSalary = Math.round((dailySalary * workingDays) + bonuses - deductions);
       console.log(`💵 ${worker.name}: إجمالي الراتب = ${totalSalary}`);
 
@@ -115,12 +120,20 @@ export default function PayrollPage() {
         return 0; // No contracts found, worker didn't work
       }
       
-      const contracts = await response.json();
+      const contracts = await response.json() as Array<{
+        id: string;
+        originalId?: string | null;
+        contractNumber?: string | null;
+        startDate: string;
+        endDate: string;
+        status: string;
+        isArchived?: boolean;
+      }>;
       console.log(`📋 العقود الموجودة للعامل ${workerId}:`, contracts.length);
-      console.log(`📋 تفاصيل العقود:`, contracts.map((c: { contractNumber: string; status: string; isArchived?: boolean }) => ({
-        contractNumber: c.contractNumber,
-        status: c.status,
-        isArchived: c.isArchived || false
+      console.log(`📋 تفاصيل العقود:`, contracts.map((contract) => ({
+        contractNumber: contract.contractNumber ?? 'غير محدد',
+        status: contract.status,
+        isArchived: contract.isArchived ?? false
       })));
       
       if (!contracts || contracts.length === 0) {
@@ -128,43 +141,92 @@ export default function PayrollPage() {
         return 0; // No active contracts
       }
 
-      // Calculate days worked in the selected month
+      const relevantStatuses = new Set(['ACTIVE', 'COMPLETED']);
+      const filteredContracts = contracts.filter((contract) => relevantStatuses.has(contract.status));
+
+      if (filteredContracts.length === 0) {
+        console.log(`⚠️ لا توجد عقود مؤهلة للحساب (نشطة أو مكتملة) للعامل ${workerId}`);
+        return 0;
+      }
+
+      const dedupedContracts = Array.from(
+        filteredContracts.reduce((acc, contract) => {
+          const key = contract.originalId || contract.contractNumber || contract.id;
+          const existing = acc.get(key);
+          if (!existing) {
+            acc.set(key, contract);
+            return acc;
+          }
+
+          // Prefer non-archived contracts over archived copies when both exist
+          if (existing.isArchived && !contract.isArchived) {
+            acc.set(key, contract);
+            return acc;
+          }
+
+          if (!existing.isArchived && contract.isArchived) {
+            return acc;
+          }
+
+          // Fall back to the contract that ends later within the same key
+          const existingEnd = new Date(existing.endDate).getTime();
+          const candidateEnd = new Date(contract.endDate).getTime();
+          if (!Number.isNaN(candidateEnd) && candidateEnd > existingEnd) {
+            acc.set(key, contract);
+          }
+          return acc;
+        }, new Map<string, typeof filteredContracts[number]>()).values()
+      );
+
+      // Calculate days worked in the selected month using UTC-safe boundaries
       const [year, month] = monthYear.split('-').map(Number);
-      const monthStart = new Date(year, month - 1, 1);
-      const monthEnd = new Date(year, month, 0); // Last day of the month
+      if (!Number.isFinite(year) || !Number.isFinite(month)) {
+        console.warn(`⚠️ قيمة الشهر غير صالحة أثناء حساب أيام العمل للعامل ${workerId}: ${monthYear}`);
+        return 0;
+      }
+
+      const monthStart = new Date(Date.UTC(year, month - 1, 1));
+      const monthEnd = new Date(Date.UTC(year, month, 0)); // Last day of the month
       console.log(`📅 حساب الأيام للشهر ${month}/${year}`);
-  console.log(`📊 بداية الشهر: ${monthStart.toLocaleDateString('ar-SA-u-ca-gregory')}`);
-  console.log(`📊 نهاية الشهر: ${monthEnd.toLocaleDateString('ar-SA-u-ca-gregory')}`);
+      console.log(`📊 بداية الشهر (UTC): ${monthStart.toISOString().split('T')[0]}`);
+      console.log(`📊 نهاية الشهر (UTC): ${monthEnd.toISOString().split('T')[0]}`);
       
       let totalWorkingDays = 0;
       
-      contracts.forEach((contract: { startDate: string; endDate: string }, index: number) => {
+      dedupedContracts.forEach((contract, index) => {
         console.log(`📝 معالجة العقد ${index + 1} للعامل ${workerId}:`, contract);
         
-        const contractStart = new Date(contract.startDate);
-        const contractEnd = new Date(contract.endDate);
+        const contractStartRaw = new Date(contract.startDate);
+        const contractEndRaw = new Date(contract.endDate);
+        const contractStart = new Date(Date.UTC(
+          contractStartRaw.getUTCFullYear(),
+          contractStartRaw.getUTCMonth(),
+          contractStartRaw.getUTCDate()
+        ));
+        const contractEnd = new Date(Date.UTC(
+          contractEndRaw.getUTCFullYear(),
+          contractEndRaw.getUTCMonth(),
+          contractEndRaw.getUTCDate()
+        ));
         
         console.log(`📋 تواريخ العقد:`, {
-          start: contractStart.toLocaleDateString('ar-SA-u-ca-gregory'),
-          end: contractEnd.toLocaleDateString('ar-SA-u-ca-gregory')
+          start: contractStart.toISOString().split('T')[0],
+          end: contractEnd.toISOString().split('T')[0]
         });
         
-        // Find the overlap between contract period and the selected month
+        // Find the overlap between contract period and the selected month (inclusive range)
         const periodStart = contractStart > monthStart ? contractStart : monthStart;
         const periodEnd = contractEnd < monthEnd ? contractEnd : monthEnd;
 
         console.log(`⏰ الفترة المحسوبة:`, {
-          periodStart: periodStart.toLocaleDateString('ar-SA-u-ca-gregory'),
-          periodEnd: periodEnd.toLocaleDateString('ar-SA-u-ca-gregory'),
-          validPeriod: periodStart < periodEnd
+          periodStart: periodStart.toISOString().split('T')[0],
+          periodEnd: periodEnd.toISOString().split('T')[0],
+          validPeriod: periodStart <= periodEnd
         });
 
         if (periodStart <= periodEnd) {
           // حساب الأيام: الفرق بين اليومين + 1 لتضمين يوم النهاية
-          const startOfDay = new Date(periodStart.getFullYear(), periodStart.getMonth(), periodStart.getDate());
-          const endOfDay = new Date(periodEnd.getFullYear(), periodEnd.getMonth(), periodEnd.getDate());
-
-          const timeDifference = endOfDay.getTime() - startOfDay.getTime();
+          const timeDifference = periodEnd.getTime() - periodStart.getTime();
           const daysDifference = Math.floor(timeDifference / (1000 * 3600 * 24)) + 1; // +1 لتضمين يوم النهاية
           console.log(`🎯 أيام العمل لهذا العقد (مع شمول يوم النهاية): ${daysDifference}`);
           totalWorkingDays += daysDifference;
@@ -172,7 +234,7 @@ export default function PayrollPage() {
       });
       
       // Cap at maximum days in month
-      const daysInMonth = monthEnd.getDate();
+      const daysInMonth = monthEnd.getUTCDate();
       const finalWorkingDays = Math.min(totalWorkingDays, daysInMonth);
       console.log(`✅ إجمالي أيام العمل للعامل ${workerId}: ${finalWorkingDays} (من أصل ${totalWorkingDays}, محدود بـ ${daysInMonth})`);
       

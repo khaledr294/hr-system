@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
@@ -59,84 +59,13 @@ type PayrollDelivery = {
 };
 
 export default function PayrollDeliveryPage() {
-  const [payrollData, setPayrollData] = useState<PayrollData[]>([]);
   const [deliveries, setDeliveries] = useState<Map<string, PayrollDelivery>>(new Map());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
-    loadPayrollData();
-  }, [selectedMonth]);
-
-  const loadPayrollData = async () => {
-    try {
-      setLoading(true);
-      console.log('📞 جاري تحميل بيانات الرواتب للشهر:', selectedMonth);
-      
-      // Load workers
-      const response = await fetch('/api/workers');
-      
-      if (response.ok) {
-        const workers = await response.json();
-        console.log('👥 تم تحميل العاملين:', workers.length);
-        
-        // Calculate payroll for all workers
-        const payrollCalculations = await Promise.all(workers.map(async (worker: Worker) => {
-          const baseSalary = worker.nationalitySalary?.salary || worker.salary || 0;
-          
-          // Calculate working days from contracts
-          const workingDays = await calculateWorkingDaysForWorker(worker.id, selectedMonth);
-          
-          const deductions = 0;
-          const bonuses = 0;
-          
-          // Calculate total salary
-          const dailySalary = baseSalary / 30;
-          const totalSalary = Math.round((dailySalary * workingDays) + bonuses - deductions);
-
-          return {
-            worker,
-            baseSalary,
-            workingDays,
-            deductions,
-            bonuses,
-            totalSalary
-          };
-        }));
-        
-        setPayrollData(payrollCalculations);
-        console.log('✅ تم حساب الرواتب:', payrollCalculations.length);
-        
-        // Initialize delivery data
-        const initialDeliveries = new Map<string, PayrollDelivery>();
-        payrollCalculations.forEach((item: PayrollData) => {
-          if (item.totalSalary > 0) {
-            initialDeliveries.set(item.worker.id, {
-              workerId: item.worker.id,
-              workerCode: item.worker.code,
-              workerName: item.worker.name,
-              nationality: item.worker.nationality,
-              totalSalary: item.totalSalary,
-              deliveredAmount: 0,
-              advanceAmount: 0,
-              remainingAmount: item.totalSalary,
-              deliveryStatus: 'pending',
-            });
-          }
-        });
-        setDeliveries(initialDeliveries);
-        console.log('💰 تم تهيئة بيانات التسليم:', initialDeliveries.size);
-      }
-    } catch (error) {
-      console.error('Error loading payroll data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const calculateWorkingDaysForWorker = async (workerId: string, monthYear: string): Promise<number> => {
+  const calculateWorkingDaysForWorker = useCallback(async (workerId: string, monthYear: string): Promise<number> => {
     try {
       const response = await fetch(`/api/contracts?workerId=${workerId}&month=${monthYear}`);
       
@@ -179,7 +108,76 @@ export default function PayrollDeliveryPage() {
       console.error('Error calculating working days:', error);
       return 0;
     }
-  };
+  }, []);
+
+  const loadPayrollData = useCallback(async () => {
+    try {
+      setLoading(true);
+      console.log('📞 جاري تحميل بيانات الرواتب للشهر:', selectedMonth);
+      
+      // Load workers
+      const response = await fetch('/api/workers');
+      
+      if (response.ok) {
+        const workers = await response.json();
+        console.log('👥 تم تحميل العاملين:', workers.length);
+        
+        // Calculate payroll for all workers
+        const payrollCalculations = await Promise.all(workers.map(async (worker: Worker) => {
+          const baseSalary = worker.nationalitySalary?.salary || worker.salary || 0;
+          
+          // Calculate working days from contracts
+          const workingDays = await calculateWorkingDaysForWorker(worker.id, selectedMonth);
+          
+          const deductions = 0;
+          const bonuses = 0;
+          
+          // Calculate total salary
+          const dailySalary = baseSalary / 30;
+          const totalSalary = Math.round((dailySalary * workingDays) + bonuses - deductions);
+
+          return {
+            worker,
+            baseSalary,
+            workingDays,
+            deductions,
+            bonuses,
+            totalSalary
+          };
+        }));
+        
+        console.log('✅ تم حساب الرواتب:', payrollCalculations.length);
+        
+        // Initialize delivery data
+        const initialDeliveries = new Map<string, PayrollDelivery>();
+        payrollCalculations.forEach((item: PayrollData) => {
+          if (item.totalSalary > 0) {
+            initialDeliveries.set(item.worker.id, {
+              workerId: item.worker.id,
+              workerCode: item.worker.code,
+              workerName: item.worker.name,
+              nationality: item.worker.nationality,
+              totalSalary: item.totalSalary,
+              deliveredAmount: 0,
+              advanceAmount: 0,
+              remainingAmount: item.totalSalary,
+              deliveryStatus: 'pending',
+            });
+          }
+        });
+        setDeliveries(initialDeliveries);
+        console.log('💰 تم تهيئة بيانات التسليم:', initialDeliveries.size);
+      }
+    } catch (error) {
+      console.error('Error loading payroll data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [calculateWorkingDaysForWorker, selectedMonth]);
+
+  useEffect(() => {
+    void loadPayrollData();
+  }, [loadPayrollData]);
 
   const handleFullDelivery = (workerId: string) => {
     setDeliveries(prev => {

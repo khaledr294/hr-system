@@ -3,6 +3,11 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { createLog } from '@/lib/logger';
 import { hasPermission } from '@/lib/permissions';
+import {
+    mergeWorkerMeta,
+    parseWorkerMeta,
+    type MedicalStatus,
+} from '@/lib/medicalStatus';
 
 export async function GET(
     req: NextRequest,
@@ -38,7 +43,14 @@ export async function GET(
             );
         }
 
-        return NextResponse.json(worker);
+        const meta = parseWorkerMeta(worker.reservationNotes);
+
+        return NextResponse.json({
+            ...worker,
+            reservationNotes: meta.reservationNote,
+            reservationNotesRaw: meta.raw,
+            medicalStatus: meta.medicalStatus,
+        });
     } catch (error) {
         console.error('Error fetching worker:', error);
         return NextResponse.json(
@@ -89,6 +101,34 @@ export async function PUT(
           if (ns) nationalitySalaryId = ns.id;
         }
         
+        const existingWorker = await prisma.worker.findUnique({
+            where: { id: params.id },
+            select: { reservationNotes: true },
+        });
+
+        if (!existingWorker) {
+            return NextResponse.json(
+                { error: 'Worker not found' },
+                { status: 404 }
+            );
+        }
+
+        const reservationNoteInput = data.reservationNote ?? data.reservationNotes;
+        const reservationNote =
+            reservationNoteInput === undefined
+                ? undefined
+                : typeof reservationNoteInput === 'string'
+                    ? reservationNoteInput.trim() === ''
+                        ? null
+                        : reservationNoteInput.trim()
+                    : null;
+
+        const reservationNotes = mergeWorkerMeta({
+            existingRawNotes: existingWorker.reservationNotes,
+            medicalStatus: data.medicalStatus as MedicalStatus | undefined,
+            reservationNote,
+        });
+
         const updateData: {
           name?: string;
           nationality?: string;
@@ -97,17 +137,41 @@ export async function PUT(
           status?: string;
           dateOfBirth?: Date;
           nationalitySalaryId?: string;
+          borderNumber?: string | null;
+          officeName?: string | null;
+          arrivalDate?: Date | null;
+          passportNumber?: string | null;
+          religion?: string | null;
+          iban?: string | null;
+          residenceBranch?: string | null;
+          reservationNotes?: string | null;
         } = {
             name: data.name,
             nationality: data.nationality,
             residencyNumber: data.residencyNumber,
             phone: data.phone,
             nationalitySalaryId,
+            borderNumber: data.borderNumber ?? null,
+            officeName: data.officeName ?? null,
+            passportNumber: data.passportNumber ?? null,
+            religion: data.religion ?? null,
+            iban: data.iban ?? null,
+            residenceBranch: data.residenceBranch ?? null,
+            reservationNotes,
         };
         
         // Convert dateOfBirth to Date object if provided
         if (data.dateOfBirth) {
             updateData.dateOfBirth = new Date(data.dateOfBirth);
+        }
+
+        if (data.arrivalDate) {
+            const arrivalDateValue = new Date(data.arrivalDate);
+            updateData.arrivalDate = isNaN(arrivalDateValue.getTime())
+                ? null
+                : arrivalDateValue;
+        } else if (data.arrivalDate === null) {
+            updateData.arrivalDate = null;
         }
         
         const worker = await prisma.worker.update({
@@ -118,7 +182,14 @@ export async function PUT(
         // Log the worker update
         await createLog(session.user.id, 'WORKER_UPDATED', `Worker updated: ${data.name} (ID: ${params.id})`);
 
-        return NextResponse.json(worker);
+        const meta = parseWorkerMeta(worker.reservationNotes);
+
+        return NextResponse.json({
+            ...worker,
+            reservationNotes: meta.reservationNote,
+            reservationNotesRaw: meta.raw,
+            medicalStatus: meta.medicalStatus,
+        });
     } catch (error) {
         console.error('Error updating worker:', error);
         return NextResponse.json(

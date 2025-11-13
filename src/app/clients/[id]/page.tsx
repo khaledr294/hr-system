@@ -5,15 +5,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 import Link from 'next/link';
 import ClientDeleteButton from '@/components/clients/ClientDeleteButton';
 import { hasPermission } from '@/lib/permissions';
-
-// Helper function to format date without timezone issues
-function formatDate(date: Date): string {
-  const d = new Date(date);
-  const year = d.getUTCFullYear();
-  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(d.getUTCDate()).padStart(2, '0');
-  return `${day}/${month}/${year}`;
-}
+import { formatDate } from '@/lib/date';
 
 export default async function ClientDetailsPage({
   params,
@@ -175,10 +167,10 @@ export default async function ClientDetailsPage({
                       {contract.worker.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatDate(contract.startDate)}
+                        {formatDate(contract.startDate, { numberingSystem: 'latn' }, 'en-GB')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatDate(contract.endDate)}
+                        {formatDate(contract.endDate, { numberingSystem: 'latn' }, 'en-GB')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {contract.packageName || contract.packageType}

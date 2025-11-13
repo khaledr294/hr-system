@@ -1,3 +1,5 @@
+import { formatDate } from './date';
+
 // متغيرات الدمج مع الفئات - للاستخدام في العميل
 export const mergeVariables = {
   client: {
@@ -83,8 +85,8 @@ export function generateSampleData() {
     
     // بيانات العقد (Contract)
     contractNumber: 'HR-2025-001',
-  startDate: new Date().toLocaleDateString('ar-SA-u-ca-gregory'),
-  endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString('ar-SA-u-ca-gregory'),
+    startDate: formatDate(new Date()),
+    endDate: formatDate(Date.now() + 365 * 24 * 60 * 60 * 1000),
     totalAmount: '24,000',
     packageType: 'FULL_TIME',
     packageName: 'باقة دوام كامل',
@@ -112,8 +114,8 @@ export function generateSampleData() {
     companyPhone: '+966 11 234 5678',
     
     // التواريخ (Dates)
-  contractDate: new Date().toLocaleDateString('ar-SA-u-ca-gregory'),
-  today: new Date().toLocaleDateString('ar-SA-u-ca-gregory'),
+  contractDate: formatDate(new Date()),
+  today: formatDate(new Date()),
     
     // الشروط والأحكام (Terms)
     terms: 'تلتزم العاملة بأداء واجباتها وفقاً للقوانين المعمول بها في المملكة العربية السعودية.',

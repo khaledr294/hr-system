@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
     const backups = await getBackups();
     return NextResponse.json({ backups });
   } catch (error) {
+    console.error('Failed to load backups:', error);
     return NextResponse.json({ error: 'error' }, { status: 500 });
   }
 }
@@ -44,6 +45,7 @@ export async function POST(request: NextRequest) {
     }
     return NextResponse.json({ error: 'unknown action' }, { status: 400 });
   } catch (error) {
+    console.error('Failed to process backup action:', error);
     return NextResponse.json({ error: 'error' }, { status: 500 });
   }
 }

@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { createLog } from '@/lib/logger';
 import { hasPermission } from '@/lib/permissions';
+import { mergeWorkerMeta, parseWorkerMeta } from '@/lib/medicalStatus';
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,6 +22,12 @@ export async function POST(request: NextRequest) {
     }
 
     const { workerId, reservationNotes } = await request.json();
+    const normalizedReservationNote =
+      typeof reservationNotes === 'string'
+        ? reservationNotes.trim() === ''
+          ? null
+          : reservationNotes.trim()
+        : reservationNotes ?? null;
 
     if (!workerId) {
       return NextResponse.json({ error: 'معرف العاملة مطلوب' }, { status: 400 });
@@ -44,7 +51,10 @@ export async function POST(request: NextRequest) {
       where: { id: workerId },
       data: {
         status: 'RESERVED',
-        reservationNotes: reservationNotes || null,
+        reservationNotes: mergeWorkerMeta({
+          existingRawNotes: worker.reservationNotes,
+          reservationNote: normalizedReservationNote,
+        }),
         reservedAt: new Date(),
         reservedBy: session.user.id || session.user.email || 'Unknown',
       }
@@ -58,9 +68,16 @@ export async function POST(request: NextRequest) {
       workerId
     );
 
+    const meta = parseWorkerMeta(updatedWorker.reservationNotes);
+
     return NextResponse.json({ 
       message: 'تم حجز العاملة بنجاح',
-      worker: updatedWorker 
+      worker: {
+        ...updatedWorker,
+        reservationNotes: meta.reservationNote,
+        reservationNotesRaw: meta.raw,
+        medicalStatus: meta.medicalStatus,
+      },
     });
 
   } catch (error) {
@@ -125,7 +142,10 @@ export async function DELETE(request: NextRequest) {
       where: { id: workerId },
       data: {
         status: 'AVAILABLE',
-        reservationNotes: null,
+        reservationNotes: mergeWorkerMeta({
+          existingRawNotes: worker.reservationNotes,
+          reservationNote: null,
+        }),
         reservedAt: null,
         reservedBy: null,
       }
@@ -146,9 +166,16 @@ export async function DELETE(request: NextRequest) {
       workerId
     );
 
+    const meta = parseWorkerMeta(updatedWorker.reservationNotes);
+
     return NextResponse.json({ 
       message: 'تم إلغاء حجز العاملة بنجاح',
-      worker: updatedWorker 
+      worker: {
+        ...updatedWorker,
+        reservationNotes: meta.reservationNote,
+        reservationNotesRaw: meta.raw,
+        medicalStatus: meta.medicalStatus,
+      },
     });
 
   } catch (error) {

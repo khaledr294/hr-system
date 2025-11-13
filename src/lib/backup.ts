@@ -18,14 +18,14 @@ export interface BackupData {
     tables: string[];
   };
   data: {
-    users: any[];
-    workers: any[];
-    clients: any[];
-    contracts: any[];
-    packages: any[];
-    nationalitySalaries: any[];
-    logs: any[];
-    backups: any[];
+    users: unknown[];
+    workers: unknown[];
+    clients: unknown[];
+    contracts: unknown[];
+    packages: unknown[];
+    nationalitySalaries: unknown[];
+    logs: unknown[];
+    backups: unknown[];
   };
 }
 
@@ -241,11 +241,11 @@ export async function getBackupStats() {
   }
 }
 
-export async function getBackupFile(backupId: string): Promise<Buffer | null> {
+export async function getBackupFile(_backupId: string): Promise<Buffer | null> {
   console.log('getBackupFile is deprecated - use direct download from API');
   return null;
 }
 
-export async function restoreBackup(backupId: string): Promise<void> {
+export async function restoreBackup(_backupId: string): Promise<void> {
   throw new Error('استعادة النسخ الاحتياطية غير مدعومة حالياً');
 }

@@ -56,7 +56,14 @@ export default function WorkerStatusManager({ workerId, currentStatus, isHRManag
 
       if (!res.ok) {
         const errorText = await res.text();
-        throw new Error(errorText || 'فشل تحديث الحالة');
+        let message = errorText || 'فشل تحديث الحالة';
+        try {
+          const parsed = JSON.parse(errorText);
+          message = parsed.error || parsed.message || message;
+        } catch {
+          // النص ليس JSON، نستخدمه كما هو
+        }
+        throw new Error(message);
       }
 
       setStatus(newStatus);

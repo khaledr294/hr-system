@@ -3,6 +3,11 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { createLog } from '@/lib/logger';
 import { hasPermission } from '@/lib/permissions';
+import {
+  buildWorkerMeta,
+  parseWorkerMeta,
+  type MedicalStatus,
+} from '@/lib/medicalStatus';
 
 // Force dynamic rendering and disable caching
 export const dynamic = 'force-dynamic';
@@ -83,6 +88,20 @@ export async function POST(req: NextRequest) {
       return new Response('Worker with this code already exists', { status: 400 });
     }
 
+    const medicalStatus = (data.medicalStatus || 'PENDING_REPORT') as MedicalStatus;
+    const reservationNoteInput = data.reservationNote ?? data.reservationNotes;
+    const reservationNote =
+      typeof reservationNoteInput === 'string'
+        ? reservationNoteInput.trim() === ''
+          ? null
+          : reservationNoteInput.trim()
+        : null;
+
+    const reservationNotes = buildWorkerMeta({
+      medicalStatus,
+      reservationNote,
+    });
+
     // Create worker
     const nationalitySalary = await prisma.nationalitySalary.findFirst({ where: { nationality: data.nationality } });
     const worker = await prisma.worker.create({
@@ -94,8 +113,7 @@ export async function POST(req: NextRequest) {
         dateOfBirth: new Date(data.dateOfBirth),
         phone: data.phone,
         nationalitySalaryId: nationalitySalary?.id,
-        status: 'AVAILABLE', // Set default status for new workers
-        // medicalStatus: data.medicalStatus || 'PENDING_REPORT',
+        status: 'AVAILABLE',
         // حقول جديدة
         borderNumber: data.borderNumber,
         officeName: data.officeName,
@@ -104,13 +122,22 @@ export async function POST(req: NextRequest) {
         religion: data.religion,
         iban: data.iban,
         residenceBranch: data.residenceBranch,
+        reservationNotes,
       },
     });
 
     // Log the worker creation
     await createLog(session.user.id, 'WORKER_CREATED', `Worker created: ${data.name} (Code: ${data.code})`);
 
-    return new Response(JSON.stringify(worker), {
+    const meta = parseWorkerMeta(worker.reservationNotes);
+    const responseBody = {
+      ...worker,
+      reservationNotes: meta.reservationNote,
+      reservationNotesRaw: meta.raw,
+      medicalStatus: meta.medicalStatus,
+    };
+
+    return new Response(JSON.stringify(responseBody), {
       status: 201,
       headers: { 
         'Content-Type': 'application/json',
@@ -206,6 +233,7 @@ export async function GET(req: NextRequest) {
     // تحديد الحالة حسب العقود النشطة وإضافة اسم المستخدم للحجوزات
     const workers = await Promise.all(workersRaw.map(async worker => {
       let reservedByUserName = worker.reservedBy;
+      const meta = parseWorkerMeta(worker.reservationNotes);
       
       // إذا كان هناك حجز، جلب اسم المستخدم
       if (worker.status === 'RESERVED' && worker.reservedBy) {
@@ -226,7 +254,10 @@ export async function GET(req: NextRequest) {
       return {
         ...worker,
         status: worker.contracts && worker.contracts.length > 0 ? 'RENTED' : worker.status,
-        reservedByUserName
+        reservedByUserName,
+        reservationNotes: meta.reservationNote,
+        reservationNotesRaw: meta.raw,
+        medicalStatus: meta.medicalStatus,
       };
     }));
 

@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
 
-export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function GET(_req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const params = await context.params;
   
   // إعادة توجيه إلى /api/users/[id]
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
   return new Response(JSON.stringify(user), { headers: { 'Content-Type': 'application/json' } });
 }
 
-export async function PUT(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function PUT(_req: NextRequest, _context: { params: Promise<{ id: string }> }) {
   const session = await getSession();
   if (!session) return new Response('Unauthorized', { status: 401 });
   
@@ -38,7 +38,7 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
   });
 }
 
-export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function DELETE(_req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const session = await getSession();
     if (!session) return new Response('Unauthorized', { status: 401 });

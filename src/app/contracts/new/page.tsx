@@ -49,7 +49,6 @@ function NewContractForm() {
   const [contractPrice, setContractPrice] = useState<number>(1000);
   const [customEndDate, setCustomEndDate] = useState<boolean>(false);
   const [endDateValue, setEndDateValue] = useState<string>('');
-  const [currentUserJobTitle, setCurrentUserJobTitle] = useState<string | null>(null);
   const [isCurrentUserMarketer, setIsCurrentUserMarketer] = useState(false);
 
   const clientId = searchParams.get('clientId');
@@ -125,8 +124,6 @@ function NewContractForm() {
             const userResponse = await fetch(`/api/users/${session.user.id}`);
             if (userResponse.ok) {
               const userData = await userResponse.json();
-              setCurrentUserJobTitle(userData.jobTitle?.nameAr || null);
-              
               // إذا كان المستخدم الحالي مسوقاً
               const isMarketer = userData.jobTitle?.nameAr === 'مسوق';
               setIsCurrentUserMarketer(isMarketer);

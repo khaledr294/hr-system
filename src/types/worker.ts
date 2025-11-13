@@ -1,3 +1,5 @@
+import type { MedicalStatus } from '@/lib/medicalStatus';
+
 export interface Worker {
   id: string;
   code: string;
@@ -19,7 +21,9 @@ export interface Worker {
   residenceBranch?: string;
   // حقول الحجز
   reservationNotes?: string;
+  reservationNotesRaw?: string | null;
   reservedAt?: Date;
   reservedBy?: string;
   reservedByUserName?: string;
+  medicalStatus?: MedicalStatus;
 }

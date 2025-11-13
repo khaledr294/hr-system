@@ -7,6 +7,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
+import type { MedicalStatus } from '@/lib/medicalStatus';
 
 interface NationalitySalary {
   id: string;
@@ -31,6 +32,8 @@ interface Worker {
   religion?: string | null;
   iban?: string | null;
   residenceBranch?: string | null;
+  medicalStatus?: MedicalStatus;
+  reservationNotes?: string | null;
 }
 
 export default function EditWorkerPage({ params }: { params: Promise<{ id: string }> }) {
@@ -96,7 +99,12 @@ export default function EditWorkerPage({ params }: { params: Promise<{ id: strin
     const religion = (formData.get('religion') as string)?.trim();
     const iban = (formData.get('iban') as string)?.trim();
     const residenceBranch = (formData.get('residenceBranch') as string)?.trim();
-    // const medicalStatus = (formData.get('medicalStatus') as string)?.trim() || 'PENDING_REPORT';
+    const medicalStatus = ((formData.get('medicalStatus') as string) || 'PENDING_REPORT') as MedicalStatus;
+
+    const allowedMedicalStatuses: MedicalStatus[] = ['PENDING_REPORT', 'FIT', 'UNFIT'];
+    const safeMedicalStatus = allowedMedicalStatuses.includes(medicalStatus)
+      ? medicalStatus
+      : 'PENDING_REPORT';
 
     // Validation
     if (!name || !nationality || !residencyNumber || !birthYear || !birthMonth || !birthDay) {
@@ -143,7 +151,7 @@ export default function EditWorkerPage({ params }: { params: Promise<{ id: strin
         religion: religion || null,
         iban: iban || null,
         residenceBranch: residenceBranch || null,
-        // medicalStatus: medicalStatus,
+        medicalStatus: safeMedicalStatus,
       };
 
       const response = await fetch(`/api/workers/${id}`, {
@@ -376,7 +384,6 @@ export default function EditWorkerPage({ params }: { params: Promise<{ id: strin
                 className="text-right"
               />
 
-              {/* Temporarily disabled until medicalStatus column is added to database
               <Select
                 label="حالة الفحص الطبي"
                 name="medicalStatus"
@@ -385,10 +392,10 @@ export default function EditWorkerPage({ params }: { params: Promise<{ id: strin
                   { value: 'FIT', label: 'لائق' },
                   { value: 'UNFIT', label: 'غير لائق' }
                 ]}
-                defaultValue={(worker as Worker & { medicalStatus?: string }).medicalStatus || 'PENDING_REPORT'}
+                defaultValue={worker.medicalStatus || 'PENDING_REPORT'}
+                required
                 className="text-right"
               />
-              */}
 
               <Input
                 label="IBAN (اختياري)"

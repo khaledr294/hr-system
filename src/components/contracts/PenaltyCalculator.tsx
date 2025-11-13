@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { formatDate as formatRiyadhDate } from '@/lib/date';
 
 interface PenaltyCalculatorProps {
   contractId: string;
@@ -68,7 +69,7 @@ export default function PenaltyCalculator({
     }
   };
 
-  const formatDate = (date: string) => {
+  const formatInputDate = (date: string) => {
     const input = date.replace(/\D/g, '');
     let formatted = input;
     if (input.length >= 2) {
@@ -133,7 +134,7 @@ export default function PenaltyCalculator({
               <strong>العاملة:</strong> {workerName}
             </div>
             <div>
-              <strong>تاريخ انتهاء العقد:</strong> {new Date(endDate).toLocaleDateString('ar')}
+              <strong>تاريخ انتهاء العقد:</strong> {formatRiyadhDate(endDate, { numberingSystem: 'latn' }, 'en-GB')}
             </div>
             <div>
               <strong>معدل الغرامة:</strong> 120 ريال/يوم
@@ -149,7 +150,7 @@ export default function PenaltyCalculator({
               placeholder="يوم/شهر/سنة (مثال: 15/03/2024)"
               value={returnDate}
               onChange={(e) => {
-                const formatted = formatDate(e.target.value);
+                const formatted = formatInputDate(e.target.value);
                 setReturnDate(formatted);
               }}
               maxLength={10}

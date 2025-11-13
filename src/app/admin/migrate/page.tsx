@@ -81,7 +81,7 @@ export default function MigrationPage() {
                 
                 <div className="space-y-3 text-sm">
                   <div className="flex items-start gap-2">
-                    <span className="font-bold text-blue-600 min-w-[24px]">1.</span>
+                    <span className="font-bold text-blue-600 min-w-6">1.</span>
                     <div>
                       <p className="text-gray-800">افتح مشروعك في Prisma:</p>
                       <a 
@@ -96,25 +96,25 @@ export default function MigrationPage() {
                   </div>
 
                   <div className="flex items-start gap-2">
-                    <span className="font-bold text-blue-600 min-w-[24px]">2.</span>
-                    <p className="text-gray-800">اضغط على مشروعك ثم اختر <strong>"Data Browser"</strong></p>
+                    <span className="font-bold text-blue-600 min-w-6">2.</span>
+                    <p className="text-gray-800">اضغط على مشروعك ثم اختر <strong>&quot;Data Browser&quot;</strong></p>
                   </div>
 
                   <div className="flex items-start gap-2">
-                    <span className="font-bold text-blue-600 min-w-[24px]">3.</span>
-                    <p className="text-gray-800">من القائمة الجانبية، اضغط على <strong>"Worker"</strong></p>
+                    <span className="font-bold text-blue-600 min-w-6">3.</span>
+                    <p className="text-gray-800">من القائمة الجانبية، اضغط على <strong>&quot;Worker&quot;</strong></p>
                   </div>
 
                   <div className="flex items-start gap-2">
-                    <span className="font-bold text-blue-600 min-w-[24px]">4.</span>
+                    <span className="font-bold text-blue-600 min-w-6">4.</span>
                     <div className="flex-1">
-                      <p className="text-gray-800 mb-2">في أعلى الصفحة، ابحث عن زر <strong>"Add field"</strong> أو <strong>"+"</strong></p>
+                      <p className="text-gray-800 mb-2">في أعلى الصفحة، ابحث عن زر <strong>&quot;Add field&quot;</strong> أو <strong>&quot;+&quot;</strong></p>
                       <div className="p-2 bg-white border border-gray-300 rounded text-xs">
                         <p className="text-gray-600 mb-1">أضف الحقل بهذه الإعدادات:</p>
                         <ul className="list-disc list-inside space-y-1 text-gray-700">
                           <li><strong>Field name:</strong> medicalStatus</li>
                           <li><strong>Type:</strong> String (Text)</li>
-                          <li><strong>Default value:</strong> "PENDING_REPORT"</li>
+                          <li><strong>Default value:</strong> &quot;PENDING_REPORT&quot;</li>
                           <li><strong>Optional:</strong> نعم (اختياري)</li>
                         </ul>
                       </div>
@@ -122,13 +122,13 @@ export default function MigrationPage() {
                   </div>
 
                   <div className="flex items-start gap-2">
-                    <span className="font-bold text-blue-600 min-w-[24px]">5.</span>
-                    <p className="text-gray-800">احفظ التغييرات واضغط <strong>"Apply Changes"</strong></p>
+                    <span className="font-bold text-blue-600 min-w-6">5.</span>
+                    <p className="text-gray-800">احفظ التغييرات واضغط <strong>&quot;Apply Changes&quot;</strong></p>
                   </div>
 
                   <div className="mt-4 p-3 bg-green-50 border border-green-300 rounded">
                     <p className="text-green-800 text-xs">
-                      ✅ بعد إضافة الحقل، قم بتحديث الصفحة وجرب زر "تشغيل Migration" مرة أخرى
+                      ✅ بعد إضافة الحقل، قم بتحديث الصفحة وجرب زر &quot;تشغيل Migration&quot; مرة أخرى
                     </p>
                   </div>
                 </div>

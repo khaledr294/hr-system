@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import fs from 'fs';
 import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
+import { formatDate } from '@/lib/date';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -55,8 +56,8 @@ export async function POST(request: NextRequest) {
         
         // بيانات العقد (متطابقة مع قاعدة البيانات)
         contractNumber: contract.contractNumber || `HR-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`,
-  startDate: startDateObj.toLocaleDateString('ar-SA-u-ca-gregory'),
-  endDate: endDateObj.toLocaleDateString('ar-SA-u-ca-gregory'),
+        startDate: formatDate(startDateObj),
+        endDate: formatDate(endDateObj),
         totalAmount: contract.totalAmount?.toLocaleString('ar-SA') || '0',
         packageType: contract.packageType || 'غير محدد',
         packageName: contract.packageName || 'غير محدد',
@@ -91,8 +92,8 @@ export async function POST(request: NextRequest) {
         marketerEmail: contract.marketer?.email || 'غير محدد',
         
         // تواريخ بصيغ مختلفة
-  contractDate: new Date().toLocaleDateString('ar-SA-u-ca-gregory'),
-  today: new Date().toLocaleDateString('ar-SA-u-ca-gregory'),
+  contractDate: formatDate(new Date()),
+  today: formatDate(new Date()),
         
         // معلومات الشركة (افتراضية)
         companyName: 'شركة ساعد لاستقدام العمالة المنزلية',

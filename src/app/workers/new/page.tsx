@@ -6,6 +6,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
+import type { MedicalStatus } from '@/lib/medicalStatus';
 
 interface NationalitySalary {
   id: string;
@@ -101,7 +102,12 @@ export default function NewWorkerPage() {
     const religion = (formData.get('religion') as string)?.trim();
     const iban = (formData.get('iban') as string)?.trim();
     const residenceBranch = (formData.get('residenceBranch') as string)?.trim();
-    // const medicalStatus = (formData.get('medicalStatus') as string)?.trim() || 'PENDING_REPORT';
+    const medicalStatus = ((formData.get('medicalStatus') as string) || 'PENDING_REPORT') as MedicalStatus;
+
+    const allowedMedicalStatuses: MedicalStatus[] = ['PENDING_REPORT', 'FIT', 'UNFIT'];
+    const safeMedicalStatus = allowedMedicalStatuses.includes(medicalStatus)
+      ? medicalStatus
+      : 'PENDING_REPORT';
 
     // Validate border number (10 digits max, numbers only)
     if (borderNumber && (borderNumber.length > 10 || !/^\d+$/.test(borderNumber))) {
@@ -144,7 +150,7 @@ export default function NewWorkerPage() {
       religion: religion || null,
       iban: iban || null,
       residenceBranch: residenceBranch || null,
-      // medicalStatus: medicalStatus,
+      medicalStatus: safeMedicalStatus,
     };
 
     try {
@@ -364,7 +370,6 @@ export default function NewWorkerPage() {
                 className="text-right"
               />
 
-              {/* Temporarily disabled until medicalStatus column is added to database
               <Select
                 label="حالة الفحص الطبي"
                 name="medicalStatus"
@@ -373,9 +378,10 @@ export default function NewWorkerPage() {
                   { value: 'FIT', label: 'لائق' },
                   { value: 'UNFIT', label: 'غير لائق' }
                 ]}
+                defaultValue="PENDING_REPORT"
+                required
                 className="text-right"
               />
-              */}
 
               <Input
                 label="IBAN (اختياري)"

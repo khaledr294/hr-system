@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
-import { createLog } from '@/lib/logger';
 import { hasPermission } from '@/lib/permissions';
 
 // Force dynamic rendering and disable caching

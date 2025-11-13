@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   const session = await getSession();
 
   // Only HR_MANAGER can run migrations

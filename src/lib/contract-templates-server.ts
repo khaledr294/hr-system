@@ -2,6 +2,7 @@
 import fs from 'fs';
 import path from 'path';
 import PizZip from 'pizzip';
+import { formatDate } from './date';
 
 // إنشاء قالب Word افتراضي برمجياً
 export function createDefaultTemplate(): Buffer {
@@ -166,8 +167,8 @@ export function generateSampleData() {
     
     // بيانات العقد
     contractNumber: 'HR-2024-001',
-  startDate: new Date().toLocaleDateString('ar-SA-u-ca-gregory'),
-  endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString('ar-SA-u-ca-gregory'),
+    startDate: formatDate(new Date()),
+    endDate: formatDate(Date.now() + 365 * 24 * 60 * 60 * 1000),
     duration: '12 شهر',
     totalAmount: '24000',
     monthlyAmount: '2000',

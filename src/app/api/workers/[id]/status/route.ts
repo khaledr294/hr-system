@@ -39,6 +39,45 @@ export async function PATCH(
   }
 
   try {
+    const workerRecord = await prisma.worker.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    if (!workerRecord) {
+      return NextResponse.json({ error: 'Worker not found' }, { status: 404 });
+    }
+
+    if (status === 'AVAILABLE') {
+      const blockingContract = await prisma.contract.findFirst({
+        where: {
+          workerId: id,
+          status: {
+            notIn: ['COMPLETED', 'CANCELLED'],
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          status: true,
+          contractNumber: true,
+        },
+      });
+
+      if (blockingContract) {
+        const contractLabel = blockingContract.contractNumber || blockingContract.id;
+        return NextResponse.json(
+          {
+            error: `لا يمكن تحويل حالة العاملة إلى متاحة لوجود عقد (${contractLabel}) حالته ${blockingContract.status}. قم بإنهاء أو إلغاء العقد أولاً.`,
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     const worker = await prisma.worker.update({
       where: { id },
       data: { status },

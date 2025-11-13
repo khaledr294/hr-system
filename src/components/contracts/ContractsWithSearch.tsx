@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Input from '@/components/ui/Input';
+import { formatDate } from '@/lib/date';
 
 interface Contract {
   id: string;
@@ -45,15 +46,13 @@ export default function ContractsWithSearch({ contracts }: ContractsWithSearchPr
     );
   }, [contracts, searchQuery]);
 
-  // تقسيم العقود المفلترة
-  const now = new Date();
-  
   // عقود على وشك الانتهاء (أقل من 3 أيام)
   const expiringSoon = useMemo(() => {
+    const now = Date.now();
     return filteredContracts.filter(contract => {
       if (contract.status !== 'ACTIVE') return false;
       const end = new Date(contract.endDate);
-      const diffTime = end.getTime() - now.getTime();
+      const diffTime = end.getTime() - now;
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       return diffDays >= 0 && diffDays <= 3;
     });
@@ -61,10 +60,11 @@ export default function ContractsWithSearch({ contracts }: ContractsWithSearchPr
   
   // عقود نشطة (باستثناء التي على وشك الانتهاء)
   const active = useMemo(() => {
+    const now = Date.now();
     return filteredContracts.filter(contract => {
       if (contract.status !== 'ACTIVE') return false;
       const end = new Date(contract.endDate);
-      const diffTime = end.getTime() - now.getTime();
+      const diffTime = end.getTime() - now;
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       return diffDays > 3;
     });
@@ -72,9 +72,10 @@ export default function ContractsWithSearch({ contracts }: ContractsWithSearchPr
   
   // عقود منتهية (تاريخياً لكن لم يتم إنهاؤها رسمياً)
   const expired = useMemo(() => {
+    const now = Date.now();
     return filteredContracts.filter(contract => 
       contract.status === 'EXPIRED' || 
-      (contract.status === 'ACTIVE' && new Date(contract.endDate) < now)
+      (contract.status === 'ACTIVE' && new Date(contract.endDate).getTime() < now)
     );
   }, [filteredContracts]);
   
@@ -133,10 +134,10 @@ export default function ContractsWithSearch({ contracts }: ContractsWithSearchPr
                     {contract.worker?.residencyNumber || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Date(contract.startDate).toLocaleDateString('ar-SA-u-ca-gregory')}
+                    {formatDate(contract.startDate, { numberingSystem: 'latn' }, 'en-GB')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Date(contract.endDate).toLocaleDateString('ar-SA-u-ca-gregory')}
+                    {formatDate(contract.endDate, { numberingSystem: 'latn' }, 'en-GB')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {contract.packageName || contract.packageType}

@@ -4,6 +4,8 @@ import DashboardLayout from '@/components/DashboardLayout';
 import WorkerActions from '../../../components/workers/WorkerActions';
 import WorkerStatusManager from '@/components/workers/WorkerStatusManager';
 import { requireSession, getSession } from '@/lib/require';
+import { parseWorkerMeta } from '@/lib/medicalStatus';
+import { formatDate } from '@/lib/date';
 
 export default async function WorkerDetailsPage({
   params,
@@ -26,6 +28,20 @@ export default async function WorkerDetailsPage({
   if (!worker) {
     redirect('/workers');
   }
+
+  const workerMeta = parseWorkerMeta(worker.reservationNotes);
+
+  const medicalStatusLabel: Record<string, string> = {
+    PENDING_REPORT: 'بانتظار التقرير الطبي',
+    FIT: 'لائق طبيًا',
+    UNFIT: 'غير لائق طبيًا',
+  };
+
+  const medicalStatusColor: Record<string, string> = {
+    PENDING_REPORT: 'bg-yellow-100 text-yellow-800',
+    FIT: 'bg-green-100 text-green-800',
+    UNFIT: 'bg-red-100 text-red-800',
+  };
 
   // إذا كان هناك حجز، جلب اسم المستخدم
   let reservedByUserName = worker.reservedBy;
@@ -69,7 +85,7 @@ export default async function WorkerDetailsPage({
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">تاريخ الميلاد</dt>
-                <dd className="mt-1 text-sm text-gray-900">{worker.dateOfBirth ? new Date(worker.dateOfBirth).toLocaleDateString('ar-SA-u-ca-gregory') : '-'}</dd>
+                <dd className="mt-1 text-sm text-gray-900">{worker.dateOfBirth ? formatDate(worker.dateOfBirth) : '-'}</dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">رقم الجوال</dt>
@@ -115,9 +131,7 @@ export default async function WorkerDetailsPage({
               <div>
                 <dt className="text-sm font-medium text-gray-500">تاريخ الوصول</dt>
                 <dd className="mt-1 text-sm text-gray-900">
-                  {worker.arrivalDate
-                    ? new Date(worker.arrivalDate).toLocaleDateString('ar-SA-u-ca-gregory')
-                    : '-'}
+                  {worker.arrivalDate ? formatDate(worker.arrivalDate) : '-'}
                 </dd>
               </div>
               <div>
@@ -171,26 +185,36 @@ export default async function WorkerDetailsPage({
                   )}
                   {worker.status === 'RESERVED' && worker.reservedAt && (
                     <div className="text-xs text-gray-500">
-                      تاريخ الحجز: {new Date(worker.reservedAt).toLocaleDateString('ar')}
+                      تاريخ الحجز: {formatDate(worker.reservedAt)}
                     </div>
                   )}
-                  {worker.status === 'RESERVED' && worker.reservationNotes && (
+                  {worker.status === 'RESERVED' && workerMeta.reservationNote && (
                     <div className="text-xs text-gray-600 mt-1">
-                      ملاحظة: {worker.reservationNotes}
+                      ملاحظة: {workerMeta.reservationNote}
                     </div>
                   )}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">الحالة الطبية</dt>
+                <dd className="mt-1">
+                  <span
+                    className={`inline-flex px-2 py-1 text-sm rounded ${medicalStatusColor[workerMeta.medicalStatus] || 'bg-gray-100 text-gray-800'}`}
+                  >
+                    {medicalStatusLabel[workerMeta.medicalStatus] || 'غير محدد'}
+                  </span>
                 </dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">تاريخ الإضافة</dt>
                 <dd className="mt-1 text-sm text-gray-900">
-                  {new Date(worker.createdAt).toLocaleDateString('ar-SA-u-ca-gregory')}
+                  {formatDate(worker.createdAt)}
                 </dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">آخر تحديث</dt>
                 <dd className="mt-1 text-sm text-gray-900">
-                  {new Date(worker.updatedAt).toLocaleDateString('ar-SA-u-ca-gregory')}
+                  {formatDate(worker.updatedAt)}
                 </dd>
               </div>
             </dl>

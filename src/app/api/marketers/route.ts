@@ -30,7 +30,7 @@ export async function GET() {
   return new Response(JSON.stringify(marketers), { headers: { 'Content-Type': 'application/json' } });
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   const session = await getSession();
   if (!session) {
     return new Response('Unauthorized', { status: 401 });
