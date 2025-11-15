@@ -1,6 +1,5 @@
 import 'dotenv/config'
 import { PrismaClient, Permission } from '@prisma/client'
-import { hash } from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
@@ -55,18 +54,6 @@ const jobTitleSeeds = [
   },
 ]
 
-const DEFAULT_SIMPLE_PASSWORD = '123456'
-
-function getSeedPassword(envKey: string, label: string): string {
-  const fromEnv = process.env[envKey]
-  if (fromEnv) {
-    return fromEnv
-  }
-
-  console.warn(`⚠️  Env ${envKey} not set. Using default password ${DEFAULT_SIMPLE_PASSWORD} for ${label}`)
-  return DEFAULT_SIMPLE_PASSWORD
-}
-
 async function ensureJobTitles() {
   console.log('🛠️  Syncing job titles & permissions...')
   const results = new Map<string, string>()
@@ -94,65 +81,6 @@ async function ensureJobTitles() {
   }
 
   return results
-}
-
-async function ensurePrivilegedUser({
-  email,
-  name,
-  envKey,
-  jobTitleName,
-  residencyNumber,
-  phone,
-}: {
-  email: string
-  name: string
-  envKey: string
-  jobTitleName: string
-  residencyNumber: string
-  phone: string
-}) {
-  const existing = await prisma.user.findFirst({ where: { email } })
-  const password = getSeedPassword(envKey, email)
-  const hashedPassword = await hash(password, 12)
-
-  const jobTitle = await prisma.jobTitle.findUnique({ where: { name: jobTitleName } })
-  if (!jobTitle) {
-    throw new Error(`Job title ${jobTitleName} not found while creating ${email}`)
-  }
-
-  if (existing) {
-    await prisma.user.update({
-      where: { id: existing.id },
-      data: {
-        password: hashedPassword,
-        jobTitleId: jobTitle.id,
-        status: 'AVAILABLE',
-      },
-    })
-
-    console.log(`🔁 Rotated credentials for ${email}`)
-    console.log(`   Temporary password: ${password}`)
-    return
-  }
-
-  const user = await prisma.user.create({
-    data: {
-      name,
-      email,
-      password: hashedPassword,
-      jobTitleId: jobTitle.id,
-      status: 'AVAILABLE',
-      nationality: 'سعودي',
-      phone,
-      dateOfBirth: new Date('1985-01-01'),
-      residencyNumber,
-    },
-  })
-
-  console.log(`✅ Created privileged user ${email} with job title ${jobTitleName}`)
-  console.log(`   Temporary password: ${password}`)
-
-  return user
 }
 
 async function main() {

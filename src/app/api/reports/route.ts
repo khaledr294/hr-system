@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { Permission } from '@prisma/client';
 import {
   generateWorkersReport,

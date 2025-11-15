@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withApiAuth } from '@/lib/api-guard';
 import { getUserNotifications, getUnreadCount, markAsRead, markAllAsRead, deleteNotification } from '@/lib/notifications';
 

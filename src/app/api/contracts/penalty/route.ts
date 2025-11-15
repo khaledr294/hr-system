@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Permission } from '@prisma/client';
 import { withApiAuth } from '@/lib/api-guard';

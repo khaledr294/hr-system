@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { Permission } from '@prisma/client';
 import { getCacheInfo, clearAllCache } from '@/lib/cache';
 import { checkDatabaseHealth } from '@/lib/query-optimization';
@@ -12,7 +12,7 @@ type EmptyContext = { params: Promise<Record<string, never>> };
  */
 export const GET = withApiAuth<EmptyContext>(
   { permissions: [Permission.VIEW_PERFORMANCE], auditAction: 'PERFORMANCE_VIEW' },
-  async ({ req }) => {
+  async () => {
   try {
     const [cacheInfo, dbHealth] = await Promise.all([
       getCacheInfo(),

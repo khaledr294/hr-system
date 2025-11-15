@@ -88,9 +88,9 @@ export default function GeneralSettingsPage() {
 
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error saving settings:", err);
-      setError(err.message || "حدث خطأ أثناء حفظ الإعدادات");
+      setError(err instanceof Error ? err.message : "حدث خطأ أثناء حفظ الإعدادات");
     } finally {
       setSaving(false);
     }
