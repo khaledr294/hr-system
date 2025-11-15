@@ -118,7 +118,7 @@ export const POST = withApiAuth<EmptyContext>(
     });
 
     // Log the worker creation
-    await createLog(session.user.id, 'WORKER_CREATED', `Worker created: ${data.name} (Code: ${data.code})`);
+    await createLog(session.user.id, 'WORKER_CREATED', `تم إضافة العاملة ${data.name} (الكود: ${data.code})`);
 
     const meta = parseWorkerMeta(worker.reservationNotes);
     const responseBody = {

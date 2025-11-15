@@ -64,7 +64,7 @@ export const DELETE = withApiAuth<ContractContext>(
         });
       });
 
-      await createLog(session.user.id, 'CONTRACT_DELETED', `Contract deleted for worker ID: ${contract.workerId}`);
+      await createLog(session.user.id, 'CONTRACT_DELETED', `تم حذف عقد العاملة: ${contract.worker.name}`);
 
       return NextResponse.json({ success: true });
     } catch (error) {

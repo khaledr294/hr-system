@@ -145,7 +145,7 @@ export const PUT = withApiAuth<WorkerContext>(
         data: updateData,
       });
 
-      await createLog(session.user.id, 'WORKER_UPDATED', `Worker updated: ${data.name} (ID: ${params.id})`);
+      await createLog(session.user.id, 'WORKER_UPDATED', `تم تحديث بيانات العاملة ${data.name}`);
 
       const meta = parseWorkerMeta(worker.reservationNotes);
 
@@ -185,7 +185,7 @@ export const DELETE = withApiAuth<WorkerContext>(
 
       await prisma.worker.delete({ where: { id: params.id } });
 
-      await createLog(session.user.id, 'WORKER_DELETED', `Worker deleted: ${worker?.name ?? params.id}`);
+      await createLog(session.user.id, 'WORKER_DELETED', `تم حذف العاملة ${worker?.name ?? 'غير معروف'}`);
 
       return NextResponse.json({ success: true });
     } catch (error) {

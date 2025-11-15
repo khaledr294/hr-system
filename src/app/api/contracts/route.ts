@@ -212,6 +212,10 @@ export const POST = withApiAuth<EmptyContext>(
             contractNumber,
             notes: data.notes || '',
           },
+          include: {
+            worker: true,
+            client: true,
+          },
         });
 
         await tx.worker.update({
@@ -225,7 +229,7 @@ export const POST = withApiAuth<EmptyContext>(
       await createLog(
         session.user.id,
         'CONTRACT_CREATED',
-        `Contract created for worker ID: ${data.workerId}, Client: ${data.clientName ?? data.clientId}`
+        `تم إنشاء عقد للعاملة ${contract.worker.name} مع العميل ${contract.client.name}`
       );
 
       return NextResponse.json(contract, { status: 201 });

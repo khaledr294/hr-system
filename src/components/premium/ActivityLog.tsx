@@ -4,23 +4,58 @@ import { useEffect, useState, memo } from "react";
 import { formatDateTime } from "@/lib/date";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
+import { 
+  UserPlus, UserX, Edit, FileText, Trash2, 
+  Shield, CheckCircle, XCircle, AlertTriangle,
+  Users, Calendar, Package
+} from "lucide-react";
 
-// ترجمة العمليات إلى العربية
-const getActionInArabic = (action: string) => {
-  const translations: Record<string, string> = {
-    'WORKER_CREATED': 'إضافة عامل',
-    'WORKER_UPDATED': 'تحديث عامل',
-    'WORKER_DELETED': 'حذف عامل',
-    'LOGIN': 'تسجيل دخول',
-    'LOGOUT': 'تسجيل خروج',
-    'CREATE_WORKER': 'إضافة عامل',
-    'UPDATE_CONTRACT': 'تحديث عقد',
-    'DELETE_USER': 'حذف مستخدم',
-    'VIEW_DASHBOARD': 'عرض لوحة التحكم',
-    'CREATE_USER': 'إضافة مستخدم',
-    'UPDATE_USER': 'تحديث مستخدم'
+// ترجمة العمليات إلى العربية مع الأيقونات
+const getActionDetails = (action: string) => {
+  const details: Record<string, { label: string; icon: typeof UserPlus; color: string }> = {
+    // عمليات العمال
+    'WORKER_CREATED': { label: 'إضافة عاملة', icon: UserPlus, color: 'text-green-600 bg-green-50' },
+    'WORKER_UPDATED': { label: 'تحديث بيانات عاملة', icon: Edit, color: 'text-blue-600 bg-blue-50' },
+    'WORKER_DELETED': { label: 'حذف عاملة', icon: UserX, color: 'text-red-600 bg-red-50' },
+    'WORKER_STATUS_CHANGED': { label: 'تغيير حالة عاملة', icon: Shield, color: 'text-purple-600 bg-purple-50' },
+    
+    // عمليات العقود
+    'CONTRACT_CREATED': { label: 'إنشاء عقد جديد', icon: FileText, color: 'text-green-600 bg-green-50' },
+    'CONTRACT_UPDATED': { label: 'تحديث عقد', icon: Edit, color: 'text-blue-600 bg-blue-50' },
+    'CONTRACT_DELETED': { label: 'حذف عقد', icon: Trash2, color: 'text-red-600 bg-red-50' },
+    'CONTRACT_EXTENDED': { label: 'تمديد عقد', icon: Calendar, color: 'text-indigo-600 bg-indigo-50' },
+    'CONTRACT_TERMINATED': { label: 'إنهاء عقد', icon: XCircle, color: 'text-orange-600 bg-orange-50' },
+    
+    // عمليات المستخدمين
+    'USER_CREATED': { label: 'إضافة مستخدم', icon: UserPlus, color: 'text-green-600 bg-green-50' },
+    'USER_UPDATED': { label: 'تحديث مستخدم', icon: Edit, color: 'text-blue-600 bg-blue-50' },
+    'USER_DELETED': { label: 'حذف مستخدم', icon: UserX, color: 'text-red-600 bg-red-50' },
+    
+    // عمليات العملاء
+    'CLIENT_CREATED': { label: 'إضافة عميل', icon: Users, color: 'text-green-600 bg-green-50' },
+    'CLIENT_UPDATED': { label: 'تحديث بيانات عميل', icon: Edit, color: 'text-blue-600 bg-blue-50' },
+    'CLIENT_DELETED': { label: 'حذف عميل', icon: UserX, color: 'text-red-600 bg-red-50' },
+    
+    // عمليات الحجز
+    'WORKER_RESERVED': { label: 'حجز عاملة', icon: Shield, color: 'text-purple-600 bg-purple-50' },
+    'WORKER_RESERVATION_CANCELLED': { label: 'إلغاء حجز عاملة', icon: XCircle, color: 'text-orange-600 bg-orange-50' },
+    
+    // عمليات النظام
+    'UPDATE_SETTINGS': { label: 'تحديث إعدادات النظام', icon: Shield, color: 'text-indigo-600 bg-indigo-50' },
+    'BACKUP_CREATED': { label: 'إنشاء نسخة احتياطية', icon: Package, color: 'text-green-600 bg-green-50' },
+    'BACKUP_RESTORED': { label: 'استعادة نسخة احتياطية', icon: Package, color: 'text-blue-600 bg-blue-50' },
+    
+    // عمليات الصلاحيات
+    'PERMISSION_DENIED': { label: 'رفض صلاحية', icon: Shield, color: 'text-red-600 bg-red-50' },
+    'LOGIN': { label: 'تسجيل دخول', icon: CheckCircle, color: 'text-green-600 bg-green-50' },
+    'LOGOUT': { label: 'تسجيل خروج', icon: XCircle, color: 'text-slate-600 bg-slate-50' },
   };
-  return translations[action] || action;
+  
+  return details[action] || { 
+    label: action.replace(/_/g, ' '), 
+    icon: AlertTriangle, 
+    color: 'text-slate-600 bg-slate-50' 
+  };
 };
 
 type Log = { 
@@ -95,35 +130,47 @@ function ActivityLog() {
         <div className="text-slate-500 text-sm">لا توجد عمليات حديثة</div>
       ) : (
         <div className="space-y-2 sm:space-y-3 max-h-64 sm:max-h-80 overflow-y-auto pr-1 custom-scrollbar">
-          {logs.map((log, i) => (
-            <div key={log.id || i} className="rounded-lg sm:rounded-xl bg-slate-50 hover:bg-slate-100 transition p-2 sm:p-3">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-slate-800 text-sm sm:text-base">
-                    <span className="truncate block">{getActionInArabic(log.action)}</span>
+          {logs.map((log, i) => {
+            const details = getActionDetails(log.action);
+            const Icon = details.icon;
+            
+            return (
+              <div key={log.id || i} className="rounded-lg sm:rounded-xl bg-white border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all p-2 sm:p-3">
+                <div className="flex items-start gap-2 sm:gap-3">
+                  {/* الأيقونة */}
+                  <div className={`shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center ${details.color}`}>
+                    <Icon className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                   </div>
-                  {log.user && (
-                    <div className="text-xs text-slate-600 mt-1">
-                      بواسطة: <span className="font-medium">{log.user.name}</span>
+                  
+                  <div className="flex-1 min-w-0">
+                    {/* العنوان والمستخدم */}
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-slate-900 text-xs sm:text-sm truncate">
+                          {details.label}
+                        </div>
+                        {log.user && (
+                          <div className="text-xs text-slate-600 mt-0.5">
+                            بواسطة: <span className="font-semibold text-slate-700">{log.user.name}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-xs text-slate-500 whitespace-nowrap">
+                        {formatDateTime(log.createdAt)}
+                      </div>
                     </div>
-                  )}
-                  {log.entity && (
-                    <span className="inline-block mt-1 text-xs bg-slate-900 text-white px-2 py-0.5 rounded">
-                      {log.entity}
-                    </span>
-                  )}
-                </div>
-                <div className="text-xs text-slate-500 whitespace-nowrap">
-                  {formatDateTime(log.createdAt)}
+                    
+                    {/* الرسالة */}
+                    {log.message && !log.message.startsWith('API ') && !log.message.startsWith('Blocked API') && (
+                      <div className="text-slate-700 text-xs mt-1.5 bg-slate-50 px-2 py-1 rounded">
+                        {log.message}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-              {log.message && (
-                <div className="text-slate-600 text-xs sm:text-sm mt-2 line-clamp-2">
-                  {log.message}
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </motion.div>

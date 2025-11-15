@@ -78,10 +78,8 @@ export const PATCH = withApiAuth<WorkerStatusContext>(
 
       await createLog(
         session.user.id,
-        'UPDATE_WORKER_STATUS',
-        'Worker',
-        id,
-        `تغيير حالة العاملة ${worker.name} إلى ${status}`
+        'WORKER_STATUS_CHANGED',
+        `تم تغيير حالة العاملة ${worker.name} إلى ${status}`
       );
 
       return NextResponse.json(worker);

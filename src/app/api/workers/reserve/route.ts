@@ -49,9 +49,7 @@ export const POST = withApiAuth<EmptyContext>(
       await createLog(
         session.user.id,
         'WORKER_RESERVED',
-        `تم حجز العاملة ${worker.name} (كود: ${worker.code})`,
-        'Worker',
-        workerId
+        `تم حجز العاملة ${worker.name} (الكود: ${worker.code})`
       );
 
       const meta = parseWorkerMeta(updatedWorker.reservationNotes);
@@ -109,9 +107,7 @@ export const DELETE = withApiAuth<EmptyContext>(
       await createLog(
         session.user.id,
         'WORKER_RESERVATION_CANCELLED',
-        `تم إلغاء حجز العاملة ${worker.name} (كود: ${worker.code})`,
-        'Worker',
-        workerId
+        `تم إلغاء حجز العاملة ${worker.name} (الكود: ${worker.code})`
       );
 
       const meta = parseWorkerMeta(updatedWorker.reservationNotes);
