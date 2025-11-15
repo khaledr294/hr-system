@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import DashboardLayout from "@/components/DashboardLayout";
 
 type NationalitySalary = {
@@ -10,16 +12,36 @@ type NationalitySalary = {
 };
 
 export default function NationalitySalaryPage() {
+  const router = useRouter();
+  const { data: session, status } = useSession();
   const [nationalities, setNationalities] = useState<NationalitySalary[]>([]);
   const [nationality, setNationality] = useState("");
   const [salary, setSalary] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
+  // التحقق من الصلاحيات
+  useEffect(() => {
+    if (status === 'loading') return;
+    
+    if (!session?.user) {
+      router.push('/login');
+      return;
+    }
+
+    const userRole = session.user.role;
+    if (userRole !== 'HR_MANAGER' && userRole !== 'GENERAL_MANAGER') {
+      router.push('/unauthorized');
+      return;
+    }
+  }, [session, status, router]);
+
   // Load nationalities on component mount
   useEffect(() => {
-    loadNationalities();
-  }, []);
+    if (session) {
+      loadNationalities();
+    }
+  }, [session]);
 
   const loadNationalities = async () => {
     try {

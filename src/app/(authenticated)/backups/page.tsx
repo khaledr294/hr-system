@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import Button from '@/components/ui/Button';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import EmptyState from '@/components/ui/empty-state';
@@ -16,13 +18,33 @@ interface Backup {
 }
 
 export default function BackupsPage() {
+  const router = useRouter();
+  const { data: session, status } = useSession();
   const [backups, setBackups] = useState<Backup[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
 
+  // التحقق من الصلاحيات
   useEffect(() => {
-    fetchBackups();
-  }, []);
+    if (status === 'loading') return;
+    
+    if (!session?.user) {
+      router.push('/login');
+      return;
+    }
+
+    const userRole = session.user.role;
+    if (userRole !== 'HR_MANAGER' && userRole !== 'GENERAL_MANAGER') {
+      router.push('/unauthorized');
+      return;
+    }
+  }, [session, status, router]);
+
+  useEffect(() => {
+    if (session) {
+      fetchBackups();
+    }
+  }, [session]);
 
   const fetchBackups = async () => {
     setLoading(true);

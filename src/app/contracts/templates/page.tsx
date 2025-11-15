@@ -1,11 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import DashboardLayout from '@/components/DashboardLayout';
 import Button from '@/components/ui/Button';
 import { mergeVariables, generateSampleData } from '@/lib/contract-templates-client';
 
 export default function ContractTemplatesPage() {
+  const router = useRouter();
+  const { data: session, status } = useSession();
   const [isUploading, setIsUploading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [templateExists, setTemplateExists] = useState(false);
@@ -13,6 +17,22 @@ export default function ContractTemplatesPage() {
 
   // استخدام templateExists للحالة المستقبلية
   console.log('Template exists status:', templateExists);
+
+  // التحقق من الصلاحيات
+  useEffect(() => {
+    if (status === 'loading') return;
+    
+    if (!session?.user) {
+      router.push('/login');
+      return;
+    }
+
+    const userRole = session.user.role;
+    if (userRole !== 'HR_MANAGER' && userRole !== 'GENERAL_MANAGER') {
+      router.push('/unauthorized');
+      return;
+    }
+  }, [session, status, router]);
 
   // فحص وجود القالب عند تحميل الصفحة
   const checkTemplateExists = async () => {

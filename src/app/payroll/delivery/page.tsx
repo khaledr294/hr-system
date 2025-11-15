@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import DashboardLayout from "@/components/DashboardLayout";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
@@ -59,11 +61,29 @@ type PayrollDelivery = {
 };
 
 export default function PayrollDeliveryPage() {
+  const router = useRouter();
+  const { data: session, status } = useSession();
   const [deliveries, setDeliveries] = useState<Map<string, PayrollDelivery>>(new Map());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [searchTerm, setSearchTerm] = useState("");
+
+  // التحقق من الصلاحيات
+  useEffect(() => {
+    if (status === 'loading') return;
+    
+    if (!session?.user) {
+      router.push('/login');
+      return;
+    }
+
+    const userRole = session.user.role;
+    if (userRole !== 'HR_MANAGER' && userRole !== 'GENERAL_MANAGER') {
+      router.push('/unauthorized');
+      return;
+    }
+  }, [session, status, router]);
 
   const calculateWorkingDaysForWorker = useCallback(async (workerId: string, monthYear: string): Promise<number> => {
     try {

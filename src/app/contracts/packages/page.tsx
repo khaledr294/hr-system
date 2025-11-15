@@ -2,6 +2,8 @@
 import DashboardLayout from '@/components/DashboardLayout';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 
@@ -13,6 +15,8 @@ interface Package {
 }
 
 export default function PackagesPage() {
+  const router = useRouter();
+  const { data: session, status } = useSession();
   const [packages, setPackages] = useState<Package[]>([]);
   const [name, setName] = useState<string>('');
   const [duration, setDuration] = useState<number>(30);
@@ -23,11 +27,29 @@ export default function PackagesPage() {
   const [editDuration, setEditDuration] = useState<number>(30);
   const [editPrice, setEditPrice] = useState<number>(1000);
 
+  // التحقق من الصلاحيات
   useEffect(() => {
-    fetch('/api/packages')
-      .then(res => res.json())
-      .then((data: Package[]) => setPackages(data));
-  }, []);
+    if (status === 'loading') return;
+    
+    if (!session?.user) {
+      router.push('/login');
+      return;
+    }
+
+    const userRole = session.user.role;
+    if (userRole !== 'HR_MANAGER' && userRole !== 'GENERAL_MANAGER') {
+      router.push('/unauthorized');
+      return;
+    }
+  }, [session, status, router]);
+
+  useEffect(() => {
+    if (session) {
+      fetch('/api/packages')
+        .then(res => res.json())
+        .then((data: Package[]) => setPackages(data));
+    }
+  }, [session]);
 
   const handleAdd = async () => {
     if (!name) return;

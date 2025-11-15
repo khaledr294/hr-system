@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import DashboardLayout from "@/components/DashboardLayout";
 import * as ExcelJS from 'exceljs';
 
@@ -32,12 +34,31 @@ type PayrollData = {
 };
 
 export default function PayrollPage() {
+  const router = useRouter();
+  const { data: session, status } = useSession();
   const [payrollData, setPayrollData] = useState<PayrollData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM format
 
+  // التحقق من الصلاحيات
+  useEffect(() => {
+    if (status === 'loading') return;
+    
+    if (!session?.user) {
+      router.push('/login');
+      return;
+    }
+
+    const userRole = session.user.role;
+    if (userRole !== 'HR_MANAGER' && userRole !== 'GENERAL_MANAGER') {
+      router.push('/unauthorized');
+      return;
+    }
+  }, [session, status, router]);
+
   // Load workers on component mount and when month changes
   useEffect(() => {
+    if (!session) return;
     const loadWorkers = async () => {
       try {
         console.log('📞 جاري تحميل العاملين...');
