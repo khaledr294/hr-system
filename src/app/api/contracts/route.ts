@@ -18,9 +18,11 @@ export const GET = withApiAuth<EmptyContext>(
 
     try {
       const whereClause: Prisma.ContractWhereInput = {};
+      const archivedWhereClause: Prisma.ArchivedContractWhereInput = {};
 
       if (workerId) {
         whereClause.workerId = workerId;
+        archivedWhereClause.workerId = workerId;
       }
 
       if (month) {
@@ -29,6 +31,10 @@ export const GET = withApiAuth<EmptyContext>(
         const monthEnd = new Date(year, monthNum, 0);
 
         whereClause.AND = [
+          { startDate: { lte: monthEnd } },
+          { endDate: { gte: monthStart } },
+        ];
+        archivedWhereClause.AND = [
           { startDate: { lte: monthEnd } },
           { endDate: { gte: monthStart } },
         ];
@@ -45,7 +51,7 @@ export const GET = withApiAuth<EmptyContext>(
           orderBy: { createdAt: 'desc' },
         }),
         prisma.archivedContract.findMany({
-          where: whereClause,
+          where: archivedWhereClause,
           orderBy: { archivedAt: 'desc' },
         }),
       ]);

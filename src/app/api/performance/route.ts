@@ -12,7 +12,7 @@ type EmptyContext = { params: Promise<Record<string, never>> };
  */
 export const GET = withApiAuth<EmptyContext>(
   { permissions: [Permission.VIEW_PERFORMANCE], auditAction: 'PERFORMANCE_VIEW' },
-  async (_request: NextRequest) => {
+  async ({ req }) => {
   try {
     const [cacheInfo, dbHealth] = await Promise.all([
       getCacheInfo(),
@@ -41,9 +41,9 @@ export const GET = withApiAuth<EmptyContext>(
  */
 export const POST = withApiAuth<EmptyContext>(
   { permissions: [Permission.MANAGE_SETTINGS], auditAction: 'PERFORMANCE_ACTION' },
-  async (request: NextRequest) => {
+  async ({ req }) => {
   try {
-  const body = (await request.json()) as { action?: string };
+  const body = (await req.json()) as { action?: string };
   const { action } = body;
 
     switch (action) {

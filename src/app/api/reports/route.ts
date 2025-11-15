@@ -19,9 +19,9 @@ type EmptyContext = { params: Promise<Record<string, never>> };
  */
 export const GET = withApiAuth<EmptyContext>(
   { permissions: [Permission.VIEW_REPORTS], auditAction: 'REPORT_VIEW' },
-  async (request: NextRequest) => {
+  async ({ req }) => {
   try {
-    const searchParams = request.nextUrl.searchParams;
+    const searchParams = req.nextUrl.searchParams;
     const type = searchParams.get('type');
     const format = searchParams.get('format') || 'json';
     const startDate = searchParams.get('startDate');

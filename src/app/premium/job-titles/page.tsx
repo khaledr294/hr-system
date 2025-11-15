@@ -141,7 +141,7 @@ export default function JobTitlesPage() {
       name: jobTitle.name,
       nameAr: jobTitle.nameAr,
       description: jobTitle.description || "",
-      permissions: jobTitle.permissions as string[],
+      permissions: (jobTitle.permissions as unknown) as string[],
       isActive: jobTitle.isActive,
     });
     setShowModal(true);
@@ -234,7 +234,7 @@ export default function JobTitlesPage() {
       {/* Job Titles Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {jobTitles.map((jobTitle) => {
-          const permissions = jobTitle.permissions as string[];
+          const permissions = (jobTitle.permissions as unknown) as string[];
           return (
             <div
               key={jobTitle.id}
