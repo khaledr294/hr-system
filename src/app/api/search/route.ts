@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
-import { hasPermission } from '@/lib/permissions';
+import { Permission, Prisma } from '@prisma/client';
+import { withApiAuth } from '@/lib/api-guard';
+import { sessionHasPermission } from '@/lib/permissions';
+
+type EmptyContext = { params: Promise<Record<string, never>> };
 
 export const dynamic = 'force-dynamic';
 
@@ -57,14 +59,11 @@ interface SearchResponse {
   users: UserSearchResult[];
 }
 
-export async function GET(request: NextRequest) {
-  try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
-    }
-
-    const searchParams = request.nextUrl.searchParams;
+export const GET = withApiAuth<EmptyContext>(
+  { permissions: [Permission.VIEW_SEARCH] },
+  async ({ req, session }) => {
+    try {
+    const searchParams = req.nextUrl.searchParams;
     const query = searchParams.get('q') || '';
   const entities = searchParams.get('entities')?.split(',') || ['workers', 'contracts', 'clients', 'users'];
   const parsedLimit = Number.parseInt(searchParams.get('limit') || '10', 10);
@@ -220,7 +219,7 @@ export async function GET(request: NextRequest) {
     }
 
     // البحث في المستخدمين (يتطلب صلاحية VIEW_USERS)
-    const canViewUsers = await hasPermission(session.user.id, 'VIEW_USERS');
+    const canViewUsers = sessionHasPermission(session, Permission.VIEW_USERS);
     if (entities.includes('users') && query && canViewUsers) {
       const userFilter: Prisma.UserWhereInput = {
         OR: [
@@ -237,8 +236,10 @@ export async function GET(request: NextRequest) {
           id: true,
           name: true,
           email: true,
-          role: true,
-          createdAt: true
+          createdAt: true,
+          jobTitle: {
+            select: { name: true }
+          }
         }
       });
 
@@ -246,7 +247,7 @@ export async function GET(request: NextRequest) {
         id: u.id,
         name: u.name,
         email: u.email,
-        role: u.role,
+        role: u.jobTitle?.name ?? 'غير محدد',
         createdAt: u.createdAt,
         type: 'user' as const,
       }));
@@ -262,4 +263,5 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+  }
+);

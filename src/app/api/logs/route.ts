@@ -1,32 +1,29 @@
-import { NextRequest } from 'next/server';
-import { getSession } from '@/lib/session';
+import { NextResponse } from 'next/server';
 import { getLogs } from '@/lib/logger';
+import { Permission } from '@prisma/client';
+import { withApiAuth } from '@/lib/api-guard';
+import { sessionHasPermission } from '@/lib/permissions';
 
-export async function GET(req: NextRequest) {
-  const session = await getSession();
+type EmptyContext = { params: Promise<Record<string, never>> };
 
-  if (!session) {
-    return new Response('Unauthorized', { status: 401 });
+export const GET = withApiAuth<EmptyContext>(
+  { permissions: [Permission.VIEW_LOGS] },
+  async ({ req, session }) => {
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '50', 10);
+    const action = searchParams.get('action') || undefined;
+
+    const canScopeUsers = sessionHasPermission(session, Permission.MANAGE_SETTINGS);
+    const requestedUserId = searchParams.get('userId') || undefined;
+    const userId = canScopeUsers ? requestedUserId : session.user.id;
+
+    try {
+      const result = await getLogs(userId, page, limit, action);
+      return NextResponse.json(result);
+    } catch (error) {
+      console.error('Error fetching logs:', error);
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
   }
-
-  const { searchParams } = new URL(req.url);
-  const page = parseInt(searchParams.get('page') || '1');
-  const limit = parseInt(searchParams.get('limit') || '50');
-  const action = searchParams.get('action') || undefined;
-  
-  // إذا كان المستخدم ليس أدمن، يجلب سجلاته فقط
-  const userId = ['ADMIN', 'HR_MANAGER', 'GENERAL_MANAGER'].includes(session.user.role) 
-    ? searchParams.get('userId') || undefined 
-    : session.user.id;
-
-  try {
-    const result = await getLogs(userId, page, limit, action);
-    return new Response(JSON.stringify(result), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  } catch (error) {
-    console.error('Error fetching logs:', error);
-    return new Response('Internal Server Error', { status: 500 });
-  }
-}
+);

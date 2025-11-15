@@ -1,27 +1,19 @@
-import { getSession } from '@/lib/session';
+import { NextResponse } from 'next/server';
 import { checkExpiringContracts } from '@/lib/notifications';
-import { hasPermission } from '@/lib/permissions';
+import { Permission } from '@prisma/client';
+import { withApiAuth } from '@/lib/api-guard';
 
-export async function POST() {
-  const session = await getSession();
+type EmptyContext = { params: Promise<Record<string, never>> };
 
-  if (!session?.user) {
-    return new Response('Unauthorized', { status: 401 });
+export const POST = withApiAuth<EmptyContext>(
+  { permissions: [Permission.VIEW_CONTRACTS], auditAction: 'NOTIFICATION_CHECK' },
+  async () => {
+    try {
+      await checkExpiringContracts();
+      return NextResponse.json({ success: true });
+    } catch (error) {
+      console.error('Failed to check notifications:', error);
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
   }
-
-  // التحقق من صلاحية عرض العقود
-  const canView = await hasPermission(session.user.id, 'VIEW_CONTRACTS');
-  if (!canView) {
-    return new Response('Forbidden - ليس لديك صلاحية فحص الإشعارات', { status: 403 });
-  }
-
-  try {
-    await checkExpiringContracts();
-    return new Response('Notification check completed successfully', {
-      status: 200,
-    });
-  } catch (error) {
-    console.error('Failed to check notifications:', error);
-    return new Response('Internal Server Error', { status: 500 });
-  }
-}
+);

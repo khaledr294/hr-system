@@ -1,17 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { autoArchiveExpiredContracts } from '@/lib/archive';
+import { Permission } from '@prisma/client';
+import { withApiAuth } from '@/lib/api-guard';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-export async function GET(request: NextRequest) {
-  try {
-    // التحقق من authorization header (Vercel Cron)
-    const authHeader = request.headers.get('authorization');
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+type EmptyContext = { params: Promise<Record<string, never>> };
 
+const runAutoArchive = async () => {
+  try {
     console.log('🗄️ بدء الأرشفة التلقائية للعقود المنتهية...');
 
     // أرشفة العقود المنتهية منذ أكثر من 90 يوم
@@ -34,4 +32,22 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
+};
+
+const guardedGet = withApiAuth<EmptyContext>(
+  { permissions: [Permission.MANAGE_ARCHIVE], auditAction: 'CONTRACT_AUTO_ARCHIVE' },
+  async () => runAutoArchive()
+);
+
+const isCronRequest = (request: NextRequest) => {
+  const authHeader = request.headers.get('authorization');
+  return authHeader !== null && authHeader === `Bearer ${process.env.CRON_SECRET}`;
+};
+
+export async function GET(request: NextRequest, context: EmptyContext) {
+  if (isCronRequest(request)) {
+    return runAutoArchive();
+  }
+
+  return guardedGet(request, context);
 }

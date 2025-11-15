@@ -1,17 +1,23 @@
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
 import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
 import { prisma } from '@/lib/prisma';
+import { Permission } from '@prisma/client';
+import { withApiAuth } from '@/lib/api-guard';
 
 const TEMPLATE_FILE = path.join(process.cwd(), 'templates', 'contract-template.docx');
 
-export async function POST(req: NextRequest) {
-  try {
-  const payload = await req.json();
+type EmptyContext = { params: Promise<Record<string, never>> };
+
+export const POST = withApiAuth<EmptyContext>(
+  { permissions: [Permission.MANAGE_TEMPLATES] },
+  async ({ req }) => {
+    try {
+      const payload = await req.json();
     // If body has contractId, load real data from DB
   let data = payload;
   if (payload && payload.contractId) {
@@ -62,19 +68,20 @@ export async function POST(req: NextRequest) {
     }
     const buf = doc.getZip().generate({ type: 'uint8array' });
   const binary = new Uint8Array(buf);
-  return new NextResponse(binary, {
+      return new NextResponse(binary, {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'Content-Disposition': 'attachment; filename="contract.docx"'
       }
     });
-  } catch (err) {
-    let msg = 'فشل توليد ملف Word: ';
-    if (err && typeof err === 'object' && 'message' in err) {
-      msg += String((err as { message?: unknown }).message);
-    } else {
-      msg += String(err);
+    } catch (err) {
+      let msg = 'فشل توليد ملف Word: ';
+      if (err && typeof err === 'object' && 'message' in err) {
+        msg += String((err as { message?: unknown }).message);
+      } else {
+        msg += String(err);
+      }
+      return NextResponse.json({ error: msg }, { status: 500 });
     }
-    return NextResponse.json({ error: msg }, { status: 500 });
   }
-}
+);

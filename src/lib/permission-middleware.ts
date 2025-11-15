@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "./session";
-import { hasPermission, hasAnyPermission } from "./permissions";
-import type { Permission } from "./permissions";
+import { sessionHasPermission, sessionHasAny, Permission } from "./permissions";
 
 /**
  * التحقق من الصلاحية على مستوى الصفحة
@@ -14,7 +13,7 @@ export async function checkPagePermission(permission: Permission) {
     return NextResponse.redirect(new URL('/login', process.env.NEXTAUTH_URL));
   }
 
-  const hasAccess = await hasPermission(session.user.id, permission);
+  const hasAccess = sessionHasPermission(session, permission);
   
   if (!hasAccess) {
     return NextResponse.redirect(new URL('/403', process.env.NEXTAUTH_URL));
@@ -33,7 +32,7 @@ export async function checkPageAnyPermission(permissions: Permission[]) {
     return NextResponse.redirect(new URL('/login', process.env.NEXTAUTH_URL));
   }
 
-  const hasAccess = await hasAnyPermission(session.user.id, permissions);
+  const hasAccess = sessionHasAny(session, permissions);
   
   if (!hasAccess) {
     return NextResponse.redirect(new URL('/403', process.env.NEXTAUTH_URL));
@@ -53,7 +52,7 @@ export async function requireApiPermission(permission: Permission) {
     throw new Error('Unauthorized');
   }
 
-  const hasAccess = await hasPermission(session.user.id, permission);
+  const hasAccess = sessionHasPermission(session, permission);
   
   if (!hasAccess) {
     throw new Error('Forbidden - ليس لديك الصلاحية المطلوبة');
@@ -70,7 +69,7 @@ export async function requireApiAnyPermission(permissions: Permission[]) {
     throw new Error('Unauthorized');
   }
 
-  const hasAccess = await hasAnyPermission(session.user.id, permissions);
+  const hasAccess = sessionHasAny(session, permissions);
   
   if (!hasAccess) {
     throw new Error('Forbidden - ليس لديك أي من الصلاحيات المطلوبة');

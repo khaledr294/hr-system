@@ -50,7 +50,7 @@ export default function EditUserForm({ user }: EditUserFormProps) {
     const jobTitle = jobTitles.find(jt => jt.id === jobTitleId);
     if (!jobTitle) return 0;
     try {
-      const parsed = JSON.parse(jobTitle.permissions) as unknown;
+      const parsed = jobTitle.permissions as unknown;
       return Array.isArray(parsed) ? parsed.length : 0;
     } catch {
       return 0;

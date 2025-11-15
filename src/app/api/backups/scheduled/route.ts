@@ -1,27 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createDatabaseBackup, cleanupOldBackups } from '@/lib/backup';
+import { Permission } from '@prisma/client';
+import { withApiAuth } from '@/lib/api-guard';
 
 /**
  * POST /api/backups/scheduled
  * نسخة احتياطية تلقائية يومية
  * يتم استدعاؤها من Vercel Cron
  */
-export async function POST(request: NextRequest) {
+type EmptyContext = { params: Promise<Record<string, never>> };
+
+const runScheduledBackup = async () => {
   try {
-    // التحقق من Authorization header
-    const authHeader = request.headers.get('authorization');
-    const cronSecret = process.env.CRON_SECRET;
-
-    if (authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
-    }
-
     console.log('🕐 بدء النسخ الاحتياطي المجدول...');
 
-    // إنشاء نسخة احتياطية تلقائية
     const result = await createDatabaseBackup('automatic');
-
-    // تنظيف النسخ القديمة
     const deletedCount = await cleanupOldBackups();
 
     return NextResponse.json({
@@ -46,28 +39,35 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+};
+
+const guardedHandler = withApiAuth<EmptyContext>(
+  { permissions: [Permission.MANAGE_SETTINGS], auditAction: 'BACKUP_RUN' },
+  async () => runScheduledBackup()
+);
+
+const isCronRequest = (request: NextRequest) => {
+  const authHeader = request.headers.get('authorization');
+  const cronSecret = process.env.CRON_SECRET;
+  return Boolean(cronSecret) && authHeader === `Bearer ${cronSecret}`;
+};
+
+export async function POST(request: NextRequest, context: EmptyContext) {
+  if (isCronRequest(request)) {
+    return runScheduledBackup();
+  }
+
+  return guardedHandler(request, context);
 }
 
 /**
  * GET /api/backups/scheduled
  * للسماح بـ Vercel Cron استدعاء الـ endpoint
  */
-export async function GET(request: NextRequest) {
-  try {
-    const authHeader = request.headers.get('authorization');
-    const cronSecret = process.env.CRON_SECRET;
-
-    if (authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
-    }
-
-    // استدعاء نفس منطق POST
-    return POST(request);
-  } catch (error) {
-    console.error('خطأ في GET /api/backups/scheduled:', error);
-    return NextResponse.json(
-      { error: 'حدث خطأ' },
-      { status: 500 }
-    );
+export async function GET(request: NextRequest, context: EmptyContext) {
+  if (isCronRequest(request)) {
+    return runScheduledBackup();
   }
+
+  return guardedHandler(request, context);
 }

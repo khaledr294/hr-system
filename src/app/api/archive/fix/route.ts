@@ -1,26 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { withApiAuth } from '@/lib/api-guard';
+import { Permission } from '@prisma/client';
 
 /**
  * API لتصحيح بيانات العاملات والعقود المؤرشفة
  * يستخدم لحل المشاكل الموجودة من الأرشفة القديمة
  */
-export async function POST(request: NextRequest) {
+export const POST = withApiAuth<{ params: Promise<Record<string, never>> }>(
+  { permissions: [Permission.MANAGE_ARCHIVE], auditAction: 'ARCHIVE_FIX' },
+  async ({ req }) => {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
-    }
-
-    // التحقق من صلاحية المدير العام فقط
-    if (session.user.role !== 'ADMIN' && session.user.role !== 'GENERAL_MANAGER') {
-      return NextResponse.json({ 
-        error: 'هذه العملية متاحة فقط للمدير العام' 
-      }, { status: 403 });
-    }
-
-    const body = await request.json();
+    const body = await req.json();
     const { action, workerId, archivedContractId } = body;
 
     // تصحيح حالة عاملة لها عقد مؤرشف
@@ -159,3 +150,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+);

@@ -1,21 +1,16 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { getSession } from "@/lib/session";
-import { hasPermission } from "@/lib/permissions";
+import { Permission } from "@prisma/client";
+import { withApiAuth } from "@/lib/api-guard";
 
-export async function POST(req: Request) {
-  const session = await getSession();
-  
-  if (!session?.user) {
-    return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
-  }
+type EmptyContext = { params: Promise<Record<string, never>> };
 
-  // التحقق من صلاحية إنشاء مستخدمين
-  const canCreate = await hasPermission(session.user.id, 'CREATE_USERS');
-  if (!canCreate) {
-    return NextResponse.json({ error: "ليس لديك صلاحية إضافة مستخدمين" }, { status: 403 });
-  }
+export const POST = withApiAuth<EmptyContext>({
+  permissions: [Permission.CREATE_USERS],
+  auditAction: "CREATE_USER",
+},
+async ({ req }) => {
   try {
     const form = await req.formData();
     const name = form.get("name") as string;
@@ -37,17 +32,16 @@ export async function POST(req: Request) {
     }
     
     const hashed = await bcrypt.hash(password, 10);
-    await prisma.user.create({
+    const user = await prisma.user.create({
       data: { 
         name, 
         email, 
         password: hashed,
-        jobTitleId,
-        role: "USER" // قيمة افتراضية للـ backward compatibility
+        jobTitleId
       },
     });
-    
-    return NextResponse.json({ success: true }, { status: 200 });
+
+    return NextResponse.json({ success: true, id: user.id }, { status: 201 });
   } catch (error: unknown) {
     console.error('Failed to create user:', error);
     const message = error instanceof Error ? error.message : "خطأ في النظام";
@@ -55,4 +49,4 @@ export async function POST(req: Request) {
       error: message 
     }, { status: 500 });
   }
-}
+});

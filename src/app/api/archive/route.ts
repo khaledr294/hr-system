@@ -1,30 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { NextResponse } from 'next/server';
 import { 
   archiveContract, 
   restoreContract, 
   searchArchivedContracts,
   getArchiveStats 
 } from '@/lib/archive';
-import { hasPermission } from '@/lib/permissions';
+import { Permission } from '@prisma/client';
+import { withApiAuth } from '@/lib/api-guard';
 
 export const dynamic = 'force-dynamic';
 
 // GET: البحث في الأرشيف أو الحصول على الإحصائيات
-export async function GET(request: NextRequest) {
+export const GET = withApiAuth<{ params: Promise<Record<string, never>> }>(
+  { permissions: [Permission.VIEW_ARCHIVE] },
+  async ({ req }) => {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
-    }
-
-    // التحقق من صلاحية عرض العقود
-    const canView = await hasPermission(session.user.id, 'VIEW_CONTRACTS');
-    if (!canView) {
-      return NextResponse.json({ error: 'ليس لديك صلاحية عرض الأرشيف' }, { status: 403 });
-    }
-
-    const searchParams = request.nextUrl.searchParams;
+    const searchParams = req.nextUrl.searchParams;
     const action = searchParams.get('action');
 
     // الحصول على الإحصائيات
@@ -65,32 +56,15 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+);
 
 // POST: أرشفة أو استرجاع
-export async function POST(request: NextRequest) {
+export const POST = withApiAuth<{ params: Promise<Record<string, never>> }>(
+  { permissions: [Permission.MANAGE_ARCHIVE], auditAction: 'ARCHIVE_ACTION' },
+  async ({ req, session }) => {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
-    }
-
-    const body = await request.json();
+    const body = await req.json();
     const { action, contractId, archivedContractId, reason } = body;
-
-    // التحقق من الصلاحيات بناءً على نوع العملية
-    if (action === 'archive') {
-      // أرشفة عقد تتطلب صلاحية حذف العقود
-      const canDelete = await hasPermission(session.user.id, 'DELETE_CONTRACTS');
-      if (!canDelete) {
-        return NextResponse.json({ error: 'ليس لديك صلاحية أرشفة العقود' }, { status: 403 });
-      }
-    } else if (action === 'restore') {
-      // استعادة عقد تتطلب صلاحية إنشاء عقود
-      const canCreate = await hasPermission(session.user.id, 'CREATE_CONTRACTS');
-      if (!canCreate) {
-        return NextResponse.json({ error: 'ليس لديك صلاحية استعادة العقود' }, { status: 403 });
-      }
-    }
 
     // أرشفة عقد
     if (action === 'archive') {
@@ -147,3 +121,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+);

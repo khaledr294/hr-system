@@ -1,11 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { PDFDocument, rgb } from 'pdf-lib';
 import * as fontkit from 'fontkit';
 import fs from 'fs';
 import path from 'path';
+import { Permission } from '@prisma/client';
+import { withApiAuth } from '@/lib/api-guard';
 
-export async function POST(req: NextRequest) {
-  const { content, options } = await req.json();
+type EmptyContext = { params: Promise<Record<string, never>> };
+
+export const POST = withApiAuth<EmptyContext>(
+  { permissions: [Permission.MANAGE_TEMPLATES] },
+  async ({ req }) => {
+    const { content, options } = await req.json();
   const {
     fontSize = 12,
     textColor = '#000000',
@@ -78,17 +84,17 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const pdfBytes = await pdfDoc.save();
-  // Convert Uint8Array to Buffer for NextResponse
-  const buffer = Buffer.from(pdfBytes);
-  return new NextResponse(buffer, {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': 'attachment; filename="contract.pdf"',
-    },
-  });
-}
+    const pdfBytes = await pdfDoc.save();
+    const buffer = Buffer.from(pdfBytes);
+    return new NextResponse(buffer, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': 'attachment; filename="contract.pdf"',
+      },
+    });
+  }
+);
 
 function wrapText(text: string, maxLength: number): string[] {
   if (text.length <= maxLength) {

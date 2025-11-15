@@ -1,64 +1,170 @@
-import { PrismaClient } from '@prisma/client'
+import 'dotenv/config'
+import { PrismaClient, Permission } from '@prisma/client'
 import { hash } from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
+const jobTitleSeeds = [
+  {
+    name: 'HR Manager',
+    nameAr: 'مدير الموارد البشرية',
+    description: 'إدارة العمليات والموارد البشرية وجميع صلاحيات النظام',
+    requiresTwoFactor: false,
+    permissions: Object.values(Permission),
+  },
+  {
+    name: 'General Manager',
+    nameAr: 'المدير العام',
+    description: 'متابعة الأداء والتقارير والنسخ الاحتياطية بدون تعديل بيانات حساسة',
+    requiresTwoFactor: false,
+    permissions: [
+      Permission.VIEW_WORKERS,
+      Permission.VIEW_CONTRACTS,
+      Permission.VIEW_CLIENTS,
+      Permission.VIEW_REPORTS,
+      Permission.MANAGE_REPORTS,
+      Permission.EXPORT_DATA,
+      Permission.VIEW_LOGS,
+      Permission.VIEW_PAYROLL,
+      Permission.VIEW_PAYROLL_DELIVERY,
+      Permission.VIEW_BACKUPS,
+      Permission.MANAGE_BACKUPS,
+      Permission.VIEW_ARCHIVE,
+      Permission.MANAGE_ARCHIVE,
+      Permission.VIEW_PERFORMANCE,
+      Permission.VIEW_SEARCH,
+      Permission.MANAGE_SETTINGS,
+    ],
+  },
+  {
+    name: 'Marketer',
+    nameAr: 'مسوق',
+    description: 'إدارة العملاء والعقود دون الوصول للبيانات الحساسة',
+    requiresTwoFactor: false,
+    permissions: [
+      Permission.VIEW_CLIENTS,
+      Permission.CREATE_CLIENTS,
+      Permission.EDIT_CLIENTS,
+      Permission.VIEW_CONTRACTS,
+      Permission.CREATE_CONTRACTS,
+      Permission.EDIT_CONTRACTS,
+      Permission.VIEW_WORKERS,
+      Permission.RESERVE_WORKERS,
+      Permission.VIEW_SEARCH,
+    ],
+  },
+]
+
+const DEFAULT_SIMPLE_PASSWORD = '123456'
+
+function getSeedPassword(envKey: string, label: string): string {
+  const fromEnv = process.env[envKey]
+  if (fromEnv) {
+    return fromEnv
+  }
+
+  console.warn(`⚠️  Env ${envKey} not set. Using default password ${DEFAULT_SIMPLE_PASSWORD} for ${label}`)
+  return DEFAULT_SIMPLE_PASSWORD
+}
+
+async function ensureJobTitles() {
+  console.log('🛠️  Syncing job titles & permissions...')
+  const results = new Map<string, string>()
+
+  for (const jt of jobTitleSeeds) {
+    const record = await prisma.jobTitle.upsert({
+      where: { name: jt.name },
+      update: {
+        nameAr: jt.nameAr,
+        description: jt.description,
+        permissions: { set: jt.permissions },
+        requiresTwoFactor: jt.requiresTwoFactor,
+        isActive: true,
+      },
+      create: {
+        name: jt.name,
+        nameAr: jt.nameAr,
+        description: jt.description,
+        permissions: { set: jt.permissions },
+        requiresTwoFactor: jt.requiresTwoFactor,
+      },
+    })
+
+    results.set(jt.name, record.id)
+  }
+
+  return results
+}
+
+async function ensurePrivilegedUser({
+  email,
+  name,
+  envKey,
+  jobTitleName,
+  residencyNumber,
+  phone,
+}: {
+  email: string
+  name: string
+  envKey: string
+  jobTitleName: string
+  residencyNumber: string
+  phone: string
+}) {
+  const existing = await prisma.user.findFirst({ where: { email } })
+  const password = getSeedPassword(envKey, email)
+  const hashedPassword = await hash(password, 12)
+
+  const jobTitle = await prisma.jobTitle.findUnique({ where: { name: jobTitleName } })
+  if (!jobTitle) {
+    throw new Error(`Job title ${jobTitleName} not found while creating ${email}`)
+  }
+
+  if (existing) {
+    await prisma.user.update({
+      where: { id: existing.id },
+      data: {
+        password: hashedPassword,
+        jobTitleId: jobTitle.id,
+        status: 'AVAILABLE',
+      },
+    })
+
+    console.log(`🔁 Rotated credentials for ${email}`)
+    console.log(`   Temporary password: ${password}`)
+    return
+  }
+
+  const user = await prisma.user.create({
+    data: {
+      name,
+      email,
+      password: hashedPassword,
+      jobTitleId: jobTitle.id,
+      status: 'AVAILABLE',
+      nationality: 'سعودي',
+      phone,
+      dateOfBirth: new Date('1985-01-01'),
+      residencyNumber,
+    },
+  })
+
+  console.log(`✅ Created privileged user ${email} with job title ${jobTitleName}`)
+  console.log(`   Temporary password: ${password}`)
+
+  return user
+}
+
 async function main() {
-  // Create admin user if not exists
-  const existingAdmin = await prisma.user.findFirst({
-    where: { email: 'admin@hr-system.com' }
-  })
+  console.log('🌱 Starting seed process...\n')
+  
+  await ensureJobTitles()
+  console.log('✅ Job titles created/updated\n')
 
-  if (!existingAdmin) {
-    const hashedPassword = await hash('123456', 12)
-    const admin = await prisma.user.create({
-      data: {
-        name: 'مدير النظام',
-        email: 'admin@hr-system.com',
-        password: hashedPassword,
-        role: 'ADMIN',
-        status: 'AVAILABLE',
-        nationality: 'سعودي',
-        phone: '0500000000',
-        dateOfBirth: new Date('1980-01-01'),
-        residencyNumber: '9999999999'
-      }
-    })
-    console.log('Created admin user:', admin)
-    console.log('Email: admin@hr-system.com')
-    console.log('Password: 123456')
-  } else {
-    console.log('Admin user already exists')
-  }
+  // Note: User accounts should be created through the admin panel
+  // No default test accounts are created in seed
 
-  // Create HR manager user if not exists
-  const existingHR = await prisma.user.findFirst({
-    where: { email: 'hr@hr-system.com' }
-  })
-
-  if (!existingHR) {
-    const hashedPassword = await hash('123456', 12)
-    const hrManager = await prisma.user.create({
-      data: {
-        name: 'مدير الموارد البشرية',
-        email: 'hr@hr-system.com',
-        password: hashedPassword,
-        role: 'HR_MANAGER',
-        status: 'AVAILABLE',
-        nationality: 'سعودي',
-        phone: '0500000001',
-        dateOfBirth: new Date('1985-01-01'),
-        residencyNumber: '8888888888'
-      }
-    })
-    console.log('Created HR manager user:', hrManager)
-    console.log('Email: hr@hr-system.com')
-    console.log('Password: 123456')
-  } else {
-    console.log('HR manager user already exists')
-  }
-
-  // Add some sample nationalities and salaries
+  // Add nationalities and default salaries
   const nationalities = [
     { nationality: 'الفلبين', salary: 1500.00 },
     { nationality: 'إندونيسيا', salary: 1400.00 },

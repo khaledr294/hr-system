@@ -1,25 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/session";
-import { hasPermission } from "@/lib/permissions";
+import { Permission } from "@prisma/client";
+import { withApiAuth } from "@/lib/api-guard";
+import type { Session } from "next-auth";
 
-/**
- * API لنقل العقود المنتهية تلقائياً إلى الأرشيف
- */
-export async function POST() {
+type EmptyContext = { params: Promise<Record<string, never>> };
+
+async function archiveExpiredContracts(session: Session) {
   try {
-    const session = await getSession();
-    if (!session?.user) {
-      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
-    }
-
-    // التحقق من صلاحية حذف/أرشفة العقود
-    const canArchive = await hasPermission(session.user.id, 'DELETE_CONTRACTS');
-    if (!canArchive) {
-      return NextResponse.json({ 
-        error: "ليس لديك صلاحية أرشفة العقود" 
-      }, { status: 403 });
-    }
 
     const now = new Date();
 
@@ -142,6 +130,15 @@ export async function POST() {
   }
 }
 
-export async function GET() {
-  return POST(); // يمكن استدعاؤها عبر GET أيضاً
-}
+/**
+ * API لنقل العقود المنتهية تلقائياً إلى الأرشيف
+ */
+export const POST = withApiAuth<EmptyContext>(
+  { permissions: [Permission.MANAGE_ARCHIVE], auditAction: "ARCHIVE_CONTRACTS" },
+  async ({ session }) => archiveExpiredContracts(session)
+);
+
+export const GET = withApiAuth<EmptyContext>(
+  { permissions: [Permission.MANAGE_ARCHIVE], auditAction: "ARCHIVE_CONTRACTS" },
+  async ({ session }) => archiveExpiredContracts(session)
+);

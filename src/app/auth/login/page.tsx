@@ -84,7 +84,6 @@ export default function LoginPage() {
                 type="text"
                 autoComplete="username"
                 required
-                defaultValue="admin"
                 className="block w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition duration-200"
                 placeholder="أدخل اسم المستخدم"
               />
@@ -100,7 +99,6 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 required
-                defaultValue="123456"
                 className="block w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition duration-200"
                 placeholder="أدخل كلمة المرور"
               />

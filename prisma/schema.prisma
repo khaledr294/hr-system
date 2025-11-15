@@ -67,7 +67,8 @@ model JobTitle {
   name        String   @unique
   nameAr      String
   description String?
-  permissions String   @default("[]") // JSON array of permissions
+  permissions Permission[] @default([])
+  requiresTwoFactor Boolean @default(false)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -79,7 +80,6 @@ model User {
   name                 String         @default("")
   email                String?
   password             String?
-  role                 String?        @default("STAFF")
   jobTitleId           String?
   nationality          String?        @default("")
   nationalitySalaryId  String?
@@ -242,12 +242,24 @@ model Notification {
   @@index([userId, read])
 }
 
-enum Role {
-  ADMIN
-  HR
-  GENERAL_MANAGER
-  MARKETER
-  STAFF
+model SystemSettings {
+  id                        String   @id @default("system")
+  companyName               String   @default("شركة ساعد للإستقدام")
+  commercialRegister        String?
+  address                   String?
+  phone                     String?
+  language                  String   @default("ar")
+  timezone                  String   @default("Asia/Riyadh")
+  dateFormat                String   @default("dd/mm/yyyy")
+  currency                  String   @default("SAR")
+  notifyContractExpiry      Boolean  @default(true)
+  notifyNewWorker           Boolean  @default(true)
+  notifyPayment             Boolean  @default(false)
+  sessionTimeout            Int      @default(60)
+  maxLoginAttempts          Int      @default(5)
+  enableActivityLogging     Boolean  @default(true)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
 }
 
 enum Nationality {
@@ -256,4 +268,42 @@ enum Nationality {
   KENYA
   INDONESIA
   BURUNDI
+}
+
+enum Permission {
+  VIEW_WORKERS
+  CREATE_WORKERS
+  EDIT_WORKERS
+  DELETE_WORKERS
+  RESERVE_WORKERS
+  VIEW_CONTRACTS
+  CREATE_CONTRACTS
+  EDIT_CONTRACTS
+  DELETE_CONTRACTS
+  VIEW_CLIENTS
+  CREATE_CLIENTS
+  EDIT_CLIENTS
+  DELETE_CLIENTS
+  VIEW_USERS
+  CREATE_USERS
+  EDIT_USERS
+  DELETE_USERS
+  VIEW_REPORTS
+  MANAGE_REPORTS
+  EXPORT_DATA
+  VIEW_LOGS
+  MANAGE_SETTINGS
+  MANAGE_JOB_TITLES
+  VIEW_PAYROLL
+  MANAGE_PAYROLL
+  VIEW_PAYROLL_DELIVERY
+  MANAGE_PAYROLL_DELIVERY
+  VIEW_BACKUPS
+  MANAGE_BACKUPS
+  VIEW_ARCHIVE
+  MANAGE_ARCHIVE
+  MANAGE_TEMPLATES
+  VIEW_PERFORMANCE
+  VIEW_SEARCH
+  MANAGE_PACKAGES
 }

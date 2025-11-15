@@ -1,26 +1,27 @@
-import { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getSession } from '@/lib/session';
+import { Permission } from '@prisma/client';
+import { withApiAuth } from '@/lib/api-guard';
 
-export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }) {
-  const session = await getSession();
-  if (!session) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-  try {
-    const params = await context.params;
+type ContractContext = { params: Promise<{ id: string }> };
+
+export const POST = withApiAuth<ContractContext>(
+  { permissions: [Permission.EDIT_CONTRACTS], auditAction: 'CONTRACT_TERMINATE' },
+  async ({ context }) => {
+    try {
+      const params = await context.params;
     
     // Get contract with full details
-    const contract = await prisma.contract.findUnique({
+      const contract = await prisma.contract.findUnique({
       where: { id: params.id },
       include: {
         client: true,
         worker: true,
       }
     });
-    if (!contract) {
-      return new Response('Contract not found', { status: 404 });
-    }
+      if (!contract) {
+        return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
+      }
 
     // حساب الغرامة إذا كان هناك تأخير
     const today = new Date();
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
     const totalAmountWithPenalty = contract.totalAmount + penaltyAmount;
 
     // Mark contract as terminated and update worker status in a transaction
-    const [updatedContract] = await prisma.$transaction([
+      const [updatedContract] = await prisma.$transaction([
       prisma.contract.update({
         where: { id: contract.id },
         data: { 
@@ -57,19 +58,19 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
       })
     ]);
     
-    return new Response(JSON.stringify({
-      ...updatedContract,
-      delayDays,
-      penaltyAmount,
-      totalAmountWithPenalty,
-      message: delayDays > 0 
-        ? `تم إنهاء العقد مع غرامة تأخير: ${delayDays} أيام × ${contract.penaltyRate || 120} ريال = ${penaltyAmount} ريال`
-        : 'تم إنهاء العقد دون غرامة تأخير'
-    }), {
-      headers: { 'Content-Type': 'application/json' },
-    });
-  } catch (error) {
-    console.error('Failed to terminate contract:', error);
-    return new Response('Internal Server Error', { status: 500 });
+      return NextResponse.json({
+        ...updatedContract,
+        delayDays,
+        penaltyAmount,
+        totalAmountWithPenalty,
+        message:
+          delayDays > 0
+            ? `تم إنهاء العقد مع غرامة تأخير: ${delayDays} أيام × ${contract.penaltyRate || 120} ريال = ${penaltyAmount} ريال`
+            : 'تم إنهاء العقد دون غرامة تأخير',
+      });
+    } catch (error) {
+      console.error('Failed to terminate contract:', error);
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
   }
-}
+);

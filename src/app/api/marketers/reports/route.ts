@@ -1,8 +1,14 @@
-import { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Permission } from '@prisma/client';
+import { withApiAuth } from '@/lib/api-guard';
 
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url!);
+type EmptyContext = { params: Promise<Record<string, never>> };
+
+export const GET = withApiAuth<EmptyContext>(
+  { permissions: [Permission.VIEW_REPORTS] },
+  async ({ req }) => {
+    const { searchParams } = new URL(req.url);
   const month = searchParams.get('month'); // YYYY-MM
   let start: Date | undefined, end: Date | undefined;
   if (month) {
@@ -17,9 +23,7 @@ export async function GET(req: NextRequest) {
   });
 
   if (!marketerJobTitle) {
-    return new Response(JSON.stringify([]), { 
-      headers: { 'Content-Type': 'application/json' } 
-    });
+      return NextResponse.json([]);
   }
 
   // جلب المستخدمين المسوقين مع عقودهم
@@ -45,7 +49,6 @@ export async function GET(req: NextRequest) {
     contractCount: m.marketedContracts.length,
   }));
 
-  return new Response(JSON.stringify(result), { 
-    headers: { 'Content-Type': 'application/json' } 
-  });
-}
+    return NextResponse.json(result);
+  }
+);

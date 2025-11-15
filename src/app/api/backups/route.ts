@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { Permission } from '@prisma/client';
 import { createDatabaseBackup, getBackups, deleteBackup, cleanupOldBackups, getBackupStats } from '@/lib/backup';
+import { withApiAuth } from '@/lib/api-guard';
 
-export async function GET(request: NextRequest) {
+type EmptyContext = { params: Promise<Record<string, never>> };
+
+export const GET = withApiAuth<EmptyContext>(
+  { permissions: [Permission.MANAGE_BACKUPS], auditAction: 'BACKUP_VIEW' },
+  async ({ req }) => {
   try {
-    const session = await auth();
-    if (!session || !['ADMIN', 'GENERAL_MANAGER', 'HR_MANAGER'].includes(session.user.role)) {
-      return NextResponse.json({ error: 'forbidden' }, { status: 403 });
-    }
-    const searchParams = request.nextUrl.searchParams;
+    const searchParams = req.nextUrl.searchParams;
     const action = searchParams.get('action');
     if (action === 'stats') {
       const stats = await getBackupStats();
@@ -21,14 +22,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'error' }, { status: 500 });
   }
 }
+);
 
-export async function POST(request: NextRequest) {
+export const POST = withApiAuth<EmptyContext>(
+  { permissions: [Permission.MANAGE_BACKUPS], auditAction: 'BACKUP_ACTION' },
+  async ({ req }) => {
   try {
-    const session = await auth();
-    if (!session || !['ADMIN', 'GENERAL_MANAGER', 'HR_MANAGER'].includes(session.user.role)) {
-      return NextResponse.json({ error: 'forbidden' }, { status: 403 });
-    }
-    const body = await request.json();
+    const body = await req.json();
     const { action, backupId } = body;
     if (action === 'create') {
       const result = await createDatabaseBackup('manual');
@@ -49,3 +49,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'error' }, { status: 500 });
   }
 }
+);

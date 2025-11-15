@@ -1,17 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { ensureDefaultTemplate, generateSampleData } from '@/lib/contract-templates-server';
 import { prisma } from '@/lib/prisma';
 import fs from 'fs';
 import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
 import { formatDate } from '@/lib/date';
+import { Permission } from '@prisma/client';
+import { withApiAuth } from '@/lib/api-guard';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
+type EmptyContext = { params: Promise<Record<string, never>> };
+
+export const POST = withApiAuth<EmptyContext>(
+  { permissions: [Permission.MANAGE_TEMPLATES] },
+  async ({ req }) => {
+    try {
+      const body = await req.json();
     console.log('📝 طلب جديد لإنتاج وثيقة Word');
 
     // التأكد من وجود القالب الافتراضي
@@ -254,7 +260,7 @@ export async function POST(request: NextRequest) {
       : `contract-${Date.now()}.docx`;
 
     // إرسال الملف للتحميل
-    return new NextResponse(Buffer.from(outputBuffer), {
+      return new NextResponse(Buffer.from(outputBuffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -263,8 +269,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-  } catch (error) {
-    console.error('❌ خطأ في إنتاج وثيقة Word:', error);
+    } catch (error) {
+      console.error('❌ خطأ في إنتاج وثيقة Word:', error);
     
     let errorMessage = 'خطأ في إنتاج الوثيقة';
     let errorDetails = '';
@@ -281,7 +287,7 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    return NextResponse.json(
+      return NextResponse.json(
       { 
         success: false, 
         message: errorMessage,
@@ -289,5 +295,6 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     );
+    }
   }
-}
+);

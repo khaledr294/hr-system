@@ -1,31 +1,23 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { auth } from '@/lib/auth';
 import { createLog } from '@/lib/logger';
-import { hasPermission } from '@/lib/permissions';
+import { Permission } from '@prisma/client';
+import { withApiAuth } from '@/lib/api-guard';
 import {
   buildWorkerMeta,
   parseWorkerMeta,
   type MedicalStatus,
 } from '@/lib/medicalStatus';
 
+type EmptyContext = { params: Promise<Record<string, never>> };
+
 // Force dynamic rendering and disable caching
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export async function POST(req: NextRequest) {
-  const session = await auth();
-
-  if (!session?.user) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
-  // التحقق من صلاحية إنشاء عامل
-  const canCreate = await hasPermission(session.user.id, 'CREATE_WORKERS');
-  if (!canCreate) {
-    return new Response('Forbidden - ليس لديك صلاحية إضافة عمال', { status: 403 });
-  }
-
+export const POST = withApiAuth<EmptyContext>(
+  { permissions: [Permission.CREATE_WORKERS], auditAction: 'WORKER_CREATE' },
+  async ({ req, session }) => {
   try {
     const data = await req.json();
 
@@ -149,20 +141,11 @@ export async function POST(req: NextRequest) {
     return new Response('Internal Server Error', { status: 500 });
   }
 }
+);
 
-export async function GET(req: NextRequest) {
-  const session = await auth();
-
-  if (!session?.user) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
-  // التحقق من صلاحية عرض العمال
-  const canView = await hasPermission(session.user.id, 'VIEW_WORKERS');
-  if (!canView) {
-    return new Response('Forbidden - ليس لديك صلاحية عرض العمال', { status: 403 });
-  }
-
+export const GET = withApiAuth<EmptyContext>(
+  { permissions: [Permission.VIEW_WORKERS] },
+  async ({ req }) => {
   try {
     const searchParams = req.nextUrl.searchParams;
     const query = searchParams.get('query');
@@ -273,3 +256,4 @@ export async function GET(req: NextRequest) {
     return new Response('Internal Server Error', { status: 500 });
   }
 }
+);

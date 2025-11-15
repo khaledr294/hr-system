@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { Permission } from '@prisma/client';
 import { getCacheInfo, clearAllCache } from '@/lib/cache';
 import { checkDatabaseHealth } from '@/lib/query-optimization';
+import { withApiAuth } from '@/lib/api-guard';
+
+type EmptyContext = { params: Promise<Record<string, never>> };
 
 /**
  * GET /api/performance
  * معلومات الأداء والكاش
  */
-export async function GET(_request: NextRequest) {
+export const GET = withApiAuth<EmptyContext>(
+  { permissions: [Permission.VIEW_PERFORMANCE], auditAction: 'PERFORMANCE_VIEW' },
+  async (_request: NextRequest) => {
   try {
-    const session = await auth();
-    if (!session || !['ADMIN', 'GENERAL_MANAGER', 'HR_MANAGER'].includes(session.user.role)) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 403 });
-    }
-
     const [cacheInfo, dbHealth] = await Promise.all([
       getCacheInfo(),
       checkDatabaseHealth(),
@@ -33,18 +33,16 @@ export async function GET(_request: NextRequest) {
     );
   }
 }
+);
 
 /**
  * POST /api/performance
  * إجراءات على الكاش
  */
-export async function POST(request: NextRequest) {
+export const POST = withApiAuth<EmptyContext>(
+  { permissions: [Permission.MANAGE_SETTINGS], auditAction: 'PERFORMANCE_ACTION' },
+  async (request: NextRequest) => {
   try {
-    const session = await auth();
-    if (!session || !['ADMIN', 'GENERAL_MANAGER', 'HR_MANAGER'].includes(session.user.role)) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 403 });
-    }
-
   const body = (await request.json()) as { action?: string };
   const { action } = body;
 
@@ -69,3 +67,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+);

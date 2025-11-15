@@ -5,11 +5,17 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import PizZip from 'pizzip';
+import { Permission } from '@prisma/client';
+import { withApiAuth } from '@/lib/api-guard';
+
+type EmptyContext = { params: Promise<Record<string, never>> };
 
 const TEMPLATE_FILE = path.join(process.cwd(), 'templates', 'contract-template.docx');
 
-export async function GET() {
-  try {
+export const GET = withApiAuth<EmptyContext>(
+  { permissions: [Permission.MANAGE_TEMPLATES] },
+  async () => {
+    try {
     console.log('🔍 فحص القالب للبحث عن المتغيرات...');
 
     if (!fs.existsSync(TEMPLATE_FILE)) {
@@ -73,7 +79,7 @@ export async function GET() {
     
     console.log('📋 المتغيرات الموجودة في القالب:', variablesList);
 
-    return NextResponse.json({
+      return NextResponse.json({
       success: true,
       templateExists: true,
       variablesCount: variablesList.length,
@@ -81,11 +87,12 @@ export async function GET() {
       message: `تم العثور على ${variablesList.length} متغير في القالب`
     });
 
-  } catch (error) {
-    console.error('خطأ في فحص القالب:', error);
-    return NextResponse.json({
-      success: false,
-      message: 'خطأ في فحص القالب: ' + (error instanceof Error ? error.message : 'خطأ غير معروف')
-    }, { status: 500 });
+    } catch (error) {
+      console.error('خطأ في فحص القالب:', error);
+      return NextResponse.json({
+        success: false,
+        message: 'خطأ في فحص القالب: ' + (error instanceof Error ? error.message : 'خطأ غير معروف')
+      }, { status: 500 });
+    }
   }
-}
+);

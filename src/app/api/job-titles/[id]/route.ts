@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireHROrManager } from "@/lib/require";
-import type { Permission } from "@/lib/permissions";
+import { Permission } from "@prisma/client";
+import { withApiAuth } from "@/lib/api-guard";
+
+type JobTitleContext = { params: Promise<{ id: string }> };
 
 interface UpdateJobTitlePayload {
   name?: string;
@@ -12,55 +14,53 @@ interface UpdateJobTitlePayload {
 }
 
 // GET: استرجاع مسمى وظيفي واحد
-export async function GET(
-  request: Request,
-  context: { params: Promise<{ id: string }> }
-) {
-  try {
-    await requireHROrManager();
-    const params = await context.params;
-
-    const jobTitle = await prisma.jobTitle.findUnique({
-      where: { id: params.id },
-      include: {
-        users: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true
+export const GET = withApiAuth<JobTitleContext>(
+  { permissions: [Permission.MANAGE_JOB_TITLES] },
+  async ({ context }) => {
+    try {
+      const params = await context.params;
+      const jobTitle = await prisma.jobTitle.findUnique({
+        where: { id: params.id },
+        include: {
+          users: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              jobTitle: {
+                select: { name: true }
+              }
+            }
           }
         }
-      }
-    });
+      });
 
-    if (!jobTitle) {
+      if (!jobTitle) {
+        return NextResponse.json(
+          { error: "المسمى الوظيفي غير موجود" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json(jobTitle);
+    } catch (error: unknown) {
+      console.error("Error fetching job title:", error);
+      const message = error instanceof Error ? error.message : "حدث خطأ أثناء استرجاع المسمى الوظيفي";
       return NextResponse.json(
-        { error: "المسمى الوظيفي غير موجود" },
-        { status: 404 }
+        { error: message },
+        { status: 500 }
       );
     }
-
-    return NextResponse.json(jobTitle);
-  } catch (error: unknown) {
-    console.error("Error fetching job title:", error);
-    const message = error instanceof Error ? error.message : "حدث خطأ أثناء استرجاع المسمى الوظيفي";
-    return NextResponse.json(
-      { error: message },
-      { status: 500 }
-    );
   }
-}
+);
 
 // PATCH: تحديث مسمى وظيفي
-export async function PATCH(
-  request: Request,
-  context: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await requireHROrManager();
-    const params = await context.params;
-    const body = (await request.json()) as UpdateJobTitlePayload;
+export const PATCH = withApiAuth<JobTitleContext>(
+  { permissions: [Permission.MANAGE_JOB_TITLES], auditAction: "UPDATE_JOB_TITLE" },
+  async ({ req, context, session }) => {
+    try {
+      const body = (await req.json()) as UpdateJobTitlePayload;
+      const params = await context.params;
 
     const { name, nameAr, description, permissions, isActive } = body;
 
@@ -96,7 +96,7 @@ export async function PATCH(
         ...(name && { name }),
         ...(nameAr && { nameAr }),
         ...(description !== undefined && { description }),
-        ...(permissions !== undefined && { permissions: JSON.stringify(permissions) }),
+        ...(permissions !== undefined && { permissions: { set: permissions ?? [] } }),
         ...(isActive !== undefined && { isActive })
       }
     });
@@ -104,7 +104,7 @@ export async function PATCH(
     // تسجيل في Log
     await prisma.log.create({
       data: {
-        userId: user.id,
+        userId: session.user.id,
         action: "UPDATE_JOB_TITLE",
         entity: "JobTitle",
         entityId: jobTitle.id,
@@ -113,24 +113,23 @@ export async function PATCH(
     });
 
     return NextResponse.json(jobTitle);
-  } catch (error: unknown) {
-    console.error("Error updating job title:", error);
-    const message = error instanceof Error ? error.message : "حدث خطأ أثناء تحديث المسمى الوظيفي";
-    return NextResponse.json(
-      { error: message },
-      { status: 500 }
-    );
+    } catch (error: unknown) {
+      console.error("Error updating job title:", error);
+      const message = error instanceof Error ? error.message : "حدث خطأ أثناء تحديث المسمى الوظيفي";
+      return NextResponse.json(
+        { error: message },
+        { status: 500 }
+      );
+    }
   }
-}
+);
 
 // DELETE: حذف مسمى وظيفي
-export async function DELETE(
-  request: Request,
-  context: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await requireHROrManager();
-    const params = await context.params;
+export const DELETE = withApiAuth<JobTitleContext>(
+  { permissions: [Permission.MANAGE_JOB_TITLES], auditAction: "DELETE_JOB_TITLE" },
+  async ({ context, session }) => {
+    try {
+      const params = await context.params;
 
     // التحقق من وجود المسمى الوظيفي
     const jobTitle = await prisma.jobTitle.findUnique({
@@ -164,7 +163,7 @@ export async function DELETE(
     // تسجيل في Log
     await prisma.log.create({
       data: {
-        userId: user.id,
+        userId: session.user.id,
         action: "DELETE_JOB_TITLE",
         entity: "JobTitle",
         entityId: params.id,
@@ -173,12 +172,13 @@ export async function DELETE(
     });
 
     return NextResponse.json({ success: true });
-  } catch (error: unknown) {
-    console.error("Error deleting job title:", error);
-    const message = error instanceof Error ? error.message : "حدث خطأ أثناء حذف المسمى الوظيفي";
-    return NextResponse.json(
-      { error: message },
-      { status: 500 }
-    );
+    } catch (error: unknown) {
+      console.error("Error deleting job title:", error);
+      const message = error instanceof Error ? error.message : "حدث خطأ أثناء حذف المسمى الوظيفي";
+      return NextResponse.json(
+        { error: message },
+        { status: 500 }
+      );
+    }
   }
-}
+);

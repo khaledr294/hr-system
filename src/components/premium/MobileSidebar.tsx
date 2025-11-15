@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { ChevronDown, X } from "lucide-react";
-import { sections } from "./Sidebar";
+import { baseSections, filterSectionsByPermissions } from "./navigation-data";
 
 type DashboardStats = { workers: number; clients: number; contracts: number; marketers: number };
 
@@ -16,13 +17,13 @@ interface MobileSidebarProps {
 
 export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
   const pathname = usePathname();
+  const { data: session } = useSession();
   // Initialize all sections as open by default
   const [open, setOpen] = useState<Record<string, boolean>>(() => {
     const initialState: Record<string, boolean> = {};
-    sections.forEach(section => {
+    baseSections.forEach(section => {
       initialState[section.title] = true;
     });
-    console.log('MobileSidebar - sections:', sections.length, 'initialState:', initialState);
     return initialState;
   });
   
@@ -49,7 +50,13 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
     marketers: stats?.marketers ?? 0,
   }), [stats]);
 
+  const filteredSections = useMemo(
+    () => filterSectionsByPermissions(baseSections, (session?.user?.permissions ?? []) as string[]),
+    [session?.user?.permissions]
+  );
+
   const getBadgeFor = (href: string) => {
+
     if (href.startsWith('/workers') && !href.includes('/new')) return counts.workers;
     if (href.startsWith('/clients') && !href.includes('/new')) return counts.clients;
     if (href.startsWith('/contracts') && !href.includes('/new')) return counts.contracts;
@@ -96,8 +103,7 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto p-4">
           <div className="space-y-4">
-            {sections.map((section) => {
-              console.log('Rendering section:', section.title, 'open:', open[section.title], 'items:', section.items.length);
+            {filteredSections.map((section) => {
               return (
                 <div key={section.title} className="space-y-2">
                   <button

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
-import { hasPermission } from '@/lib/permissions';
+import { Permission } from '@prisma/client';
 import {
   generateWorkersReport,
   generateContractsReport,
@@ -10,24 +9,18 @@ import {
 } from '@/lib/reports';
 import { prisma } from '@/lib/prisma';
 import type { Prisma } from '@prisma/client';
+import { withApiAuth } from '@/lib/api-guard';
+
+type EmptyContext = { params: Promise<Record<string, never>> };
 
 /**
  * GET /api/reports
  * جلب التقارير المتقدمة
  */
-export async function GET(request: NextRequest) {
+export const GET = withApiAuth<EmptyContext>(
+  { permissions: [Permission.VIEW_REPORTS], auditAction: 'REPORT_VIEW' },
+  async (request: NextRequest) => {
   try {
-    const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 403 });
-    }
-
-    // التحقق من صلاحية VIEW_REPORTS
-    const canView = await hasPermission(session.user.id, 'VIEW_REPORTS');
-    if (!canView) {
-      return NextResponse.json({ error: 'ليس لديك صلاحية عرض التقارير' }, { status: 403 });
-    }
-
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get('type');
     const format = searchParams.get('format') || 'json';
@@ -235,3 +228,4 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+);

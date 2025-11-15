@@ -1,71 +1,53 @@
 import { NextResponse } from "next/server";
-import { auth } from '@/lib/auth';
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { hasPermission } from '@/lib/permissions';
+import { Permission } from "@prisma/client";
+import { withApiAuth } from "@/lib/api-guard";
 
-export async function GET(
-  request: Request,
-  context: { params: Promise<{ id: string }> }
-) {
-  try {
-    const session = await auth();
-    
-    if (!session?.user) {
-      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
-    }
+type UserContext = { params: Promise<{ id: string }> };
 
-    const { id } = await context.params;
-    
-    const user = await prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        phone: true,
-        jobTitle: {
-          select: {
-            id: true,
-            name: true,
-            nameAr: true,
-            permissions: true
+export const GET = withApiAuth<UserContext>(
+  { permissions: [Permission.VIEW_USERS] },
+  async ({ context }) => {
+    try {
+      const { id } = await context.params;
+
+      const user = await prisma.user.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          jobTitle: {
+            select: {
+              id: true,
+              name: true,
+              nameAr: true,
+              permissions: true
+            }
           }
         }
+      });
+
+      if (!user) {
+        return NextResponse.json({ error: "المستخدم غير موجود" }, { status: 404 });
       }
-    });
 
-    if (!user) {
-      return NextResponse.json({ error: "المستخدم غير موجود" }, { status: 404 });
+      return NextResponse.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      return NextResponse.json({ error: "حدث خطأ أثناء جلب بيانات المستخدم" }, { status: 500 });
     }
-
-    return NextResponse.json(user);
-  } catch (error) {
-    console.error("Error fetching user:", error);
-    return NextResponse.json({ error: "حدث خطأ أثناء جلب بيانات المستخدم" }, { status: 500 });
   }
-}
+);
 
-export async function PUT(
-  request: Request,
-  context: { params: Promise<{ id: string }> }
-) {
-  try {
-    const session = await auth();
-    
-    if (!session?.user) {
-      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
-    }
-
-    // التحقق من صلاحية تعديل المستخدمين
-    const canEdit = await hasPermission(session.user.id, 'EDIT_USERS');
-    if (!canEdit) {
-      return NextResponse.json({ error: "ليس لديك صلاحية تعديل المستخدمين" }, { status: 403 });
-    }
-
-    const { id } = await context.params;
-    const formData = await request.formData();
+export const PUT = withApiAuth<UserContext>(
+  { permissions: [Permission.EDIT_USERS], auditAction: "EDIT_USER" },
+  async ({ req, context }) => {
+    try {
+      const { id } = await context.params;
+      const formData = await req.formData();
     
     const name = formData.get("name") as string;
     const email = formData.get("email") as string;
@@ -121,44 +103,31 @@ export async function PUT(
         jobTitle: updatedUser.jobTitle 
       }
     });
-  } catch (error) {
-    console.error("Error updating user:", error);
-    return NextResponse.json({ error: "حدث خطأ أثناء تحديث المستخدم" }, { status: 500 });
+    } catch (error) {
+      console.error("Error updating user:", error);
+      return NextResponse.json({ error: "حدث خطأ أثناء تحديث المستخدم" }, { status: 500 });
+    }
   }
-}
+);
 
-export async function DELETE(
-  request: Request,
-  context: { params: Promise<{ id: string }> }
-) {
-  try {
-    const session = await auth();
-    
-    if (!session?.user) {
-      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+export const DELETE = withApiAuth<UserContext>(
+  { permissions: [Permission.DELETE_USERS], auditAction: "DELETE_USER" },
+  async ({ context, session }) => {
+    try {
+      const { id } = await context.params;
+
+      if (session.user.id === id) {
+        return NextResponse.json({ error: "لا يمكن حذف حسابك الخاص" }, { status: 400 });
+      }
+
+      await prisma.user.delete({
+        where: { id }
+      });
+
+      return NextResponse.json({ message: "تم حذف المستخدم بنجاح" });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      return NextResponse.json({ error: "حدث خطأ أثناء حذف المستخدم" }, { status: 500 });
     }
-
-    // التحقق من صلاحية حذف المستخدمين
-    const canDelete = await hasPermission(session.user.id, 'DELETE_USERS');
-    if (!canDelete) {
-      return NextResponse.json({ error: "ليس لديك صلاحية حذف المستخدمين" }, { status: 403 });
-    }
-
-    const { id } = await context.params;
-
-    // التأكد من عدم حذف المستخدم لنفسه
-    if (session.user.id === id) {
-      return NextResponse.json({ error: "لا يمكن حذف حسابك الخاص" }, { status: 400 });
-    }
-
-    // حذف المستخدم
-    await prisma.user.delete({
-      where: { id }
-    });
-
-    return NextResponse.json({ message: "تم حذف المستخدم بنجاح" });
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    return NextResponse.json({ error: "حدث خطأ أثناء حذف المستخدم" }, { status: 500 });
   }
-}
+);

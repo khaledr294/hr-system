@@ -5,7 +5,8 @@
 
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
-import { hasPermission, type Permission } from '@/lib/permissions';
+import { Permission } from '@prisma/client';
+import { sessionHasPermission } from '@/lib/permissions';
 
 /**
  * حماية صفحة تتطلب صلاحية معينة
@@ -17,7 +18,7 @@ export async function requirePermission(permission: Permission) {
     redirect('/login');
   }
 
-  const allowed = await hasPermission(session.user.id, permission);
+  const allowed = sessionHasPermission(session, permission);
   
   if (!allowed) {
     redirect('/unauthorized');

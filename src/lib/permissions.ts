@@ -1,132 +1,102 @@
-/**
- * Permissions System
- * نظام الصلاحيات - يستخدم لفحص صلاحيات المستخدمين بناءً على المسمى الوظيفي
- */
-
+import { Permission } from "@prisma/client";
+export { Permission };
+import type { Session } from "next-auth";
 import { prisma } from "./prisma";
 
-export type Permission = 
-  // Workers
-  | "VIEW_WORKERS"
-  | "CREATE_WORKERS"
-  | "EDIT_WORKERS"
-  | "DELETE_WORKERS"
-  | "RESERVE_WORKERS"
-  // Contracts
-  | "VIEW_CONTRACTS"
-  | "CREATE_CONTRACTS"
-  | "EDIT_CONTRACTS"
-  | "DELETE_CONTRACTS"
-  // Clients
-  | "VIEW_CLIENTS"
-  | "CREATE_CLIENTS"
-  | "EDIT_CLIENTS"
-  | "DELETE_CLIENTS"
-  // Users
-  | "VIEW_USERS"
-  | "CREATE_USERS"
-  | "EDIT_USERS"
-  | "DELETE_USERS"
-  // Reports
-  | "VIEW_REPORTS"
-  | "EXPORT_DATA"
-  // System
-  | "VIEW_LOGS"
-  | "MANAGE_SETTINGS"
-  | "MANAGE_JOB_TITLES";
+export type PermissionList = Permission[];
 
-/**
- * فحص صلاحية معينة للمستخدم
- */
-export async function hasPermission(userId: string, permission: Permission): Promise<boolean> {
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { jobTitle: true }
-    });
+export const PERMISSION_LABELS: Record<Permission, string> = {
+  VIEW_WORKERS: "عرض بيانات العاملات",
+  CREATE_WORKERS: "إضافة عاملات",
+  EDIT_WORKERS: "تعديل بيانات العاملات",
+  DELETE_WORKERS: "حذف العاملات",
+  RESERVE_WORKERS: "حجز العاملات",
+  VIEW_CONTRACTS: "عرض العقود",
+  CREATE_CONTRACTS: "إنشاء العقود",
+  EDIT_CONTRACTS: "تعديل العقود",
+  DELETE_CONTRACTS: "حذف العقود",
+  VIEW_CLIENTS: "عرض العملاء",
+  CREATE_CLIENTS: "إضافة العملاء",
+  EDIT_CLIENTS: "تعديل العملاء",
+  DELETE_CLIENTS: "حذف العملاء",
+  VIEW_USERS: "عرض المستخدمين",
+  CREATE_USERS: "إضافة المستخدمين",
+  EDIT_USERS: "تعديل المستخدمين",
+  DELETE_USERS: "حذف المستخدمين",
+  VIEW_REPORTS: "عرض التقارير",
+  MANAGE_REPORTS: "إدارة وإصدار التقارير",
+  EXPORT_DATA: "تصدير البيانات",
+  VIEW_LOGS: "عرض السجلات",
+  MANAGE_SETTINGS: "إدارة الإعدادات",
+  MANAGE_JOB_TITLES: "إدارة المسميات الوظيفية",
+  VIEW_PAYROLL: "عرض الرواتب",
+  MANAGE_PAYROLL: "إدارة الرواتب",
+  VIEW_PAYROLL_DELIVERY: "عرض تسليم الرواتب",
+  MANAGE_PAYROLL_DELIVERY: "إدارة تسليم الرواتب",
+  VIEW_BACKUPS: "عرض النسخ الاحتياطية",
+  MANAGE_BACKUPS: "إدارة النسخ الاحتياطية",
+  VIEW_ARCHIVE: "عرض الأرشيف",
+  MANAGE_ARCHIVE: "إدارة الأرشيف",
+  MANAGE_TEMPLATES: "إدارة القوالب",
+  VIEW_PERFORMANCE: "عرض الأداء",
+  VIEW_SEARCH: "الوصول للبحث المتقدم",
+  MANAGE_PACKAGES: "إدارة الباقات",
+};
 
-    if (!user) return false;
+export async function resolveUserPermissions(userId: string): Promise<PermissionList> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { jobTitle: true },
+  });
 
-    // HR_MANAGER و GENERAL_MANAGER لديهم صلاحيات كاملة
-    if (user.role === "HR_MANAGER" || user.role === "GENERAL_MANAGER") {
-      return true;
-    }
-
-    // فحص الصلاحيات من المسمى الوظيفي
-    if (user.jobTitle && user.jobTitle.isActive && user.jobTitle.permissions) {
-      try {
-        const permissions = JSON.parse(user.jobTitle.permissions) as Permission[];
-        return permissions.includes(permission);
-      } catch (parseError) {
-        console.error("Error parsing permissions JSON:", parseError);
-        return false;
-      }
-    }
-
-    return false;
-  } catch (error) {
-    console.error("Error checking permission:", error);
-    return false;
-  }
-}
-
-/**
- * فحص عدة صلاحيات - يجب أن تكون جميعها متوفرة
- */
-export async function hasAllPermissions(userId: string, permissions: Permission[]): Promise<boolean> {
-  const results = await Promise.all(
-    permissions.map(permission => hasPermission(userId, permission))
-  );
-  return results.every(result => result === true);
-}
-
-/**
- * فحص عدة صلاحيات - يكفي أن تكون واحدة متوفرة
- */
-export async function hasAnyPermission(userId: string, permissions: Permission[]): Promise<boolean> {
-  const results = await Promise.all(
-    permissions.map(permission => hasPermission(userId, permission))
-  );
-  return results.some(result => result === true);
-}
-
-/**
- * الحصول على جميع صلاحيات المستخدم
- */
-export async function getUserPermissions(userId: string): Promise<Permission[]> {
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { jobTitle: true }
-    });
-
-    if (!user) return [];
-
-    // HR_MANAGER و GENERAL_MANAGER لديهم جميع الصلاحيات
-    if (user.role === "HR_MANAGER" || user.role === "GENERAL_MANAGER") {
-      return [
-        "VIEW_WORKERS", "CREATE_WORKERS", "EDIT_WORKERS", "DELETE_WORKERS", "RESERVE_WORKERS",
-        "VIEW_CONTRACTS", "CREATE_CONTRACTS", "EDIT_CONTRACTS", "DELETE_CONTRACTS",
-        "VIEW_CLIENTS", "CREATE_CLIENTS", "EDIT_CLIENTS", "DELETE_CLIENTS",
-        "VIEW_USERS", "CREATE_USERS", "EDIT_USERS", "DELETE_USERS",
-        "VIEW_REPORTS", "EXPORT_DATA",
-        "VIEW_LOGS", "MANAGE_SETTINGS", "MANAGE_JOB_TITLES"
-      ];
-    }
-
-    // الصلاحيات من المسمى الوظيفي
-    if (user.jobTitle && user.jobTitle.isActive && user.jobTitle.permissions) {
-      try {
-        return JSON.parse(user.jobTitle.permissions) as Permission[];
-      } catch (parseError) {
-        console.error("Error parsing permissions JSON:", parseError);
-        return [];
-      }
-    }
-
-    return [];
-  } catch (error) {
-    console.error("Error getting user permissions:", error);
+  if (!user?.jobTitle?.isActive) {
     return [];
   }
+
+  return user.jobTitle.permissions ?? [];
+}
+
+export function hasPermission(permissions: PermissionList, permission: Permission): boolean;
+export function hasPermission(userId: string, permission: Permission): Promise<boolean>;
+export function hasPermission(arg: PermissionList | string, permission: Permission): boolean | Promise<boolean> {
+  if (typeof arg === 'string') {
+    return resolveUserPermissions(arg).then((perms) => perms.includes(permission));
+  }
+  return arg.includes(permission);
+}
+
+export function hasAllPermissions(permissions: PermissionList, required: Permission[]): boolean;
+export function hasAllPermissions(userId: string, required: Permission[]): Promise<boolean>;
+export function hasAllPermissions(arg: PermissionList | string, required: Permission[]): boolean | Promise<boolean> {
+  if (typeof arg === 'string') {
+    return resolveUserPermissions(arg).then((perms) => required.every((perm) => perms.includes(perm)));
+  }
+  return required.every((perm) => arg.includes(perm));
+}
+
+export function hasAnyPermission(permissions: PermissionList, required: Permission[]): boolean;
+export function hasAnyPermission(userId: string, required: Permission[]): Promise<boolean>;
+export function hasAnyPermission(arg: PermissionList | string, required: Permission[]): boolean | Promise<boolean> {
+  if (typeof arg === 'string') {
+    return resolveUserPermissions(arg).then((perms) => required.some((perm) => perms.includes(perm)));
+  }
+  return required.some((perm) => arg.includes(perm));
+}
+
+export function diffPermissions(current: PermissionList, target: PermissionList) {
+  const missing = target.filter((perm) => !current.includes(perm));
+  const extra = current.filter((perm) => !target.includes(perm));
+  return { missing, extra };
+}
+
+export function sessionHasPermission(session: Session | null | undefined, permission: Permission): boolean {
+  return hasPermission(session?.user?.permissions ?? [], permission);
+}
+
+export function sessionHasAll(session: Session | null | undefined, perms: Permission[]): boolean {
+  return hasAllPermissions(session?.user?.permissions ?? [], perms);
+}
+
+export function sessionHasAny(session: Session | null | undefined, perms: Permission[]): boolean {
+  return hasAnyPermission(session?.user?.permissions ?? [], perms);
 }

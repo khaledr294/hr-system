@@ -1,78 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
-import { 
-  LayoutGrid, 
-  Users, 
-  Wallet, 
-  FileText, 
-  Settings, 
-  Home, 
-  UserCog, 
-  Briefcase, 
-  FolderKanban, 
-  ChevronDown,
-  Archive, 
-  HardDrive, 
-  Search, 
-  Activity
-} from "lucide-react";
-
-export type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }> };
-export type Section = { title: string; items: NavItem[] };
-
-export const sections: Section[] = [
-  {
-    title: "عام",
-    items: [
-      { href: "/dashboard", label: "الرئيسية", icon: Home },
-    ],
-  },
-  {
-    title: "العمليات",
-    items: [
-      { href: "/workers", label: "العمالة", icon: Users },
-      { href: "/workers/new", label: "إضافة عاملة", icon: Users },
-      { href: "/workers/reserve", label: "حجز العاملات", icon: Users },
-      { href: "/clients", label: "العملاء", icon: LayoutGrid },
-      { href: "/clients/new", label: "إضافة عميل", icon: LayoutGrid },
-      { href: "/contracts", label: "العقود", icon: FileText },
-      { href: "/contracts/templates", label: "قوالب العقود", icon: FolderKanban },
-      { href: "/contracts/packages", label: "الباقات والخدمات", icon: Briefcase },
-    ],
-  },
-  {
-    title: "المالية",
-    items: [
-      { href: "/payroll", label: "حساب الرواتب", icon: Wallet },
-      { href: "/payroll/delivery", label: "تسليم الرواتب", icon: Wallet },
-      { href: "/nationality-salary", label: "الجنسيات والرواتب", icon: Wallet },
-    ],
-  },
-  {
-    title: "الإدارة",
-    items: [
-      { href: "/reports", label: "التقارير", icon: FileText },
-      { href: "/search", label: "البحث المتقدم", icon: Search },
-      { href: "/archive", label: "الأرشيف", icon: Archive },
-      { href: "/backups", label: "النسخ الاحتياطية", icon: HardDrive },
-      { href: "/performance", label: "الأداء", icon: Activity },
-      { href: "/users", label: "المستخدمون", icon: UserCog },
-  { href: "/premium/job-titles", label: "المسميات الوظيفية", icon: Briefcase },
-      { href: "/settings", label: "الإعدادات", icon: Settings },
-    ],
-  },
-];
+import { ChevronDown } from "lucide-react";
+import { baseSections, filterSectionsByPermissions } from "./navigation-data";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
   // Initialize all sections as open by default
   const [open, setOpen] = useState<Record<string, boolean>>(() => {
     const initialState: Record<string, boolean> = {};
-    sections.forEach(section => {
+    baseSections.forEach(section => {
       initialState[section.title] = true;
     });
     return initialState;
@@ -81,19 +23,24 @@ export default function Sidebar() {
     setOpen((p) => ({ ...p, [title]: !p[title] }));
   };
 
+  const filteredSections = useMemo(() => {
+    const permissions = (session?.user?.permissions ?? []) as string[];
+    return filterSectionsByPermissions(baseSections, permissions);
+  }, [session?.user?.permissions]);
+
   return (
   <aside dir="rtl" className="hidden lg:flex flex-col gap-2 p-3 w-64 text-right">
-      <div className="glass rounded-3xl shadow-soft p-4 flex items-center gap-3">
+      <Link href="/settings" className="glass rounded-3xl shadow-soft p-4 flex items-center gap-3 hover:bg-slate-50 transition-colors cursor-pointer">
         <div className="w-10 h-10 rounded-2xl gradient-brand ring-soft" />
         <div>
-          <div className="text-sm font-bold text-slate-900">شركة ساعد</div>
+          <div className="text-sm font-bold text-slate-900">شركة ساعد للإستقدام</div>
           <div className="text-xs text-slate-500">لوحة التحكم</div>
         </div>
-      </div>
+      </Link>
 
       <nav className="glass rounded-3xl shadow-soft p-2">
         <div className="space-y-2">
-          {sections.map((section) => (
+          {filteredSections.map((section) => (
             <div key={section.title} className="rounded-2xl border border-slate-200">
               <button 
                 onClick={(e) => {

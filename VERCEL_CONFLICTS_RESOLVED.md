@@ -24,6 +24,6 @@ Vercel environment variables were **overriding** GitHub secrets with old, incorr
 **Expected Result**: 
 - ✅ Build will complete successfully
 - ✅ Authentication will work with Prisma Accelerate
-- ✅ Login credentials will function: admin@hr-system.com/123456
+- ✅ Login credentials will function: admin@hr-system.com / 123456
 
 This deployment should be the successful one! 🎯

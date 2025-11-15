@@ -1,126 +1,97 @@
-import { getSession } from '@/lib/session';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createLog } from '@/lib/logger';
-import { hasPermission } from '@/lib/permissions';
+import { Permission } from '@prisma/client';
+import { withApiAuth } from '@/lib/api-guard';
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const session = await getSession();
-  if (!session?.user) {
-    return new Response('Unauthorized', { status: 401 });
-  }
+type ContractContext = { params: Promise<{ id: string }> };
 
-  // التحقق من صلاحية تعديل العقود
-  const canEdit = await hasPermission(session.user.id, 'EDIT_CONTRACTS');
-  if (!canEdit) {
-    return new Response('Forbidden - ليس لديك صلاحية تعديل العقود', { status: 403 });
-  }
-  try {
-    const { id } = await params;
-    const data = await req.json();
-    // فقط الحقول المسموح بتعديلها
-    const allowedFields = [
-      'startDate', 'endDate', 'packageType', 'packageName', 'totalAmount', 'status', 'notes'
-    ];
-  const updateData: Partial<{ startDate: Date; endDate: Date; packageType: string; packageName: string; totalAmount: number; status: string; notes: string }> = {};
-    for (const key of allowedFields) {
-      if (key in data) (updateData as Partial<typeof updateData>)[key as keyof typeof updateData] = data[key];
-    }
-    if (updateData.startDate) updateData.startDate = new Date(updateData.startDate);
-    if (updateData.endDate) updateData.endDate = new Date(updateData.endDate);
-    const updated = await prisma.contract.update({
-      where: { id },
-      data: updateData,
-    });
-    return new Response(JSON.stringify(updated), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  } catch (error) {
-    console.error('Failed to update contract:', error);
-    return new Response('Internal Server Error', { status: 500 });
-  }
-}
+export const PATCH = withApiAuth<ContractContext>(
+  { permissions: [Permission.EDIT_CONTRACTS], auditAction: 'CONTRACT_UPDATE' },
+  async ({ req, context }) => {
+    try {
+      const { id } = await context.params;
+      const data = await req.json();
+      const allowedFields = [
+        'startDate',
+        'endDate',
+        'packageType',
+        'packageName',
+        'totalAmount',
+        'status',
+        'notes',
+      ];
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const session = await getSession();
+      const updateData: Partial<{ startDate: Date; endDate: Date; packageType: string; packageName: string; totalAmount: number; status: string; notes: string }> = {};
 
-  if (!session?.user) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
-  // التحقق من صلاحية حذف العقود
-  const canDelete = await hasPermission(session.user.id, 'DELETE_CONTRACTS');
-  if (!canDelete) {
-    return new Response('Forbidden - ليس لديك صلاحية حذف العقود', { status: 403 });
-  }
-
-  try {
-    const { id } = await params;
-
-    // التحقق من وجود العقد
-    const contract = await prisma.contract.findUnique({
-      where: { id },
-      include: {
-        worker: true,
+      for (const key of allowedFields) {
+        if (key in data) {
+          (updateData as Record<string, unknown>)[key] = data[key];
+        }
       }
-    });
 
-    if (!contract) {
-      return new Response('Contract not found', { status: 404 });
+      if (updateData.startDate) updateData.startDate = new Date(updateData.startDate);
+      if (updateData.endDate) updateData.endDate = new Date(updateData.endDate);
+
+      const updated = await prisma.contract.update({ where: { id }, data: updateData });
+      return NextResponse.json(updated);
+    } catch (error) {
+      console.error('Failed to update contract:', error);
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
+  }
+);
 
-    // حذف العقد وتحديث حالة العاملة
-    await prisma.$transaction(async (tx) => {
-      // حذف العقد
-      await tx.contract.delete({
-        where: { id }
+export const DELETE = withApiAuth<ContractContext>(
+  { permissions: [Permission.DELETE_CONTRACTS], auditAction: 'CONTRACT_DELETE' },
+  async ({ context, session }) => {
+    try {
+      const { id } = await context.params;
+      const contract = await prisma.contract.findUnique({
+        where: { id },
+        include: { worker: true },
       });
 
-      // تحديث حالة العاملة إلى متاحة
-      await tx.worker.update({
-        where: { id: contract.workerId },
-        data: { status: 'AVAILABLE' }
+      if (!contract) {
+        return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
+      }
+
+      await prisma.$transaction(async (tx) => {
+        await tx.contract.delete({ where: { id } });
+        await tx.worker.update({
+          where: { id: contract.workerId },
+          data: { status: 'AVAILABLE' },
+        });
       });
-    });
 
-    // Log the contract deletion
-    await createLog(session.user.id, 'CONTRACT_DELETED', `Contract deleted for worker ID: ${contract.workerId}`);
+      await createLog(session.user.id, 'CONTRACT_DELETED', `Contract deleted for worker ID: ${contract.workerId}`);
 
-    return new Response('Contract deleted successfully', { status: 200 });
-  } catch (error) {
-    console.error('Failed to delete contract:', error);
-    return new Response('Internal Server Error', { status: 500 });
-  }
-}
-
-export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
-    const contract = await prisma.contract.findUnique({
-      where: { id },
-      include: {
-        client: true,
-        worker: true,
-      },
-    });
-    if (!contract) {
-      return new Response('Contract not found', { status: 404 });
+      return NextResponse.json({ success: true });
+    } catch (error) {
+      console.error('Failed to delete contract:', error);
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
-    return new Response(JSON.stringify(contract), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  } catch (error) {
-    console.error('Failed to fetch contract:', error);
-    return new Response('Internal Server Error', { status: 500 });
   }
-}
+);
+
+export const GET = withApiAuth<ContractContext>(
+  { permissions: [Permission.VIEW_CONTRACTS] },
+  async ({ context }) => {
+    try {
+      const { id } = await context.params;
+      const contract = await prisma.contract.findUnique({
+        where: { id },
+        include: { client: true, worker: true },
+      });
+
+      if (!contract) {
+        return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
+      }
+
+      return NextResponse.json(contract);
+    } catch (error) {
+      console.error('Failed to fetch contract:', error);
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+  }
+);
