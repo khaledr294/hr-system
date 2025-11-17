@@ -17,32 +17,63 @@ interface JobTitle {
   };
 }
 
-// الصلاحيات المتاحة
+// الصلاحيات المتاحة - جميع الـ 36 صلاحية من النظام
 const AVAILABLE_PERMISSIONS = [
+  // صلاحيات العمال (5)
   { id: "VIEW_WORKERS", label: "عرض العمال", category: "workers", icon: "👁️" },
   { id: "CREATE_WORKERS", label: "إضافة عمال", category: "workers", icon: "➕" },
   { id: "EDIT_WORKERS", label: "تعديل العمال", category: "workers", icon: "✏️" },
   { id: "DELETE_WORKERS", label: "حذف العمال", category: "workers", icon: "🗑️" },
   { id: "RESERVE_WORKERS", label: "حجز العاملات", category: "workers", icon: "🔒" },
   
+  // صلاحيات العقود (4)
   { id: "VIEW_CONTRACTS", label: "عرض العقود", category: "contracts", icon: "👁️" },
   { id: "CREATE_CONTRACTS", label: "إنشاء عقود", category: "contracts", icon: "➕" },
   { id: "EDIT_CONTRACTS", label: "تعديل العقود", category: "contracts", icon: "✏️" },
   { id: "DELETE_CONTRACTS", label: "حذف العقود", category: "contracts", icon: "🗑️" },
   
+  // صلاحيات العملاء (4)
   { id: "VIEW_CLIENTS", label: "عرض العملاء", category: "clients", icon: "👁️" },
   { id: "CREATE_CLIENTS", label: "إضافة عملاء", category: "clients", icon: "➕" },
   { id: "EDIT_CLIENTS", label: "تعديل العملاء", category: "clients", icon: "✏️" },
   { id: "DELETE_CLIENTS", label: "حذف العملاء", category: "clients", icon: "🗑️" },
   
+  // صلاحيات المستخدمين (4)
   { id: "VIEW_USERS", label: "عرض المستخدمين", category: "users", icon: "👁️" },
   { id: "CREATE_USERS", label: "إضافة مستخدمين", category: "users", icon: "➕" },
   { id: "EDIT_USERS", label: "تعديل المستخدمين", category: "users", icon: "✏️" },
   { id: "DELETE_USERS", label: "حذف المستخدمين", category: "users", icon: "🗑️" },
   
+  // صلاحيات التقارير (3)
   { id: "VIEW_REPORTS", label: "عرض التقارير", category: "reports", icon: "📊" },
+  { id: "MANAGE_REPORTS", label: "إدارة التقارير", category: "reports", icon: "📈" },
   { id: "EXPORT_DATA", label: "تصدير البيانات", category: "reports", icon: "💾" },
   
+  // صلاحيات كشف الرواتب (4)
+  { id: "VIEW_PAYROLL", label: "عرض كشف الرواتب", category: "payroll", icon: "💰" },
+  { id: "MANAGE_PAYROLL", label: "إدارة كشف الرواتب", category: "payroll", icon: "💵" },
+  { id: "VIEW_PAYROLL_DELIVERY", label: "عرض توصيل الرواتب", category: "payroll", icon: "🚚" },
+  { id: "MANAGE_PAYROLL_DELIVERY", label: "إدارة توصيل الرواتب", category: "payroll", icon: "📦" },
+  
+  // صلاحيات النسخ الاحتياطي (2)
+  { id: "VIEW_BACKUPS", label: "عرض النسخ الاحتياطية", category: "system", icon: "💾" },
+  { id: "MANAGE_BACKUPS", label: "إدارة النسخ الاحتياطية", category: "system", icon: "🔄" },
+  
+  // صلاحيات الأرشيف (2)
+  { id: "VIEW_ARCHIVE", label: "عرض الأرشيف", category: "system", icon: "📦" },
+  { id: "MANAGE_ARCHIVE", label: "إدارة الأرشيف", category: "system", icon: "🗄️" },
+  
+  // صلاحيات الباقات (1)
+  { id: "MANAGE_PACKAGES", label: "إدارة الباقات", category: "system", icon: "📦" },
+  
+  // صلاحيات القوالب (1)
+  { id: "MANAGE_TEMPLATES", label: "إدارة القوالب", category: "system", icon: "📄" },
+  
+  // صلاحيات الأداء والبحث (2)
+  { id: "VIEW_PERFORMANCE", label: "عرض الأداء", category: "system", icon: "📊" },
+  { id: "VIEW_SEARCH", label: "البحث المتقدم", category: "system", icon: "🔍" },
+  
+  // صلاحيات النظام الأساسية (3)
   { id: "VIEW_LOGS", label: "عرض السجلات", category: "system", icon: "📋" },
   { id: "MANAGE_SETTINGS", label: "إدارة الإعدادات", category: "system", icon: "⚙️" },
   { id: "MANAGE_JOB_TITLES", label: "إدارة المسميات الوظيفية", category: "system", icon: "💼" },
@@ -54,6 +85,7 @@ const PERMISSION_CATEGORIES = {
   clients: { label: "العملاء", icon: "👥", color: "green" },
   users: { label: "المستخدمين", icon: "🔐", color: "orange" },
   reports: { label: "التقارير", icon: "📊", color: "pink" },
+  payroll: { label: "كشف الرواتب", icon: "💰", color: "emerald" },
   system: { label: "النظام", icon: "⚙️", color: "gray" },
 };
 
