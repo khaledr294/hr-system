@@ -23,22 +23,38 @@ export const POST = withApiAuth<ContractContext>(
         return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
       }
 
-    // حساب الغرامة إذا كان هناك تأخير
     const today = new Date();
-    const endDate = new Date(contract.endDate);
+    const startDate = new Date(contract.startDate);
+    const originalEndDate = new Date(contract.endDate);
     
+    // حساب الأيام الفعلية المستهلكة
+    const actualDaysUsed = Math.ceil((today.getTime() - startDate.getTime()) / (1000 * 3600 * 24));
+    
+    // حساب إجمالي أيام العقد الأصلية
+    const originalTotalDays = Math.ceil((originalEndDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24));
+    
+    // حساب القيمة الجديدة للعقد بناءً على الأيام المستهلكة
+    let newTotalAmount = contract.totalAmount;
+    
+    // إذا تم إنهاء العقد مبكراً (قبل موعده)
+    if (today < originalEndDate) {
+      // حساب القيمة اليومية من المبلغ الأصلي
+      const dailyRate = contract.totalAmount / originalTotalDays;
+      // القيمة الجديدة = القيمة اليومية × الأيام المستهلكة
+      newTotalAmount = Math.round(dailyRate * actualDaysUsed);
+    }
+    
+    // حساب الغرامة إذا كان هناك تأخير (بعد انتهاء العقد)
     let delayDays = 0;
     let penaltyAmount = 0;
     
-    if (today > endDate) {
-      const timeDiff = today.getTime() - endDate.getTime();
-      delayDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    if (today > originalEndDate) {
+      delayDays = Math.ceil((today.getTime() - originalEndDate.getTime()) / (1000 * 3600 * 24));
       const penaltyRate = contract.penaltyRate || 120;
       penaltyAmount = delayDays * penaltyRate;
+      // إضافة الغرامة للقيمة الأصلية
+      newTotalAmount = contract.totalAmount + penaltyAmount;
     }
-
-    // حساب المبلغ الإجمالي الجديد (المبلغ الأصلي + الغرامة)
-    const totalAmountWithPenalty = contract.totalAmount + penaltyAmount;
 
     // Mark contract as terminated and update worker status in a transaction
       const [updatedContract] = await prisma.$transaction([
@@ -49,7 +65,7 @@ export const POST = withApiAuth<ContractContext>(
           endDate: today,
           delayDays: delayDays,
           penaltyAmount: penaltyAmount,
-          totalAmount: totalAmountWithPenalty, // تحديث المبلغ الإجمالي ليشمل الغرامة
+          totalAmount: newTotalAmount,
         },
       }),
       prisma.worker.update({
@@ -60,13 +76,17 @@ export const POST = withApiAuth<ContractContext>(
     
       return NextResponse.json({
         ...updatedContract,
+        actualDaysUsed,
+        originalTotalDays,
         delayDays,
         penaltyAmount,
-        totalAmountWithPenalty,
+        newTotalAmount,
         message:
-          delayDays > 0
-            ? `تم إنهاء العقد مع غرامة تأخير: ${delayDays} أيام × ${contract.penaltyRate || 120} ريال = ${penaltyAmount} ريال`
-            : 'تم إنهاء العقد دون غرامة تأخير',
+          today < originalEndDate
+            ? `تم إنهاء العقد مبكراً. الأيام المستهلكة: ${actualDaysUsed} من ${originalTotalDays} يوم. القيمة المحدثة: ${newTotalAmount} ريال`
+            : delayDays > 0
+            ? `تم إنهاء العقد مع غرامة تأخير: ${delayDays} أيام × ${contract.penaltyRate || 120} ريال = ${penaltyAmount} ريال. القيمة النهائية: ${newTotalAmount} ريال`
+            : `تم إنهاء العقد في موعده. القيمة: ${newTotalAmount} ريال`,
       });
     } catch (error) {
       console.error('Failed to terminate contract:', error);

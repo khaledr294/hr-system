@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import DashboardLayout from "@/components/DashboardLayout";
+import { Edit2, Save, X } from "lucide-react";
 
 type NationalitySalary = {
   id: string;
@@ -19,6 +20,8 @@ export default function NationalitySalaryPage() {
   const [salary, setSalary] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingSalary, setEditingSalary] = useState<string>("");
 
   // التحقق من الصلاحيات
   useEffect(() => {
@@ -110,6 +113,47 @@ export default function NationalitySalaryPage() {
     }
   };
 
+  const handleEdit = (item: NationalitySalary) => {
+    setEditingId(item.id);
+    setEditingSalary(item.salary.toString());
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditingSalary("");
+  };
+
+  const handleSaveEdit = async (id: string) => {
+    if (!editingSalary || parseFloat(editingSalary) <= 0) {
+      alert('يرجى إدخال راتب صحيح');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/nationality-salary/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          salary: parseFloat(editingSalary),
+        }),
+      });
+
+      if (response.ok) {
+        setEditingId(null);
+        setEditingSalary("");
+        loadNationalities(); // Reload data
+      } else {
+        const errorText = await response.text();
+        alert('فشل في تحديث الراتب: ' + errorText);
+      }
+    } catch (error) {
+      console.error('Error updating salary:', error);
+      alert('حدث خطأ أثناء تحديث الراتب');
+    }
+  };
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -176,14 +220,60 @@ export default function NationalitySalaryPage() {
                 nationalities.map((item) => (
                   <tr key={item.id} className="border-b hover:bg-gray-50">
                     <td className="py-3 px-4 text-gray-900 font-semibold">{item.nationality}</td>
-                    <td className="py-3 px-4 text-gray-900 font-semibold">{item.salary.toLocaleString()} ريال</td>
+                    <td className="py-3 px-4 text-gray-900 font-semibold">
+                      {editingId === item.id ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            value={editingSalary}
+                            onChange={(e) => setEditingSalary(e.target.value)}
+                            className="px-3 py-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-32"
+                            min="0"
+                            step="0.01"
+                          />
+                          <span>ريال</span>
+                        </div>
+                      ) : (
+                        `${item.salary.toLocaleString()} ريال`
+                      )}
+                    </td>
                     <td className="py-3 px-4 text-center">
-                      <button
-                        className="text-red-600 hover:text-red-900 font-bold px-4 py-2 rounded hover:bg-red-50"
-                        onClick={() => handleDelete(item.id)}
-                      >
-                        حذف
-                      </button>
+                      <div className="flex items-center justify-center gap-2">
+                        {editingId === item.id ? (
+                          <>
+                            <button
+                              className="text-green-600 hover:text-green-900 font-bold px-3 py-2 rounded hover:bg-green-50 flex items-center gap-1"
+                              onClick={() => handleSaveEdit(item.id)}
+                            >
+                              <Save size={16} />
+                              حفظ
+                            </button>
+                            <button
+                              className="text-gray-600 hover:text-gray-900 font-bold px-3 py-2 rounded hover:bg-gray-100 flex items-center gap-1"
+                              onClick={handleCancelEdit}
+                            >
+                              <X size={16} />
+                              إلغاء
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              className="text-indigo-600 hover:text-indigo-900 font-bold px-3 py-2 rounded hover:bg-indigo-50 flex items-center gap-1"
+                              onClick={() => handleEdit(item)}
+                            >
+                              <Edit2 size={16} />
+                              تعديل
+                            </button>
+                            <button
+                              className="text-red-600 hover:text-red-900 font-bold px-3 py-2 rounded hover:bg-red-50"
+                              onClick={() => handleDelete(item.id)}
+                            >
+                              حذف
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))

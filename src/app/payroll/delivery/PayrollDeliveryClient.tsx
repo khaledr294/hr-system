@@ -68,6 +68,7 @@ export default function PayrollDeliveryPage() {
   const [saving, setSaving] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [searchTerm, setSearchTerm] = useState("");
+  const [inputValues, setInputValues] = useState<Map<string, { partial: string; advance: string }>>(new Map());
 
   // التحقق من الصلاحيات
   useEffect(() => {
@@ -233,6 +234,13 @@ export default function PayrollDeliveryPage() {
       }
       return newDeliveries;
     });
+    // مسح قيمة الحقل بعد التطبيق
+    setInputValues(prev => {
+      const newValues = new Map(prev);
+      const current = newValues.get(workerId) || { partial: '', advance: '' };
+      newValues.set(workerId, { ...current, partial: '' });
+      return newValues;
+    });
   };
 
   const handleAdvance = (workerId: string, amount: number) => {
@@ -249,6 +257,13 @@ export default function PayrollDeliveryPage() {
         });
       }
       return newDeliveries;
+    });
+    // مسح قيمة الحقل بعد التطبيق
+    setInputValues(prev => {
+      const newValues = new Map(prev);
+      const current = newValues.get(workerId) || { partial: '', advance: '' };
+      newValues.set(workerId, { ...current, advance: '' });
+      return newValues;
     });
   };
 
@@ -711,13 +726,28 @@ export default function PayrollDeliveryPage() {
                       type="number"
                       placeholder="مبلغ جزئي"
                       className="flex-1"
+                      value={inputValues.get(delivery.workerId)?.partial || ''}
                       onChange={(e) => {
-                        const amount = parseFloat(e.target.value) || 0;
+                        const newValues = new Map(inputValues);
+                        const current = newValues.get(delivery.workerId) || { partial: '', advance: '' };
+                        newValues.set(delivery.workerId, { ...current, partial: e.target.value });
+                        setInputValues(newValues);
+                      }}
+                    />
+                    <Button
+                      onClick={() => {
+                        const amount = parseFloat(inputValues.get(delivery.workerId)?.partial || '0');
                         if (amount > 0) {
                           handlePartialDelivery(delivery.workerId, amount);
                         }
                       }}
-                    />
+                      variant="secondary"
+                      size="sm"
+                      className="gap-1 whitespace-nowrap"
+                    >
+                      <DollarSign className="w-4 h-4" />
+                      تطبيق
+                    </Button>
                   </div>
 
                   {/* Advance */}
@@ -726,13 +756,28 @@ export default function PayrollDeliveryPage() {
                       type="number"
                       placeholder="سلفة"
                       className="flex-1"
+                      value={inputValues.get(delivery.workerId)?.advance || ''}
                       onChange={(e) => {
-                        const amount = parseFloat(e.target.value) || 0;
+                        const newValues = new Map(inputValues);
+                        const current = newValues.get(delivery.workerId) || { partial: '', advance: '' };
+                        newValues.set(delivery.workerId, { ...current, advance: e.target.value });
+                        setInputValues(newValues);
+                      }}
+                    />
+                    <Button
+                      onClick={() => {
+                        const amount = parseFloat(inputValues.get(delivery.workerId)?.advance || '0');
                         if (amount > 0) {
                           handleAdvance(delivery.workerId, amount);
                         }
                       }}
-                    />
+                      variant="secondary"
+                      size="sm"
+                      className="gap-1 whitespace-nowrap"
+                    >
+                      <Wallet className="w-4 h-4" />
+                      تطبيق
+                    </Button>
                   </div>
                 </div>
 

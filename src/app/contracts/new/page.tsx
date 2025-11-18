@@ -119,19 +119,15 @@ function NewContractForm() {
           const marketersList = await response.json();
           setMarketers(marketersList);
           
-          // التحقق من JobTitle للمستخدم الحالي
+          // التحقق من المستخدم الحالي
           if (session?.user?.id) {
-            const userResponse = await fetch(`/api/users/${session.user.id}`);
-            if (userResponse.ok) {
-              const userData = await userResponse.json();
-              // إذا كان المستخدم الحالي مسوقاً
-              const isMarketer = userData.jobTitle?.nameAr === 'مسوق';
-              setIsCurrentUserMarketer(isMarketer);
-              
-              if (isMarketer) {
-                // تعيين المسوق الحالي تلقائياً
-                setValue('marketerId', session.user.id);
-              }
+            // البحث في قائمة المسوقين عن المستخدم الحالي
+            const currentUserIsMarketer = marketersList.some((m: { id: string }) => m.id === session.user.id);
+            setIsCurrentUserMarketer(currentUserIsMarketer);
+            
+            if (currentUserIsMarketer) {
+              // تعيين المسوق الحالي تلقائياً
+              setValue('marketerId', session.user.id);
             }
           }
         }
@@ -296,24 +292,27 @@ function NewContractForm() {
             <label className="block text-base font-bold text-indigo-900 mb-2">اسم المسوق</label>
             {isCurrentUserMarketer ? (
               // إذا كان المستخدم مسوقاً: إظهار اسمه فقط (غير قابل للتغيير)
-              <div className="block w-full rounded-md border-2 border-gray-300 bg-gray-100 shadow-sm px-3 py-2 text-lg font-semibold text-gray-700">
-                {session?.user?.name || 'المسوق الحالي'}
-              </div>
+              <>
+                <div className="block w-full rounded-md border-2 border-indigo-500 bg-indigo-50 shadow-sm px-3 py-2 text-lg font-semibold text-indigo-900">
+                  {session?.user?.name || 'المسوق الحالي'}
+                </div>
+                <input type="hidden" {...register('marketerId')} value={session?.user?.id} />
+                <p className="text-sm text-indigo-600 mt-1">أنت مسجل كمسوق لهذا العقد</p>
+              </>
             ) : (
-              // إذا كان HR_MANAGER: يختار من القائمة
+              // إذا لم يكن مسوقاً: يختار من القائمة
               <Select
                 label="اسم المسوق"
                 className="text-right"
                 {...register('marketerId')}
                 error={errors.marketerId?.message}
-                disabled={isCurrentUserMarketer}
                 options={marketers.map(marketer => ({
                   value: marketer.id,
                   label: marketer.name,
                 }))}
               />
             )}
-            {errors.marketerId && (
+            {errors.marketerId && !isCurrentUserMarketer && (
               <p className="mt-1 text-sm text-red-600">{errors.marketerId.message}</p>
             )}
           </div>

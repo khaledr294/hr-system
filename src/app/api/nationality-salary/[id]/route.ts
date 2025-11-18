@@ -71,6 +71,32 @@ export const PUT = withApiAuth<NationalityContext>(
   }
 );
 
+export const PATCH = withApiAuth<NationalityContext>(
+  { permissions: [Permission.MANAGE_SETTINGS], auditAction: 'NATIONALITY_SALARY_UPDATE' },
+  async ({ req, context }) => {
+    try {
+      const params = await context.params;
+      const data = await req.json();
+      
+      if (!data.salary) {
+        return NextResponse.json({ error: 'Missing salary field' }, { status: 400 });
+      }
+
+      const nationalitySalary = await prisma.nationalitySalary.update({
+        where: { id: params.id },
+        data: {
+          salary: parseFloat(data.salary),
+        },
+      });
+
+      return NextResponse.json(nationalitySalary);
+    } catch (error) {
+      console.error('Failed to update nationality salary:', error);
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+  }
+);
+
 export const DELETE = withApiAuth<NationalityContext>(
   { permissions: [Permission.MANAGE_SETTINGS], auditAction: 'NATIONALITY_SALARY_DELETE' },
   async ({ context }) => {
