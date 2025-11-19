@@ -50,6 +50,7 @@ function NewContractForm() {
   const [customEndDate, setCustomEndDate] = useState<boolean>(false);
   const [endDateValue, setEndDateValue] = useState<string>('');
   const [isCurrentUserMarketer, setIsCurrentUserMarketer] = useState(false);
+  const [marketersLoading, setMarketersLoading] = useState(true);
 
   const clientId = searchParams.get('clientId');
 
@@ -114,26 +115,30 @@ function NewContractForm() {
     // جلب المسوقين من Users حسب JobTitle
     const fetchMarketers = async () => {
       try {
+        setMarketersLoading(true);
         const response = await fetch('/api/users/marketers');
         if (response.ok) {
           const marketersList = await response.json();
           setMarketers(marketersList);
           
-          // التحقق من المستخدم الحالي
+          // التحقق من المستخدم الحالي بعد تحميل قائمة المسوقين
           if (session?.user?.id) {
             // البحث في قائمة المسوقين عن المستخدم الحالي
             const currentUserIsMarketer = marketersList.some((m: { id: string }) => m.id === session.user.id);
+            console.log('🔍 Checking if current user is marketer:', session.user.id, currentUserIsMarketer);
             setIsCurrentUserMarketer(currentUserIsMarketer);
             
             if (currentUserIsMarketer) {
               // تعيين المسوق الحالي تلقائياً
-              console.log('Setting marketer to:', session.user.id, session.user.name);
+              console.log('✅ Setting marketer to:', session.user.id, session.user.name);
               setValue('marketerId', session.user.id, { shouldValidate: true });
             }
           }
         }
       } catch (error) {
         console.error('Error fetching marketers:', error);
+      } finally {
+        setMarketersLoading(false);
       }
     };
     
@@ -295,7 +300,11 @@ function NewContractForm() {
           </div>
           <div>
             <label className="block text-base font-bold text-indigo-900 mb-2">اسم المسوق</label>
-            {isCurrentUserMarketer ? (
+            {marketersLoading ? (
+              <div className="block w-full rounded-md border border-gray-300 bg-gray-50 shadow-sm px-3 py-2 text-gray-500">
+                جاري التحميل...
+              </div>
+            ) : isCurrentUserMarketer ? (
               // إذا كان المستخدم مسوقاً: إظهار اسمه فقط (غير قابل للتغيير)
               <>
                 <div className="block w-full rounded-md border-2 border-indigo-500 bg-indigo-50 shadow-sm px-3 py-2 text-lg font-semibold text-indigo-900">

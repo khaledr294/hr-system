@@ -136,6 +136,28 @@ export default function PayrollDeliveryPage() {
       setLoading(true);
       console.log('📞 جاري تحميل بيانات الرواتب للشهر:', selectedMonth);
       
+      // أولاً: محاولة جلب البيانات المحفوظة
+      const savedResponse = await fetch(`/api/payroll/delivery?month=${selectedMonth}`);
+      if (savedResponse.ok) {
+        const savedData = await savedResponse.json();
+        if (savedData.deliveries && savedData.deliveries.length > 0) {
+          // توجد بيانات محفوظة مسبقاً - استخدمها
+          const savedDeliveries = new Map<string, PayrollDelivery>();
+          savedData.deliveries.forEach((item: PayrollDelivery) => {
+            savedDeliveries.set(item.workerId, {
+              ...item,
+              deliveryDate: item.deliveryDate || undefined,
+              notes: item.notes || undefined,
+            });
+          });
+          setDeliveries(savedDeliveries);
+          console.log('✅ تم تحميل البيانات المحفوظة:', savedDeliveries.size);
+          setLoading(false);
+          return;
+        }
+      }
+      
+      // إذا لم توجد بيانات محفوظة: احسب البيانات من العقود
       // Load workers
       const response = await fetch('/api/workers');
       

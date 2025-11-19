@@ -142,14 +142,18 @@ export default function NationalitySalaryPage() {
 
       if (response.ok) {
         const updatedData = await response.json();
+        console.log('📥 تم استلام البيانات المحدثة من API:', updatedData);
         // تحديث القيمة في state محلياً
-        setNationalities(prev => 
-          prev.map(item => 
+        setNationalities(prev => {
+          const updated = prev.map(item => 
             item.id === id ? { ...item, salary: updatedData.salary } : item
-          )
-        );
+          );
+          console.log('✅ تم تحديث state:', updated);
+          return updated;
+        });
         setEditingId(null);
         setEditingSalary("");
+        alert('تم تحديث الراتب بنجاح!');
       } else {
         const errorText = await response.text();
         alert('فشل في تحديث الراتب: ' + errorText);

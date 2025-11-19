@@ -27,9 +27,19 @@ export const GET = withApiAuth<EmptyContext>(
       const { searchParams } = new URL(req.url);
       const month = searchParams.get('month');
 
+      if (!month) {
+        return NextResponse.json({ error: 'Month parameter is required' }, { status: 400 });
+      }
+
+      // جلب البيانات المحفوظة من قاعدة البيانات
+      const savedDeliveries = await prisma.payrollDelivery.findMany({
+        where: { month },
+        orderBy: { workerCode: 'asc' },
+      });
+
       return NextResponse.json({
         month,
-        deliveries: [],
+        deliveries: savedDeliveries,
         message: 'Payroll delivery data retrieved successfully',
       });
     } catch (error) {
@@ -50,7 +60,41 @@ export const POST = withApiAuth<EmptyContext>(
         return NextResponse.json({ error: 'Invalid request data' }, { status: 400 });
       }
 
+      // حفظ أو تحديث البيانات في قاعدة البيانات
       for (const delivery of deliveries) {
+        await prisma.payrollDelivery.upsert({
+          where: {
+            workerId_month: {
+              workerId: delivery.workerId,
+              month: month,
+            },
+          },
+          update: {
+            deliveredAmount: delivery.deliveredAmount,
+            advanceAmount: delivery.advanceAmount,
+            remainingAmount: delivery.remainingAmount,
+            deliveryStatus: delivery.deliveryStatus,
+            deliveryDate: delivery.deliveryDate ? new Date(delivery.deliveryDate) : null,
+            notes: delivery.notes,
+            updatedAt: new Date(),
+          },
+          create: {
+            workerId: delivery.workerId,
+            workerCode: delivery.workerCode,
+            workerName: delivery.workerName,
+            nationality: delivery.nationality,
+            month: month,
+            totalSalary: delivery.totalSalary,
+            deliveredAmount: delivery.deliveredAmount,
+            advanceAmount: delivery.advanceAmount,
+            remainingAmount: delivery.remainingAmount,
+            deliveryStatus: delivery.deliveryStatus,
+            deliveryDate: delivery.deliveryDate ? new Date(delivery.deliveryDate) : null,
+            notes: delivery.notes,
+          },
+        });
+
+        // تسجيل في الـ logs كما كان سابقاً
         await prisma.log.create({
           data: {
             userId: session.user.id,
