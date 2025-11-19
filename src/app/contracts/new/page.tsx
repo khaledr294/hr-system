@@ -119,6 +119,7 @@ function NewContractForm() {
         const response = await fetch('/api/users/marketers');
         if (response.ok) {
           const marketersList = await response.json();
+          console.log('📋 Marketers list loaded:', marketersList);
           setMarketers(marketersList);
           
           // التحقق من المستخدم الحالي بعد تحميل قائمة المسوقين
@@ -134,9 +135,28 @@ function NewContractForm() {
               setValue('marketerId', session.user.id, { shouldValidate: true });
             }
           }
+        } else {
+          console.error('❌ Failed to fetch marketers. Status:', response.status);
+          const errorText = await response.text();
+          console.error('Error details:', errorText);
+          
+          // في حالة الفشل، إذا كان المستخدم الحالي معرّف، اعتبره مسوقاً
+          if (session?.user?.id) {
+            console.log('⚠️ Using fallback: setting current user as marketer');
+            setIsCurrentUserMarketer(true);
+            setValue('marketerId', session.user.id, { shouldValidate: true });
+            setMarketers([{ id: session.user.id, name: session.user.name || 'المسوق الحالي' }]);
+          }
         }
       } catch (error) {
         console.error('Error fetching marketers:', error);
+        // في حالة الخطأ، استخدم المستخدم الحالي كمسوق
+        if (session?.user?.id) {
+          console.log('⚠️ Error fallback: setting current user as marketer');
+          setIsCurrentUserMarketer(true);
+          setValue('marketerId', session.user.id, { shouldValidate: true });
+          setMarketers([{ id: session.user.id, name: session.user.name || 'المسوق الحالي' }]);
+        }
       } finally {
         setMarketersLoading(false);
       }

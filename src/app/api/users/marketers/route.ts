@@ -6,7 +6,7 @@ import { withApiAuth } from '@/lib/api-guard';
 type EmptyContext = { params: Promise<Record<string, never>> };
 
 export const GET = withApiAuth<EmptyContext>(
-  { permissions: [Permission.VIEW_USERS] },
+  { permissions: [Permission.VIEW_USERS, Permission.CREATE_CONTRACTS] },
   async () => {
     try {
       const marketerJobTitle = await prisma.jobTitle.findFirst({
