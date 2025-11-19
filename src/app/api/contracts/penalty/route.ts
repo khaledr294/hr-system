@@ -44,6 +44,7 @@ export const POST = withApiAuth<EmptyContext>(
           penaltyAmount,
           totalAmount: contract.totalAmount + penaltyAmount,
           status: 'COMPLETED',
+          endDate: actualReturnDate,
           updatedAt: new Date(),
         },
       });

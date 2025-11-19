@@ -40,7 +40,7 @@ export const GET = withApiAuth<EmptyContext>(
 );
 
 export const POST = withApiAuth<EmptyContext>(
-  { permissions: [Permission.MANAGE_PAYROLL_DELIVERY], auditAction: 'PAYROLL_DELIVERY_SAVE' },
+  { permissions: [Permission.VIEW_PAYROLL_DELIVERY], auditAction: 'PAYROLL_DELIVERY_SAVE' },
   async ({ req, session }) => {
     try {
       const body = await req.json();

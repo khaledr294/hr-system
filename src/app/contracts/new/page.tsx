@@ -127,7 +127,8 @@ function NewContractForm() {
             
             if (currentUserIsMarketer) {
               // تعيين المسوق الحالي تلقائياً
-              setValue('marketerId', session.user.id);
+              console.log('Setting marketer to:', session.user.id, session.user.name);
+              setValue('marketerId', session.user.id, { shouldValidate: true });
             }
           }
         }
@@ -135,7 +136,11 @@ function NewContractForm() {
         console.error('Error fetching marketers:', error);
       }
     };
-    fetchMarketers();
+    
+    // انتظار جلسة المستخدم قبل جلب المسوقين
+    if (session?.user?.id) {
+      fetchMarketers();
+    }
   }, [session, setValue]);
 
   useEffect(() => {

@@ -141,9 +141,15 @@ export default function NationalitySalaryPage() {
       });
 
       if (response.ok) {
+        const updatedData = await response.json();
+        // تحديث القيمة في state محلياً
+        setNationalities(prev => 
+          prev.map(item => 
+            item.id === id ? { ...item, salary: updatedData.salary } : item
+          )
+        );
         setEditingId(null);
         setEditingSalary("");
-        loadNationalities(); // Reload data
       } else {
         const errorText = await response.text();
         alert('فشل في تحديث الراتب: ' + errorText);
