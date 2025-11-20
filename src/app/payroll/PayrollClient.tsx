@@ -91,10 +91,6 @@ export default function PayrollPage() {
   const calculatePayroll = async (workersData: Worker[]) => {
     console.log('🔄 بدء حساب الرواتب للشهر:', selectedMonth);
     console.log('👥 عدد العمال:', workersData.length);
-    const [targetYear, targetMonth] = selectedMonth.split('-').map(Number);
-    const daysInMonth = Number.isFinite(targetYear) && Number.isFinite(targetMonth)
-      ? new Date(Date.UTC(targetYear, targetMonth, 0)).getUTCDate()
-      : 30;
 
     const payrollCalculations = await Promise.all(workersData.map(async (worker) => {
       const baseSalary = worker.salary ?? worker.nationalitySalary?.salary ?? 0;
@@ -108,8 +104,8 @@ export default function PayrollPage() {
       const bonuses = 0; // Default no bonuses
       
       // Calculate total salary
-      const divisor = daysInMonth > 0 ? daysInMonth : 30;
-      const dailySalary = baseSalary / divisor;
+      // نستخدم 30 كرقم ثابت في جميع الشهور
+      const dailySalary = baseSalary / 30;
       const totalSalary = Math.round((dailySalary * workingDays) + bonuses - deductions);
       console.log(`💵 ${worker.name}: إجمالي الراتب = ${totalSalary}`);
 
