@@ -28,7 +28,7 @@ const contractSchema = z.object({
     .regex(/^\d{2}\/\d{2}\/\d{4}$/, 'يجب أن يكون التاريخ بصيغة يوم/شهر/سنة (مثال: 15/03/2024)'),
   endDate: z.string().optional(),
   packageType: z.string().min(1, 'يجب اختيار الباقة'),
-  totalAmount: z.number().min(1, 'يجب إدخال المبلغ'),
+  totalAmount: z.number().min(0, 'المبلغ يجب أن يكون صفر أو أكثر'),
   notes: z.string().optional(),
 });
 

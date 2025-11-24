@@ -179,7 +179,7 @@ export default function EditContractPage({ params }: { params: Promise<{ id: str
                 value={form.totalAmount} 
                 onChange={handleChange} 
                 className="w-full border-2 rounded px-4 py-2 text-gray-900 font-semibold bg-white focus:border-blue-500"
-                required
+                min="0"
                 disabled={form.status === 'COMPLETED'}
               />
             </div>

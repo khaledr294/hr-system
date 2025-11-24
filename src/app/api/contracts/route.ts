@@ -160,13 +160,17 @@ export const POST = withApiAuth<EmptyContext>(
         'startDate',
         'endDate',
         'packageType',
-        'totalAmount',
       ];
 
       for (const field of requiredFields) {
         if (!data[field]) {
           return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 });
         }
+      }
+
+      // totalAmount يمكن أن يكون 0، لذا نتحقق من وجوده فقط كرقم
+      if (typeof data.totalAmount !== 'number') {
+        return NextResponse.json({ error: 'Missing required field: totalAmount' }, { status: 400 });
       }
 
       const worker = await prisma.worker.findUnique({ where: { id: data.workerId } });
