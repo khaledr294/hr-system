@@ -693,7 +693,7 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
 
 
     // عرض تقرير الأخطاء إن وجدت
-    let restoreErrors: { workers?: string[]; contracts?: string[] } = {};
+    const restoreErrors: { workers?: string[]; contracts?: string[] } = {};
     if ((globalThis as any).__restoreErrors) {
       if (((globalThis as any).__restoreErrors).workers?.length) {
         console.log('❗️ أخطاء استعادة العاملات:');
