@@ -27,7 +27,6 @@ export const POST = withApiAuth<EmptyContext>(
       'nationality',
       'residencyNumber',
       'dateOfBirth',
-      'phone',
     ];
 
     for (const field of requiredFields) {

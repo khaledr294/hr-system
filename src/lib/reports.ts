@@ -465,3 +465,139 @@ export async function exportContractsToExcel(report: ContractsReport): Promise<B
   const buffer = await workbook.xlsx.writeBuffer();
   return Buffer.from(buffer);
 }
+
+/**
+ * تقرير عقود المسوقين لحساب البونص الشهري
+ * Marketers Contracts Report for Monthly Bonus Calculation
+ */
+export interface MarketersReport {
+  month: string;
+  marketers: Array<{
+    marketerName: string;
+    contractsCount: number;
+    totalRevenue: number;
+    suggestedBonus: number;
+  }>;
+  totalContracts: number;
+  totalRevenue: number;
+  totalBonus: number;
+}
+
+export async function generateMarketersReport(
+  month: string // Format: YYYY-MM
+): Promise<MarketersReport> {
+  // Parse month
+  const [year, monthNum] = month.split('-').map(Number);
+  const startDate = new Date(year, monthNum - 1, 1);
+  const endDate = new Date(year, monthNum, 0, 23, 59, 59);
+
+  // Get all contracts created in the specified month
+    const contracts = await prisma.contract.findMany({
+      where: {
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      select: {
+        id: true,
+        marketer: {
+          select: {
+            name: true,
+          },
+        },
+        totalAmount: true,
+      },
+    });
+  
+    // Group by marketer
+    const marketerMap = new Map<string, { count: number; revenue: number }>();
+    
+    contracts.forEach(contract => {
+      const name = contract.marketer?.name || 'غير محدد';
+      const existing = marketerMap.get(name) || { count: 0, revenue: 0 };
+      marketerMap.set(name, {
+        count: existing.count + 1,
+        revenue: existing.revenue + (contract.totalAmount || 0),
+      });
+    });
+  
+    // Calculate bonuses (50 SAR per contract)
+    const BONUS_PER_CONTRACT = 50;
+    const marketers = Array.from(marketerMap.entries()).map(([name, data]) => ({
+      marketerName: name,
+      contractsCount: data.count,
+      totalRevenue: data.revenue,
+      suggestedBonus: data.count * BONUS_PER_CONTRACT,
+    }));
+  
+    // Sort by contracts count descending
+    marketers.sort((a, b) => b.contractsCount - a.contractsCount);
+  
+    const totalContracts = contracts.length;
+    const totalRevenue = contracts.reduce((sum, c) => sum + (c.totalAmount || 0), 0);
+    const totalBonus = marketers.reduce((sum, m) => sum + m.suggestedBonus, 0);
+
+  return {
+    month,
+    marketers,
+    totalContracts,
+    totalRevenue,
+    totalBonus,
+  };
+}
+
+export async function exportMarketersReportToExcel(
+  report: MarketersReport
+): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('تقرير المسوقين');
+
+  // Title
+  worksheet.mergeCells('A1:E1');
+  const titleCell = worksheet.getCell('A1');
+  titleCell.value = `تقرير عقود المسوقين - ${report.month}`;
+  titleCell.font = { size: 16, bold: true };
+  titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+  // Summary
+  worksheet.addRow([]);
+  worksheet.addRow(['الملخص العام']);
+  worksheet.addRow(['إجمالي العقود', report.totalContracts]);
+  worksheet.addRow(['إجمالي الإيرادات', report.totalRevenue]);
+  worksheet.addRow(['إجمالي البونص المقترح', report.totalBonus]);
+
+  // Details header
+  worksheet.addRow([]);
+  worksheet.addRow(['تفاصيل المسوقين']);
+  const headerRow = worksheet.addRow([
+    'المسوق',
+    'عدد العقود',
+    'الإيرادات',
+    'البونص المقترح (50 ريال × العقود)',
+  ]);
+  
+  headerRow.font = { bold: true };
+  headerRow.alignment = { horizontal: 'center' };
+
+  // Details
+  report.marketers.forEach(marketer => {
+    worksheet.addRow([
+      marketer.marketerName,
+      marketer.contractsCount,
+      marketer.totalRevenue,
+      marketer.suggestedBonus,
+    ]);
+  });
+
+  // Column widths
+  worksheet.columns = [
+    { width: 25 },
+    { width: 15 },
+    { width: 15 },
+    { width: 30 },
+  ];
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  return Buffer.from(buffer);
+}

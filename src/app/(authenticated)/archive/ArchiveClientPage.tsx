@@ -154,7 +154,7 @@ export default function ArchivePage() {
   });
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ar-SA', {
+    return new Date(dateString).toLocaleDateString('ar-SA-u-ca-gregory', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'

@@ -246,6 +246,147 @@ export async function getBackupFile(_backupId: string): Promise<Buffer | null> {
   return null;
 }
 
-export async function restoreBackup(_backupId: string): Promise<void> {
-  throw new Error('استعادة النسخ الاحتياطية غير مدعومة حالياً');
+export async function restoreBackup(backupId: string, userId?: string): Promise<{
+  success: boolean;
+  message: string;
+  stats?: {
+    users: number;
+    workers: number;
+    clients: number;
+    contracts: number;
+    packages: number;
+  };
+}> {
+  try {
+    console.log('🔄 بدء عملية الاستعادة...');
+
+    // Get backup
+    const backup = await prisma.backup.findUnique({
+      where: { id: backupId }
+    });
+
+    if (!backup) {
+      throw new Error('النسخة الاحتياطية غير موجودة');
+    }
+
+    if (backup.status !== 'completed') {
+      throw new Error('لا يمكن استعادة نسخة احتياطية غير مكتملة');
+    }
+
+    if (!backup.data) {
+      throw new Error('بيانات النسخة الاحتياطية مفقودة');
+    }
+
+    console.log('📦 جاري فك ضغط البيانات...');
+    
+    // Decompress data
+    const compressedBuffer = Buffer.from(backup.data as string, 'base64');
+    const decompressed = pako.ungzip(compressedBuffer, { to: 'string' });
+    const backupData: BackupData = JSON.parse(decompressed);
+
+    console.log('✅ تم فك الضغط بنجاح');
+    console.log('📊 الجداول المتوفرة:', backupData.metadata.tables);
+
+    // Create a pre-restore backup automatically
+    console.log('💾 جاري إنشاء نسخة احتياطية قبل الاستعادة...');
+    await createDatabaseBackup('automatic');
+
+    // Start restoration transaction
+    console.log('🔄 بدء عملية الاستعادة...');
+    
+    const stats = await prisma.$transaction(async (tx) => {
+      // Clear existing data (except backups and critical system data)
+      console.log('🗑️ جاري حذف البيانات القديمة...');
+      
+      await tx.log.deleteMany({});
+      await tx.contract.deleteMany({});
+      await tx.client.deleteMany({});
+      await tx.worker.deleteMany({});
+      await tx.nationalitySalary.deleteMany({});
+      await tx.package.deleteMany({});
+      // Keep users and backups
+
+      console.log('📥 جاري استعادة البيانات...');
+
+      // Restore packages first (no dependencies)
+      const packagesCreated = await Promise.all(
+        backupData.data.packages.map((pkg: any) =>
+          tx.package.create({ data: pkg })
+        )
+      );
+
+      // Restore nationality salaries
+      const nationalitySalariesCreated = await Promise.all(
+        backupData.data.nationalitySalaries.map((ns: any) =>
+          tx.nationalitySalary.create({ data: ns })
+        )
+      );
+
+      // Restore workers
+      const workersCreated = await Promise.all(
+        backupData.data.workers.map((worker: any) => {
+          const { nationalitySalary, contracts, ...workerData } = worker;
+          return tx.worker.create({ data: workerData });
+        })
+      );
+
+      // Restore clients
+      const clientsCreated = await Promise.all(
+        backupData.data.clients.map((client: any) => {
+          const { contracts, ...clientData } = client;
+          return tx.client.create({ data: clientData });
+        })
+      );
+
+      // Restore contracts
+      const contractsCreated = await Promise.all(
+        backupData.data.contracts.map((contract: any) => {
+          const { worker, client, marketer, ...contractData } = contract;
+          return tx.contract.create({ data: contractData });
+        })
+      );
+
+      // Restore logs (last 1000 only)
+      await Promise.all(
+        backupData.data.logs.slice(0, 1000).map((log: any) =>
+          tx.log.create({ data: log }).catch(() => null) // Ignore log restore failures
+        )
+      );
+
+      return {
+        users: 0, // We don't restore users for security
+        workers: workersCreated.length,
+        clients: clientsCreated.length,
+        contracts: contractsCreated.length,
+        packages: packagesCreated.length,
+      };
+    });
+
+    console.log('✅ تمت الاستعادة بنجاح');
+    console.log('📊 الإحصائيات:', stats);
+
+    // Log restoration action
+    await prisma.log.create({
+      data: {
+        id: uuidv4(),
+        userId: userId,
+        action: 'BACKUP_RESTORE',
+        details: JSON.stringify({
+          backupId,
+          filename: backup.filename,
+          stats,
+          timestamp: new Date().toISOString(),
+        }),
+      },
+    }).catch(() => null);
+
+    return {
+      success: true,
+      message: `تمت استعادة النسخة الاحتياطية بنجاح. تم استعادة ${stats.workers} عاملة، ${stats.clients} عميل، ${stats.contracts} عقد.`,
+      stats,
+    };
+  } catch (error: any) {
+    console.error('خطأ في استعادة النسخة الاحتياطية:', error);
+    throw new Error(error.message || 'فشلت عملية الاستعادة');
+  }
 }

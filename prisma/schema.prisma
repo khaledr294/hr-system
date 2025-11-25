@@ -4,8 +4,9 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  // Connection URLs must be provided outside schema.prisma (for example in prisma.config.ts
+  // or passed to the PrismaClient constructor). See https://pris.ly/d/config-datasource
+  // and https://pris.ly/d/prisma7-client-config
 }
 
 model Log {
@@ -35,7 +36,7 @@ model Worker {
   nationality         String
   residencyNumber     String             @unique
   dateOfBirth         DateTime
-  phone               String
+  phone               String?
   status              String             @default("AVAILABLE")
   salary              Float?
   createdAt           DateTime           @default(now())
@@ -44,6 +45,8 @@ model Worker {
   arrivalDate         DateTime?
   borderNumber        String?
   iban                String?
+  salaryTransferMethod String?
+  salaryTransferNotes String?
   officeName          String?
   passportNumber      String?
   religion            String?

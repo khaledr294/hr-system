@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDate as formatRiyadhDate } from '@/lib/date';
+import DatePicker from '@/components/ui/DatePicker';
 
 interface PenaltyCalculatorProps {
   contractId: string;
@@ -69,25 +70,10 @@ export default function PenaltyCalculator({
     }
   };
 
-  const formatInputDate = (date: string) => {
-    const input = date.replace(/\D/g, '');
-    let formatted = input;
-    if (input.length >= 2) {
-      formatted = input.slice(0, 2) + '/' + input.slice(2);
-    }
-    if (input.length >= 4) {
-      formatted = formatted.slice(0, 5) + '/' + input.slice(4, 8);
-    }
-    return formatted;
-  };
-
   const parseDate = (dateStr: string) => {
-    const match = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if (match) {
-      const [, day, month, year] = match;
-      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-    }
-    return null;
+    // Handle ISO date format (YYYY-MM-DD)
+    const date = new Date(dateStr);
+    return isNaN(date.getTime()) ? null : date;
   };
 
   // حساب الغرامة المحتملة للعرض
@@ -142,23 +128,13 @@ export default function PenaltyCalculator({
           </div>
 
           <div className="border-t pt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              تاريخ الإرجاع الفعلي
-            </label>
-            <input
-              type="text"
-              placeholder="يوم/شهر/سنة (مثال: 15/03/2024)"
+            <DatePicker
+              label="تاريخ الإرجاع الفعلي"
               value={returnDate}
-              onChange={(e) => {
-                const formatted = formatInputDate(e.target.value);
-                setReturnDate(formatted);
-              }}
-              maxLength={10}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-right"
+              onChange={setReturnDate}
+              min={new Date(endDate).toISOString().split('T')[0]}
+              className="w-full"
             />
-            <div className="text-xs text-gray-600 mt-1">
-              أدخل التاريخ بصيغة يوم/شهر/سنة
-            </div>
           </div>
 
           {potentialPenalty && returnDate && (

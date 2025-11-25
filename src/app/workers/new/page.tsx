@@ -101,6 +101,8 @@ export default function NewWorkerPage() {
     const passportNumber = (formData.get('passportNumber') as string)?.trim();
     const religion = (formData.get('religion') as string)?.trim();
     const iban = (formData.get('iban') as string)?.trim();
+    const salaryTransferMethod = (formData.get('salaryTransferMethod') as string)?.trim();
+    const salaryTransferNotes = (formData.get('salaryTransferNotes') as string)?.trim();
     const residenceBranch = (formData.get('residenceBranch') as string)?.trim();
     const medicalStatus = ((formData.get('medicalStatus') as string) || 'PENDING_REPORT') as MedicalStatus;
 
@@ -149,6 +151,8 @@ export default function NewWorkerPage() {
       passportNumber: passportNumber || null,
       religion: religion || null,
       iban: iban || null,
+      salaryTransferMethod: salaryTransferMethod || null,
+      salaryTransferNotes: salaryTransferNotes || null,
       residenceBranch: residenceBranch || null,
       medicalStatus: safeMedicalStatus,
     };
@@ -376,43 +380,31 @@ export default function NewWorkerPage() {
                 options={[
                   { value: 'PENDING_REPORT', label: 'بانتظار التقرير' },
                   { value: 'FIT', label: 'لائق' },
-                  { value: 'UNFIT', label: 'غير لائق' }
                 ]}
                 defaultValue="PENDING_REPORT"
                 required
                 className="text-right"
               />
 
-              <Input
-                label="IBAN (اختياري)"
-                name="iban"
-                type="text"
-                placeholder="أدخل رقم IBAN (مثال: SA0000000000000000000000)"
+              <Select
+                label="طريقة تحويل الراتب (اختياري)"
+                name="salaryTransferMethod"
+                options={[
+                  { value: '', label: 'اختر الطريقة' },
+                  { value: 'BANK_TRANSFER', label: 'تحويل بنكي (IBAN)' },
+                  { value: 'CASH', label: 'نقداً' },
+                  { value: 'OFFICE', label: 'عن طريق المكتب' },
+                  { value: 'OTHER', label: 'طريقة أخرى' },
+                ]}
                 className="text-right"
-                maxLength={24}
-                pattern="SA[0-9]{22}"
-                onInput={(e) => {
-                  const input = e.target as HTMLInputElement;
-                  let value = input.value.toUpperCase();
-                  
-                  // إذا لم يبدأ بـ SA، أضف SA
-                  if (value.length > 0 && !value.startsWith('SA')) {
-                    if (value.startsWith('S')) {
-                      value = 'SA' + value.substring(1);
-                    } else {
-                      value = 'SA' + value;
-                    }
-                  }
-                  
-                  // احتفظ بـ SA واسمح فقط بالأرقام بعدها
-                  if (value.startsWith('SA')) {
-                    const numbers = value.substring(2).replace(/\D/g, '');
-                    value = 'SA' + numbers;
-                  }
-                  
-                  // حد أقصى 24 حرف
-                  input.value = value.substring(0, 24);
-                }}
+              />
+
+              <Input
+                label="تفاصيل تحويل الراتب (اختياري)"
+                name="salaryTransferNotes"
+                type="text"
+                placeholder="أدخل التفاصيل (مثل: رقم IBAN أو ملاحظات)"
+                className="text-right"
               />
 
               <Input

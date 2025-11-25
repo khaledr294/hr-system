@@ -395,3 +395,168 @@ export async function cleanupOldArchives(yearsToKeep: number = 5) {
     throw error;
   }
 }
+
+/**
+ * أرشفة عاملة
+ * Archive a worker (for departure/transfer)
+ */
+export async function archiveWorker(
+  workerId: string,
+  reason: string,
+  userId?: string
+) {
+  try {
+    const worker = await prisma.worker.findUnique({
+      where: { id: workerId },
+      include: {
+        contracts: {
+          where: {
+            status: {
+              in: ['PENDING', 'ACTIVE']
+            }
+          }
+        }
+      }
+    });
+
+    if (!worker) {
+      throw new Error('العاملة غير موجودة');
+    }
+
+    // Check for active contracts
+    if (worker.contracts.length > 0) {
+      throw new Error('لا يمكن أرشفة عاملة لديها عقود نشطة أو معلقة. يرجى إنهاء جميع العقود أولاً.');
+    }
+
+    // Count total contracts
+    const totalContracts = await prisma.contract.count({
+      where: { workerId }
+    });
+
+    // Create archived worker record
+    const archivedWorker = await prisma.archivedWorker.create({
+      data: {
+        id: uuidv4(),
+        originalId: workerId,
+        name: worker.name,
+        code: parseInt(worker.code),
+        archiveReason: reason,
+        archivedBy: userId,
+        contractsCount: totalContracts,
+        metadata: JSON.stringify({
+          nationality: worker.nationality,
+          residencyNumber: worker.residencyNumber,
+          phone: worker.phone,
+          status: worker.status,
+          createdAt: worker.createdAt,
+        })
+      }
+    });
+
+    // Delete worker
+    await prisma.worker.delete({
+      where: { id: workerId }
+    });
+
+    // Log action
+    await prisma.archiveLog.create({
+      data: {
+        id: uuidv4(),
+        entityType: 'WORKER',
+        entityId: workerId,
+        action: 'ARCHIVE',
+        performedBy: userId || 'SYSTEM',
+        reason,
+        metadata: JSON.stringify({
+          workerName: worker.name,
+          workerCode: worker.code,
+          totalContracts
+        })
+      }
+    });
+
+    return {
+      success: true,
+      archivedWorker
+    };
+  } catch (error) {
+    console.error('خطأ في أرشفة العاملة:', error);
+    throw error;
+  }
+}
+
+/**
+ * استرجاع عاملة من الأرشيف
+ * Restore a worker from archive
+ */
+export async function restoreWorker(
+  archivedWorkerId: string,
+  userId?: string
+) {
+  try {
+    const archivedWorker = await prisma.archivedWorker.findUnique({
+      where: { id: archivedWorkerId }
+    });
+
+    if (!archivedWorker) {
+      throw new Error('العاملة المؤرشفة غير موجودة');
+    }
+
+    // Check if worker code already exists
+    const existingWorker = await prisma.worker.findFirst({
+      where: { code: archivedWorker.code.toString() }
+    });
+
+    if (existingWorker) {
+      throw new Error('رمز العاملة موجود بالفعل في النظام');
+    }
+
+    // Parse metadata
+    const metadata = archivedWorker.metadata 
+      ? JSON.parse(archivedWorker.metadata as string)
+      : {};
+
+    // Restore worker
+    const restoredWorker = await prisma.worker.create({
+      data: {
+        id: archivedWorker.originalId,
+        name: archivedWorker.name,
+        code: archivedWorker.code.toString(),
+        nationality: metadata.nationality || 'غير محدد',
+        residencyNumber: metadata.residencyNumber || '0000000000',
+        dateOfBirth: metadata.dateOfBirth ? new Date(metadata.dateOfBirth) : new Date(),
+        phone: metadata.phone,
+        status: 'AVAILABLE',
+      }
+    });
+
+    // Delete from archive
+    await prisma.archivedWorker.delete({
+      where: { id: archivedWorkerId }
+    });
+
+    // Log action
+    await prisma.archiveLog.create({
+      data: {
+        id: uuidv4(),
+        entityType: 'WORKER',
+        entityId: restoredWorker.id,
+        action: 'RESTORE',
+        performedBy: userId || 'SYSTEM',
+        reason: 'استرجاع من الأرشيف',
+        metadata: JSON.stringify({
+          workerName: restoredWorker.name,
+          workerCode: restoredWorker.code,
+        })
+      }
+    });
+
+    return {
+      success: true,
+      restoredWorker
+    };
+  } catch (error) {
+    console.error('خطأ في استرجاع العاملة:', error);
+    throw error;
+  }
+}

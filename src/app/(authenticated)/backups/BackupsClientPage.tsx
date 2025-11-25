@@ -7,7 +7,7 @@ import Button from '@/components/ui/Button';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import EmptyState from '@/components/ui/empty-state';
 import { motion } from 'framer-motion';
-import { Database, Download, Upload, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Database, Download, Upload, Clock, CheckCircle, AlertCircle, RotateCcw } from 'lucide-react';
 
 interface Backup {
   id: string;
@@ -23,6 +23,10 @@ export default function BackupsPage() {
   const [backups, setBackups] = useState<Backup[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [restoring, setRestoring] = useState<string | null>(null);
+  const [showRestoreModal, setShowRestoreModal] = useState(false);
+  const [selectedBackupId, setSelectedBackupId] = useState<string | null>(null);
+  const [confirmationCode, setConfirmationCode] = useState('');
 
   // التحقق من الصلاحيات
   useEffect(() => {
@@ -125,6 +129,50 @@ export default function BackupsPage() {
       }
     } catch (error) {
       console.error('Error downloading backup:', error);
+    }
+  };
+
+  const handleRestoreClick = (backupId: string) => {
+    setSelectedBackupId(backupId);
+    setConfirmationCode('');
+    setShowRestoreModal(true);
+  };
+
+  const handleRestoreConfirm = async () => {
+    if (confirmationCode !== 'RESTORE') {
+      alert('يرجى كتابة RESTORE للتأكيد');
+      return;
+    }
+
+    if (!selectedBackupId) return;
+
+    setRestoring(selectedBackupId);
+    try {
+      const response = await fetch('/api/backups/restore', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          backupId: selectedBackupId,
+          confirmationCode,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert(`✅ ${result.message}`);
+        setShowRestoreModal(false);
+        router.refresh();
+      } else {
+        const error = await response.text();
+        alert(`❌ فشلت عملية الاستعادة: ${error}`);
+      }
+    } catch (error) {
+      console.error('Error restoring backup:', error);
+      alert('حدث خطأ أثناء استعادة النسخة الاحتياطية');
+    } finally {
+      setRestoring(null);
+      setSelectedBackupId(null);
+      setConfirmationCode('');
     }
   };
 
@@ -233,21 +281,92 @@ export default function BackupsPage() {
                   </div>
                 </div>
                 {backup.status === 'completed' && (
-                  <Button
-                    onClick={() => downloadBackup(backup.id, backup.filename)}
-                    variant="secondary"
-                    size="sm"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Download className="w-4 h-4" />
-                      <span>تحميل</span>
-                    </div>
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => handleRestoreClick(backup.id)}
+                      variant="secondary"
+                      size="sm"
+                      disabled={restoring !== null}
+                    >
+                      <div className="flex items-center gap-2">
+                        <RotateCcw className="w-4 h-4" />
+                        <span>{restoring === backup.id ? 'جاري الاستعادة...' : 'استعادة'}</span>
+                      </div>
+                    </Button>
+                    <Button
+                      onClick={() => downloadBackup(backup.id, backup.filename)}
+                      variant="secondary"
+                      size="sm"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Download className="w-4 h-4" />
+                        <span>تحميل</span>
+                      </div>
+                    </Button>
+                  </div>
                 )}
               </div>
             </motion.div>
           ))}
         </motion.div>
+      )}
+
+      {/* Restore Confirmation Modal */}
+      {showRestoreModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-lg p-6 max-w-md w-full mx-4"
+          >
+            <h3 className="text-xl font-bold text-red-600 mb-4 flex items-center gap-2">
+              <AlertCircle className="w-6 h-6" />
+              تحذير: استعادة النسخة الاحتياطية
+            </h3>
+            <div className="space-y-4 mb-6">
+              <p className="text-gray-700">
+                ⚠️ <strong>تحذير:</strong> هذا الإجراء خطير!
+              </p>
+              <ul className="list-disc pr-5 text-sm text-gray-600 space-y-1">
+                <li>سيتم حذف جميع البيانات الحالية (العاملات، العملاء، العقود)</li>
+                <li>سيتم استبدالها ببيانات النسخة الاحتياطية المحددة</li>
+                <li>سيتم إنشاء نسخة احتياطية تلقائية قبل الاستعادة</li>
+                <li>لا يمكن التراجع عن هذا الإجراء بعد تنفيذه</li>
+              </ul>
+              <p className="text-gray-700 font-medium">
+                للتأكيد، اكتب: <span className="text-red-600 font-bold">RESTORE</span>
+              </p>
+              <input
+                type="text"
+                value={confirmationCode}
+                onChange={(e) => setConfirmationCode(e.target.value)}
+                placeholder="اكتب RESTORE للتأكيد"
+                className="w-full px-3 py-2 border-2 border-gray-300 rounded-md focus:border-red-500 focus:outline-none text-center font-mono text-lg"
+              />
+            </div>
+            <div className="flex gap-3 justify-end">
+              <Button
+                onClick={() => {
+                  setShowRestoreModal(false);
+                  setSelectedBackupId(null);
+                  setConfirmationCode('');
+                }}
+                variant="secondary"
+                disabled={restoring !== null}
+              >
+                إلغاء
+              </Button>
+              <Button
+                onClick={handleRestoreConfirm}
+                variant="primary"
+                disabled={confirmationCode !== 'RESTORE' || restoring !== null}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {restoring ? 'جاري الاستعادة...' : 'تأكيد الاستعادة'}
+              </Button>
+            </div>
+          </motion.div>
+        </div>
       )}
     </div>
   );
