@@ -28,6 +28,14 @@ export interface BackupData {
     nationalitySalaries: unknown[];
     logs: unknown[];
     backups: unknown[];
+    jobTitles: unknown[];
+    systemSettings: unknown[];
+    payrollDeliveries: unknown[];
+    marketers: unknown[];
+    notifications: unknown[];
+    archivedContracts: unknown[];
+    archivedWorkers: unknown[];
+    archiveLogs: unknown[];
   };
 }
 
@@ -51,6 +59,14 @@ export async function createDatabaseBackup(type: 'manual' | 'automatic' = 'autom
       nationalitySalaries,
       logs,
       backups,
+      jobTitles,
+      systemSettings,
+      payrollDeliveries,
+      marketers,
+      notifications,
+      archivedContracts,
+      archivedWorkers,
+      archiveLogs,
     ] = await Promise.all([
       prisma.user.findMany(),
       prisma.worker.findMany({ include: { nationalitySalary: true } }),
@@ -60,6 +76,14 @@ export async function createDatabaseBackup(type: 'manual' | 'automatic' = 'autom
       prisma.nationalitySalary.findMany(),
       prisma.log.findMany({ orderBy: { createdAt: 'desc' }, take: 1000 }),
       prisma.backup.findMany({ orderBy: { createdAt: 'desc' }, take: 10 }),
+      prisma.jobTitle.findMany(),
+      prisma.systemSettings.findMany(),
+      prisma.payrollDelivery.findMany(),
+      prisma.marketer.findMany(),
+      prisma.notification.findMany(),
+      prisma.archivedContract.findMany(),
+      prisma.archivedWorker.findMany(),
+      prisma.archiveLog.findMany(),
     ]);
 
     const backupData: BackupData = {
@@ -75,6 +99,14 @@ export async function createDatabaseBackup(type: 'manual' | 'automatic' = 'autom
           'nationalitySalaries',
           'logs',
           'backups',
+          'jobTitles',
+          'systemSettings',
+          'payrollDeliveries',
+          'marketers',
+          'notifications',
+          'archivedContracts',
+          'archivedWorkers',
+          'archiveLogs',
         ],
       },
       data: {
@@ -86,6 +118,14 @@ export async function createDatabaseBackup(type: 'manual' | 'automatic' = 'autom
         nationalitySalaries,
         logs,
         backups,
+        jobTitles,
+        systemSettings,
+        payrollDeliveries,
+        marketers,
+        notifications,
+        archivedContracts,
+        archivedWorkers,
+        archiveLogs,
       },
     };
 
@@ -113,6 +153,7 @@ export async function createDatabaseBackup(type: 'manual' | 'automatic' = 'autom
         size: BigInt(compressedSize),
         type,
         status: 'completed',
+        data: base64Data,
       },
     });
 
@@ -259,6 +300,14 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
     packages: number;
     nationalitySalaries: number;
     logs: number;
+    jobTitles: number;
+    systemSettings: number;
+    payrollDeliveries: number;
+    marketers: number;
+    notifications: number;
+    archivedContracts: number;
+    archivedWorkers: number;
+    archiveLogs: number;
   };
   errors?: {
     workers?: string[];
@@ -317,28 +366,89 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
     console.log('🗑️ جاري حذف البيانات القديمة...');
     
     await prisma.log.deleteMany({});
+    await prisma.archiveLog.deleteMany({});
+    await prisma.notification.deleteMany({});
+    await prisma.payrollDelivery.deleteMany({});
     await prisma.contract.deleteMany({});
+    await prisma.archivedContract.deleteMany({});
+    await prisma.archivedWorker.deleteMany({});
     await prisma.client.deleteMany({});
     await prisma.worker.deleteMany({});
     await prisma.nationalitySalary.deleteMany({});
     await prisma.package.deleteMany({});
-    await prisma.user.deleteMany({}); // Clear users too
+    await prisma.user.deleteMany({});
+    await prisma.jobTitle.deleteMany({});
+    await prisma.marketer.deleteMany({});
+    await prisma.systemSettings.deleteMany({});
 
     console.log('📥 جاري استعادة البيانات...');
 
+    // Restore nationality salaries
+    console.log('💰 استعادة رواتب الجنسيات...');
+    const nationalitySalariesCreated = [];
+    let salariesSkipped = 0;
+    for (const ns of backupData.data.nationalitySalaries) {
+      try {
+        // Check if nationalityId is valid
+        const createdNS = await prisma.nationalitySalary.create({ data: ns as any });
+        nationalitySalariesCreated.push(createdNS);
+      } catch (err: any) {
+        console.error('Failed to restore nationality salary:', (ns as any).id, err.message);
+        salariesSkipped++;
+      }
+    }
+    console.log('✅ تم استعادة', nationalitySalariesCreated.length, 'راتب جنسية', salariesSkipped > 0 ? `(تم تخطي ${salariesSkipped})` : '');
+
+    // Restore System Settings
+    console.log('⚙️ استعادة إعدادات النظام...');
+    let systemSettingsRestored = 0;
+    if (backupData.data.systemSettings) {
+      for (const setting of backupData.data.systemSettings) {
+        try {
+          await prisma.systemSettings.create({ data: setting as any });
+          systemSettingsRestored++;
+        } catch (err) { console.error('Failed to restore system setting', err); }
+      }
+    }
+    console.log('✅ تم استعادة', systemSettingsRestored, 'إعدادات');
+
+    // Restore Job Titles
+    console.log('📋 استعادة المسميات الوظيفية...');
+    let jobTitlesRestored = 0;
+    if (backupData.data.jobTitles) {
+      for (const jt of backupData.data.jobTitles) {
+        try {
+          await prisma.jobTitle.create({ data: jt as any });
+          jobTitlesRestored++;
+        } catch (err) { console.error('Failed to restore job title', err); }
+      }
+    }
+    console.log('✅ تم استعادة', jobTitlesRestored, 'مسمى وظيفي');
+
+    // Restore Marketers
+    console.log('📢 استعادة المسوقين...');
+    let marketersRestored = 0;
+    if (backupData.data.marketers) {
+      for (const m of backupData.data.marketers) {
+        try {
+          await prisma.marketer.create({ data: m as any });
+          marketersRestored++;
+        } catch (err) { console.error('Failed to restore marketer', err); }
+      }
+    }
+    console.log('✅ تم استعادة', marketersRestored, 'مسوق');
+
     // Get existing JobTitles to validate user jobTitleIds
-    const existingJobTitles = await prisma.jobTitle.findMany({
-      select: { id: true }
-    });
+    const existingJobTitles = await prisma.jobTitle.findMany();
     const jobTitleIds = new Set(existingJobTitles.map(jt => jt.id));
     console.log('📋 المسميات الوظيفية الموجودة:', existingJobTitles.length);
 
-      // استخدم NationalitySalary بدلاً من Nationality
-      const existingNationalitySalaries = await prisma.nationalitySalary.findMany({
-        select: { id: true }
-      });
-      const nationalitySalaryIds = new Set(existingNationalitySalaries.map(n => n.id));
-      console.log('💰 رواتب الجنسيات الموجودة:', existingNationalitySalaries.length);
+    // Get existing NationalitySalaries AFTER restore
+    const existingNationalitySalaries = await prisma.nationalitySalary.findMany({
+      select: { id: true }
+    });
+    const nationalitySalaryIds = new Set(existingNationalitySalaries.map(n => n.id));
+    console.log('💰 رواتب الجنسيات الموجودة:', existingNationalitySalaries.length);
 
     // Restore users (needed for contracts with marketerId)
     console.log('👤 استعادة المستخدمين...');
@@ -350,8 +460,27 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
         
         // Check if jobTitleId is valid
         if (userData.jobTitleId && !jobTitleIds.has(userData.jobTitleId)) {
-          console.error('Invalid jobTitleId for user:', (user as any).email, '- setting to first available');
-          userData.jobTitleId = existingJobTitles[0]?.id || null;
+          // Try to find matching job title by name
+          const originalJobTitle = (user as any).jobTitle; // Assuming jobTitle object might be in backup or we infer from somewhere? 
+          // Actually backup usually just has the ID. If we don't have the name, we can't map by name easily unless we had a map.
+          // But wait, the backup data MIGHT have the jobTitle object included if the findMany included it?
+          // Looking at createDatabaseBackup, user.findMany() does NOT include jobTitle.
+          // So we only have the ID.
+          // However, in the provided backup file, I see "jobTitleId" but no "jobTitle" object in the user data.
+          // Wait, the user said "Users returned as HR Manager" (which is default?) or "Users returned as Marketer" (which is default?).
+          // The issue is that the ID in backup doesn't exist in DB.
+          // We should try to map known IDs if possible, or just default to a safe role.
+          // Better strategy: If ID not found, check if there's a default role or try to match 'HR_MANAGER' if the user was 'nader'.
+          
+          // For now, let's just log it and default to first available, BUT we can add a special check for Nader if we wanted, 
+          // but the repair script handles Nader. 
+          // The generic fix is: if ID invalid, pick a safe default (Marketer) instead of random first one if possible.
+          
+          const marketerRole = existingJobTitles.find(jt => jt.name === 'Marketer' || jt.name === 'مسوق');
+          const defaultRole = marketerRole || existingJobTitles[0];
+          
+          console.warn(`Invalid jobTitleId for user: ${(user as any).email}. Mapping to ${defaultRole?.name}`);
+          userData.jobTitleId = defaultRole?.id || null;
         }
         
         const createdUser = await prisma.user.create({ data: userData });
@@ -375,22 +504,6 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
       }
     }
     console.log('✅ تم استعادة', packagesCreated.length, 'باقة');
-
-    // Restore nationality salaries
-    console.log('💰 استعادة رواتب الجنسيات...');
-    const nationalitySalariesCreated = [];
-    let salariesSkipped = 0;
-    for (const ns of backupData.data.nationalitySalaries) {
-      try {
-        // Check if nationalityId is valid
-        const createdNS = await prisma.nationalitySalary.create({ data: ns as any });
-        nationalitySalariesCreated.push(createdNS);
-      } catch (err: any) {
-        console.error('Failed to restore nationality salary:', (ns as any).id, err.message);
-        salariesSkipped++;
-      }
-    }
-    console.log('✅ تم استعادة', nationalitySalariesCreated.length, 'راتب جنسية', salariesSkipped > 0 ? `(تم تخطي ${salariesSkipped})` : '');
 
     // Restore workers
     console.log('👷 استعادة العمال...');
@@ -418,6 +531,10 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
         }
         // إذا كان nationalitySalaryId غير صحيح أو غير موجود، عيّنه إلى null
         if (workerData.nationalitySalaryId && !nationalitySalaryIds.has(workerData.nationalitySalaryId)) {
+          // Try to find by nationality name if ID is invalid
+          // We need the nationalitySalary map for this.
+          // Since we can't easily get the map here without fetching again, we'll just set to null.
+          // The repair script will handle the linking by name.
           workerData.nationalitySalaryId = null;
         }
         const createdWorker = await prisma.worker.create({ data: workerData as any });
@@ -490,6 +607,71 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
     }
     console.log('✅ تم استعادة', logsRestored, 'سجل');
 
+    // Restore Payroll Deliveries
+    console.log('💸 استعادة تسليم الرواتب...');
+    let payrollDeliveriesRestored = 0;
+    if (backupData.data.payrollDeliveries) {
+      for (const pd of backupData.data.payrollDeliveries) {
+        try {
+          await prisma.payrollDelivery.create({ data: pd as any });
+          payrollDeliveriesRestored++;
+        } catch (err) { console.error('Failed to restore payroll delivery', err); }
+      }
+    }
+    console.log('✅ تم استعادة', payrollDeliveriesRestored, 'سجل رواتب');
+
+    // Restore Notifications
+    console.log('🔔 استعادة الإشعارات...');
+    let notificationsRestored = 0;
+    if (backupData.data.notifications) {
+      for (const n of backupData.data.notifications) {
+        try {
+          await prisma.notification.create({ data: n as any });
+          notificationsRestored++;
+        } catch (err) { console.error('Failed to restore notification', err); }
+      }
+    }
+    console.log('✅ تم استعادة', notificationsRestored, 'إشعار');
+
+    // Restore Archived Contracts
+    console.log('🗄️ استعادة أرشيف العقود...');
+    let archivedContractsRestored = 0;
+    if (backupData.data.archivedContracts) {
+      for (const ac of backupData.data.archivedContracts) {
+        try {
+          await prisma.archivedContract.create({ data: ac as any });
+          archivedContractsRestored++;
+        } catch (err) { console.error('Failed to restore archived contract', err); }
+      }
+    }
+    console.log('✅ تم استعادة', archivedContractsRestored, 'عقد مؤرشف');
+
+    // Restore Archived Workers
+    console.log('🗄️ استعادة أرشيف العمال...');
+    let archivedWorkersRestored = 0;
+    if (backupData.data.archivedWorkers) {
+      for (const aw of backupData.data.archivedWorkers) {
+        try {
+          await prisma.archivedWorker.create({ data: aw as any });
+          archivedWorkersRestored++;
+        } catch (err) { console.error('Failed to restore archived worker', err); }
+      }
+    }
+    console.log('✅ تم استعادة', archivedWorkersRestored, 'عامل مؤرشف');
+
+    // Restore Archive Logs
+    console.log('🗄️ استعادة سجلات الأرشيف...');
+    let archiveLogsRestored = 0;
+    if (backupData.data.archiveLogs) {
+      for (const al of backupData.data.archiveLogs) {
+        try {
+          await prisma.archiveLog.create({ data: al as any });
+          archiveLogsRestored++;
+        } catch (err) { console.error('Failed to restore archive log', err); }
+      }
+    }
+    console.log('✅ تم استعادة', archiveLogsRestored, 'سجل أرشيف');
+
 
     const stats = {
       users: usersCreated.length,
@@ -499,6 +681,14 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
       packages: packagesCreated.length,
       nationalitySalaries: nationalitySalariesCreated.length,
       logs: logsRestored,
+      jobTitles: jobTitlesRestored,
+      systemSettings: systemSettingsRestored,
+      payrollDeliveries: payrollDeliveriesRestored,
+      marketers: marketersRestored,
+      notifications: notificationsRestored,
+      archivedContracts: archivedContractsRestored,
+      archivedWorkers: archivedWorkersRestored,
+      archiveLogs: archiveLogsRestored,
     };
 
 
