@@ -23,6 +23,7 @@ export default function BackupsPage() {
   const [backups, setBackups] = useState<Backup[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [restoring, setRestoring] = useState<string | null>(null);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [selectedBackupId, setSelectedBackupId] = useState<string | null>(null);
@@ -176,6 +177,48 @@ export default function BackupsPage() {
     }
   };
 
+  const handleUploadBackup = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.gz')) {
+      alert('يرجى اختيار ملف نسخة احتياطية بصيغة .gz');
+      return;
+    }
+
+    if (!confirm(`هل تريد رفع النسخة الاحتياطية: ${file.name}؟`)) {
+      event.target.value = '';
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/backups/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert(`✅ تم رفع النسخة الاحتياطية بنجاح: ${result.backup.filename}`);
+        await fetchBackups();
+        event.target.value = '';
+      } else {
+        const error = await response.text();
+        alert(`❌ فشل رفع النسخة الاحتياطية: ${error}`);
+      }
+    } catch (error) {
+      console.error('Error uploading backup:', error);
+      alert('حدث خطأ أثناء رفع النسخة الاحتياطية');
+    } finally {
+      setUploading(false);
+      event.target.value = '';
+    }
+  };
+
   const formatSize = (bytes: number) => {
     const mb = bytes / (1024 * 1024);
     return `${mb.toFixed(2)} MB`;
@@ -234,12 +277,34 @@ export default function BackupsPage() {
             <p className="text-gray-500">إدارة النسخ الاحتياطية لقاعدة البيانات</p>
           </div>
         </div>
-        <Button onClick={createBackup} disabled={creating} variant="primary">
-          <div className="flex items-center gap-2">
-            {creating ? <LoadingSpinner size="sm" /> : <Upload className="w-5 h-5" />}
-            <span>{creating ? 'جاري الإنشاء...' : 'إنشاء نسخة احتياطية'}</span>
-          </div>
-        </Button>
+        <div className="flex gap-3">
+          <label htmlFor="upload-backup" className="cursor-pointer">
+            <div className={`inline-flex items-center justify-center px-4 py-2 rounded-md font-medium transition-colors ${
+              uploading 
+                ? 'bg-gray-300 cursor-not-allowed' 
+                : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
+            }`}>
+              <div className="flex items-center gap-2">
+                {uploading ? <LoadingSpinner size="sm" /> : <Download className="w-5 h-5" />}
+                <span>{uploading ? 'جاري الرفع...' : 'رفع نسخة احتياطية'}</span>
+              </div>
+            </div>
+          </label>
+          <input
+            id="upload-backup"
+            type="file"
+            accept=".gz"
+            onChange={handleUploadBackup}
+            className="hidden"
+            disabled={uploading}
+          />
+          <Button onClick={createBackup} disabled={creating} variant="primary">
+            <div className="flex items-center gap-2">
+              {creating ? <LoadingSpinner size="sm" /> : <Upload className="w-5 h-5" />}
+              <span>{creating ? 'جاري الإنشاء...' : 'إنشاء نسخة احتياطية'}</span>
+            </div>
+          </Button>
+        </div>
       </motion.div>
 
       {/* Backups List */}

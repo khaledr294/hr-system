@@ -2,6 +2,8 @@ import { prisma } from './prisma';
 import { v4 as uuidv4 } from 'uuid';
 import pako from 'pako';
 
+// Backup and restore utilities for HR System
+
 export interface BackupInfo {
   id: string;
   filename: string;
@@ -291,76 +293,178 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
     console.log('💾 جاري إنشاء نسخة احتياطية قبل الاستعادة...');
     await createDatabaseBackup('automatic');
 
-    // Start restoration transaction
+    // Start restoration (WITHOUT transaction to avoid timeout)
     console.log('🔄 بدء عملية الاستعادة...');
     
-    const stats = await prisma.$transaction(async (tx) => {
-      // Clear existing data (except backups and critical system data)
-      console.log('🗑️ جاري حذف البيانات القديمة...');
-      
-      await tx.log.deleteMany({});
-      await tx.contract.deleteMany({});
-      await tx.client.deleteMany({});
-      await tx.worker.deleteMany({});
-      await tx.nationalitySalary.deleteMany({});
-      await tx.package.deleteMany({});
-      // Keep users and backups
+    // Clear existing data (except backups and critical system data)
+    console.log('🗑️ جاري حذف البيانات القديمة...');
+    
+    await prisma.log.deleteMany({});
+    await prisma.contract.deleteMany({});
+    await prisma.client.deleteMany({});
+    await prisma.worker.deleteMany({});
+    await prisma.nationalitySalary.deleteMany({});
+    await prisma.package.deleteMany({});
+    await prisma.user.deleteMany({}); // Clear users too
 
-      console.log('📥 جاري استعادة البيانات...');
+    console.log('📥 جاري استعادة البيانات...');
 
-      // Restore packages first (no dependencies)
-      const packagesCreated = await Promise.all(
-        backupData.data.packages.map((pkg: any) =>
-          tx.package.create({ data: pkg })
-        )
-      );
-
-      // Restore nationality salaries
-      const nationalitySalariesCreated = await Promise.all(
-        backupData.data.nationalitySalaries.map((ns: any) =>
-          tx.nationalitySalary.create({ data: ns })
-        )
-      );
-
-      // Restore workers
-      const workersCreated = await Promise.all(
-        backupData.data.workers.map((worker: any) => {
-          const { nationalitySalary, contracts, ...workerData } = worker;
-          return tx.worker.create({ data: workerData });
-        })
-      );
-
-      // Restore clients
-      const clientsCreated = await Promise.all(
-        backupData.data.clients.map((client: any) => {
-          const { contracts, ...clientData } = client;
-          return tx.client.create({ data: clientData });
-        })
-      );
-
-      // Restore contracts
-      const contractsCreated = await Promise.all(
-        backupData.data.contracts.map((contract: any) => {
-          const { worker, client, marketer, ...contractData } = contract;
-          return tx.contract.create({ data: contractData });
-        })
-      );
-
-      // Restore logs (last 1000 only)
-      await Promise.all(
-        backupData.data.logs.slice(0, 1000).map((log: any) =>
-          tx.log.create({ data: log }).catch(() => null) // Ignore log restore failures
-        )
-      );
-
-      return {
-        users: 0, // We don't restore users for security
-        workers: workersCreated.length,
-        clients: clientsCreated.length,
-        contracts: contractsCreated.length,
-        packages: packagesCreated.length,
-      };
+    // Get existing JobTitles to validate user jobTitleIds
+    const existingJobTitles = await prisma.jobTitle.findMany({
+      select: { id: true }
     });
+    const jobTitleIds = new Set(existingJobTitles.map(jt => jt.id));
+    console.log('📋 المسميات الوظيفية الموجودة:', existingJobTitles.length);
+
+    // Get existing Nationalities to validate worker nationalityIds
+    const existingNationalities = await prisma.nationality.findMany({
+      select: { id: true }
+    });
+    const nationalityIds = new Set(existingNationalities.map(n => n.id));
+    console.log('🌍 الجنسيات الموجودة:', existingNationalities.length);
+
+    // Restore users (needed for contracts with marketerId)
+    console.log('👤 استعادة المستخدمين...');
+    const usersCreated = [];
+    let usersSkipped = 0;
+    for (const user of backupData.data.users) {
+      try {
+        const { logs, Notification, jobTitle, ...userData } = user;
+        
+        // Check if jobTitleId is valid
+        if (userData.jobTitleId && !jobTitleIds.has(userData.jobTitleId)) {
+          console.error('Invalid jobTitleId for user:', user.email, '- setting to first available');
+          userData.jobTitleId = existingJobTitles[0]?.id || null;
+        }
+        
+        const createdUser = await prisma.user.create({ data: userData });
+        usersCreated.push(createdUser);
+      } catch (err: any) {
+        console.error('Failed to restore user:', user.id, err.message);
+        usersSkipped++;
+      }
+    }
+    console.log('✅ تم استعادة', usersCreated.length, 'مستخدم', usersSkipped > 0 ? `(تم تخطي ${usersSkipped})` : '');
+
+    // Restore packages (no dependencies)
+    console.log('📦 استعادة الباقات...');
+    const packagesCreated = [];
+    for (const pkg of backupData.data.packages) {
+      try {
+        const createdPackage = await prisma.package.create({ data: pkg });
+        packagesCreated.push(createdPackage);
+      } catch (err: any) {
+        console.error('Failed to restore package:', pkg.id, err.message);
+      }
+    }
+    console.log('✅ تم استعادة', packagesCreated.length, 'باقة');
+
+    // Restore nationality salaries
+    console.log('💰 استعادة رواتب الجنسيات...');
+    const nationalitySalariesCreated = [];
+    let salariesSkipped = 0;
+    for (const ns of backupData.data.nationalitySalaries) {
+      try {
+        // Check if nationalityId is valid
+        if (ns.nationalityId && !nationalityIds.has(ns.nationalityId)) {
+          console.error('Invalid nationalityId for salary:', ns.id, '- skipping');
+          salariesSkipped++;
+          continue;
+        }
+        const createdNS = await prisma.nationalitySalary.create({ data: ns });
+        nationalitySalariesCreated.push(createdNS);
+      } catch (err: any) {
+        console.error('Failed to restore nationality salary:', ns.id, err.message);
+        salariesSkipped++;
+      }
+    }
+    console.log('✅ تم استعادة', nationalitySalariesCreated.length, 'راتب جنسية', salariesSkipped > 0 ? `(تم تخطي ${salariesSkipped})` : '');
+
+    // Restore workers
+    console.log('👷 استعادة العمال...');
+    const workersCreated = [];
+    let workersSkipped = 0;
+    for (const worker of backupData.data.workers) {
+      try {
+        const { nationalitySalary, nationality, contracts, ...workerData } = worker;
+        
+        // Check if nationalityId is valid (set to null if invalid)
+        if (workerData.nationalityId && !nationalityIds.has(workerData.nationalityId)) {
+          console.error('Invalid nationalityId for worker:', worker.name, '- setting to null');
+          workerData.nationalityId = null;
+        }
+        
+        const createdWorker = await prisma.worker.create({ data: workerData });
+        workersCreated.push(createdWorker);
+      } catch (err: any) {
+        console.error('Failed to restore worker:', worker.id, err.message);
+        workersSkipped++;
+      }
+    }
+    console.log('✅ تم استعادة', workersCreated.length, 'عامل', workersSkipped > 0 ? `(تم تخطي ${workersSkipped})` : '');
+
+    // Restore clients
+    console.log('🏢 استعادة العملاء...');
+    const clientsCreated = [];
+    for (const client of backupData.data.clients) {
+      try {
+        const { contracts, ...clientData } = client;
+        const createdClient = await prisma.client.create({ data: clientData });
+        clientsCreated.push(createdClient);
+      } catch (err: any) {
+        console.error('Failed to restore client:', client.id, err.message);
+      }
+    }
+    console.log('✅ تم استعادة', clientsCreated.length, 'عميل');
+
+    // Restore contracts
+    console.log('📄 استعادة العقود...');
+    const contractsCreated = [];
+    for (const contract of backupData.data.contracts) {
+      try {
+        const { worker, client, marketer, ...contractData } = contract;
+        
+        // Check if marketerId exists, if not set to null
+        if (contractData.marketerId) {
+          const marketerExists = await prisma.user.findUnique({
+            where: { id: contractData.marketerId }
+          });
+          if (!marketerExists) {
+            contractData.marketerId = null;
+            contractData.marketerName = null;
+          }
+        }
+        
+        const createdContract = await prisma.contract.create({ data: contractData });
+        contractsCreated.push(createdContract);
+      } catch (err: any) {
+        console.error('Failed to restore contract:', contract.id, err.message);
+      }
+    }
+    console.log('✅ تم استعادة', contractsCreated.length, 'عقد');
+
+    // Restore logs (last 1000 only)
+    console.log('📝 استعادة السجلات...');
+    let logsRestored = 0;
+    for (const log of backupData.data.logs.slice(0, 1000)) {
+      try {
+        await prisma.log.create({ data: log });
+        logsRestored++;
+      } catch {
+        // Ignore log restore failures silently
+      }
+    }
+    console.log('✅ تم استعادة', logsRestored, 'سجل');
+
+    const stats = {
+      users: usersCreated.length,
+      workers: workersCreated.length,
+      clients: clientsCreated.length,
+      contracts: contractsCreated.length,
+      packages: packagesCreated.length,
+      nationalitySalaries: nationalitySalariesCreated.length,
+      logs: logsRestored,
+    };
 
     console.log('✅ تمت الاستعادة بنجاح');
     console.log('📊 الإحصائيات:', stats);
@@ -382,7 +486,7 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
 
     return {
       success: true,
-      message: `تمت استعادة النسخة الاحتياطية بنجاح. تم استعادة ${stats.workers} عاملة، ${stats.clients} عميل، ${stats.contracts} عقد.`,
+      message: `تمت استعادة النسخة الاحتياطية بنجاح. تم استعادة ${stats.users} مستخدم، ${stats.workers} عاملة، ${stats.clients} عميل، ${stats.contracts} عقد.`,
       stats,
     };
   } catch (error: any) {
