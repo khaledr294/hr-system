@@ -5,8 +5,8 @@ import path from 'path';
 // Adjust this path to your backup storage directory
 const BACKUP_DIR = path.resolve(process.cwd(), 'backups');
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     // Find the backup file by id (assuming filename contains the id)
     const files = await fs.readdir(BACKUP_DIR);
