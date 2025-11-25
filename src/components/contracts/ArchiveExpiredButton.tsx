@@ -13,7 +13,7 @@ export default function ArchiveExpiredButton({ count }: ArchiveExpiredButtonProp
   const router = useRouter();
 
   const handleArchive = async () => {
-    if (!confirm(`هل تريد نقل ${count} عقد منتهي إلى الأرشيف؟`)) {
+    if (!confirm(`هل تريد نقل ${count} عقد مكتمل إلى الأرشيف؟`)) {
       return;
     }
 
@@ -46,7 +46,7 @@ export default function ArchiveExpiredButton({ count }: ArchiveExpiredButtonProp
       className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-2 border-slate-900"
     >
       <Archive className="w-5 h-5" />
-      {loading ? "جاري النقل..." : `أرشفة العقود المنتهية (${count})`}
+      {loading ? "جاري النقل..." : `أرشفة العقود المكتملة (${count})`}
     </button>
   );
 }

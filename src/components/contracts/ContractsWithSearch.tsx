@@ -31,20 +31,31 @@ interface ContractsWithSearchProps {
 
 export default function ContractsWithSearch({ contracts }: ContractsWithSearchProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
 
   // فلترة العقود بناءً على البحث
   const filteredContracts = useMemo(() => {
-    if (!searchQuery.trim()) return contracts;
+    let result = contracts;
 
-    const query = searchQuery.toLowerCase().trim();
-    return contracts.filter(contract => 
-      contract.client.name.toLowerCase().includes(query) ||
-      contract.client.idNumber.includes(query) ||
-      contract.worker.name.toLowerCase().includes(query) ||
-      contract.worker.residencyNumber.includes(query) ||
-      (contract.contractNumber && contract.contractNumber.toLowerCase().includes(query))
-    );
-  }, [contracts, searchQuery]);
+    // Filter by Status
+    if (statusFilter !== 'ALL') {
+      result = result.filter(contract => contract.status === statusFilter);
+    }
+
+    // Filter by Search Query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter(contract => 
+        contract.client.name.toLowerCase().includes(query) ||
+        contract.client.idNumber.includes(query) ||
+        contract.worker.name.toLowerCase().includes(query) ||
+        contract.worker.residencyNumber.includes(query) ||
+        (contract.contractNumber && contract.contractNumber.toLowerCase().includes(query))
+      );
+    }
+
+    return result;
+  }, [contracts, searchQuery, statusFilter]);
 
   // عقود على وشك الانتهاء (أقل من 3 أيام)
   const expiringSoon = useMemo(() => {
@@ -198,8 +209,8 @@ export default function ContractsWithSearch({ contracts }: ContractsWithSearchPr
           </p>
         </div>
         
-        <div className="flex items-center gap-4">
-          <div className="flex-1">
+        <div className="flex flex-col md:flex-row items-center gap-4">
+          <div className="flex-1 w-full">
             <Input
               type="text"
               placeholder="اكتب هنا للبحث في العقود..."
@@ -208,12 +219,28 @@ export default function ContractsWithSearch({ contracts }: ContractsWithSearchPr
               className="w-full"
             />
           </div>
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+          
+          {/* Status Filter */}
+          <div className="w-full md:w-48">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             >
-              مسح البحث
+              <option value="ALL">جميع الحالات</option>
+              <option value="ACTIVE">نشط</option>
+              <option value="EXPIRED">منتهي</option>
+              <option value="COMPLETED">مكتمل</option>
+              <option value="CANCELLED">ملغي</option>
+            </select>
+          </div>
+
+          {(searchQuery || statusFilter !== 'ALL') && (
+            <button
+              onClick={() => { setSearchQuery(''); setStatusFilter('ALL'); }}
+              className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors whitespace-nowrap"
+            >
+              مسح الفلتر
             </button>
           )}
         </div>

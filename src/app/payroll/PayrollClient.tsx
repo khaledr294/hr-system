@@ -39,6 +39,7 @@ export default function PayrollPage() {
   const [payrollData, setPayrollData] = useState<PayrollData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM format
+  const [searchQuery, setSearchQuery] = useState("");
 
   // التحقق من الصلاحيات
   useEffect(() => {
@@ -483,9 +484,21 @@ export default function PayrollPage() {
   return (
     <DashboardLayout>
       <div className="max-w-7xl mx-auto p-8 bg-white rounded-lg shadow-md">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
           <h1 className="text-3xl font-bold text-indigo-700">حساب الرواتب</h1>
-          <div className="flex gap-4 items-center">
+          
+          <div className="flex flex-col md:flex-row gap-4 items-center w-full md:w-auto">
+            {/* Search Input */}
+            <div className="relative w-full md:w-64">
+              <input
+                type="text"
+                placeholder="بحث (الاسم، الكود، الجنسية)..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
             <input
               type="month"
               value={selectedMonth}
@@ -494,13 +507,13 @@ export default function PayrollPage() {
             />
             <button
               onClick={exportToExcel}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 flex items-center gap-2"
+              className="bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 flex items-center gap-2 whitespace-nowrap"
             >
               📊 تصدير Excel
             </button>
             <button
               onClick={exportPayroll}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 flex items-center gap-2"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 flex items-center gap-2 whitespace-nowrap"
             >
               📄 تصدير CSV
             </button>
@@ -545,7 +558,13 @@ export default function PayrollPage() {
                   <td colSpan={8} className="text-center py-4 text-gray-500">لا توجد بيانات للعرض حالياً.</td>
                 </tr>
               ) : (
-                payrollData.map((item) => (
+                payrollData
+                  .filter(item => 
+                    item.worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    item.worker.code.toString().includes(searchQuery) ||
+                    item.worker.nationality.toLowerCase().includes(searchQuery.toLowerCase())
+                  )
+                  .map((item) => (
                   <tr key={item.worker.id} className="border-b hover:bg-gray-50">
                     <td className="py-2 px-2 text-center text-sm font-bold text-indigo-600">
                       {item.worker.code.toString().padStart(4, '0')}

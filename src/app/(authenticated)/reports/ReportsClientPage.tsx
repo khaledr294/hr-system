@@ -69,6 +69,12 @@ export default function ReportsPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [exporting, setExporting] = useState<"excel" | "pdf" | null>(null);
+  const [marketersMonth, setMarketersMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [marketersData, setMarketersData] = useState<{
+    marketers: Array<{ marketerName: string; contractsCount: number; totalRevenue: number; suggestedBonus: number }>;
+    totalContracts: number;
+    totalRevenue: number;
+  } | null>(null);
 
   // التحقق من الصلاحيات
   useEffect(() => {
@@ -225,6 +231,18 @@ export default function ReportsPage() {
     }
   };
 
+  const fetchMarketersData = async (month: string) => {
+    try {
+      const response = await fetch(`/api/reports/marketers?month=${month}`);
+      if (response.ok) {
+        const data = await response.json();
+        setMarketersData(data);
+      }
+    } catch (error) {
+      console.error("Error fetching marketers data:", error);
+    }
+  };
+
   const fetchReports = async () => {
     try {
       setLoading(true);
@@ -248,6 +266,10 @@ export default function ReportsPage() {
     fetchReports();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reportType, startDate, endDate]);
+
+  useEffect(() => {
+    fetchMarketersData(marketersMonth);
+  }, [marketersMonth]);
 
   // إعدادات الألوان
   const colors = {
@@ -511,6 +533,148 @@ export default function ReportsPage() {
             </button>
           </div>
         </div>
+      </motion.div>
+
+      {/* تقرير عقود المسوقين */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-lg shadow-sm border border-purple-200"
+      >
+        <div className="flex items-center gap-2 mb-4">
+          <Users className="text-purple-600" size={24} />
+          <h2 className="text-lg font-semibold text-purple-900">تقرير عقود المسوقين - احتساب البونص الشهري</h2>
+        </div>
+        
+        <p className="text-sm text-purple-700 mb-4">
+          تقرير شهري يعرض عدد العقود لكل مسوق مع البونص المقترح (50 ريال لكل عقد)
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              اختر الشهر
+            </label>
+            <input
+              type="month"
+              value={marketersMonth}
+              onChange={(e) => setMarketersMonth(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+
+          <div className="flex items-end">
+            <button
+              onClick={async () => {
+                try {
+                  const response = await fetch(`/api/reports/marketers?month=${marketersMonth}&format=excel`);
+                  if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `تقرير_المسوقين_${marketersMonth}.xlsx`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                  } else {
+                    alert('فشل تحميل التقرير');
+                  }
+                } catch (error) {
+                  console.error('Error downloading report:', error);
+                  alert('حدث خطأ أثناء تحميل التقرير');
+                }
+              }}
+              className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center justify-center gap-2 font-medium"
+            >
+              <Download size={20} />
+              تحميل تقرير Excel
+            </button>
+          </div>
+        </div>
+
+        {/* Marketers Chart */}
+        {marketersData && marketersData.marketers.length > 0 && (
+          <div className="bg-white p-6 rounded-lg border border-purple-200">
+            <h3 className="text-lg font-semibold mb-4 text-purple-900 flex items-center gap-2">
+              <TrendingUp className="text-purple-600" size={20} />
+              عدد العقود لكل مسوق - {marketersMonth}
+            </h3>
+            <div className="h-80">
+              <Bar
+                data={{
+                  labels: marketersData.marketers.map(m => m.marketerName),
+                  datasets: [
+                    {
+                      label: 'عدد العقود',
+                      data: marketersData.marketers.map(m => m.contractsCount),
+                      backgroundColor: [
+                        'rgba(147, 51, 234, 0.8)',
+                        'rgba(79, 70, 229, 0.8)',
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(14, 165, 233, 0.8)',
+                        'rgba(6, 182, 212, 0.8)',
+                        'rgba(20, 184, 166, 0.8)',
+                      ],
+                      borderColor: [
+                        'rgb(147, 51, 234)',
+                        'rgb(79, 70, 229)',
+                        'rgb(59, 130, 246)',
+                        'rgb(14, 165, 233)',
+                        'rgb(6, 182, 212)',
+                        'rgb(20, 184, 166)',
+                      ],
+                      borderWidth: 2,
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      display: false,
+                    },
+                    tooltip: {
+                      callbacks: {
+                        label: (context) => {
+                          const marketer = marketersData.marketers[context.dataIndex];
+                          return [
+                            `عدد العقود: ${marketer.contractsCount}`,
+                            `الإيرادات: ${marketer.totalRevenue.toLocaleString()} ريال`,
+                            `البونص المقترح: ${marketer.suggestedBonus.toLocaleString()} ريال`,
+                          ];
+                        },
+                      },
+                    },
+                  },
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      ticks: {
+                        stepSize: 1,
+                      },
+                    },
+                  },
+                }}
+              />
+            </div>
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
+              <div className="bg-purple-50 p-3 rounded-lg">
+                <p className="text-sm text-purple-600 font-medium">إجمالي العقود</p>
+                <p className="text-2xl font-bold text-purple-900">{marketersData.totalContracts}</p>
+              </div>
+              <div className="bg-indigo-50 p-3 rounded-lg">
+                <p className="text-sm text-indigo-600 font-medium">إجمالي الإيرادات</p>
+                <p className="text-2xl font-bold text-indigo-900">{marketersData.totalRevenue.toLocaleString()} ريال</p>
+              </div>
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <p className="text-sm text-blue-600 font-medium">إجمالي البونص</p>
+                <p className="text-2xl font-bold text-blue-900">{marketersData.marketers.reduce((sum, m) => sum + m.suggestedBonus, 0).toLocaleString()} ريال</p>
+              </div>
+            </div>
+          </div>
+        )}
       </motion.div>
 
       {/* البطاقات الإحصائية */}

@@ -11,12 +11,10 @@ async function archiveExpiredContracts(session: Session) {
 
     const now = new Date();
 
-    // البحث عن العقود المنتهية
+    // البحث عن العقود المكتملة
     const expiredContracts = await prisma.contract.findMany({
       where: {
-        endDate: {
-          lt: now
-        }
+        status: 'COMPLETED'
       },
       include: {
         worker: true,
@@ -28,7 +26,7 @@ async function archiveExpiredContracts(session: Session) {
       return NextResponse.json({
         success: true,
         archivedCount: 0,
-        message: "لا توجد عقود منتهية لنقلها"
+        message: "لا توجد عقود مكتملة لنقلها"
       });
     }
 
@@ -51,7 +49,7 @@ async function archiveExpiredContracts(session: Session) {
       return NextResponse.json({
         success: true,
         archivedCount: 0,
-        message: "جميع العقود المنتهية موجودة بالأرشيف بالفعل"
+        message: "جميع العقود المكتملة موجودة بالأرشيف بالفعل"
       });
     }
 
@@ -105,12 +103,12 @@ async function archiveExpiredContracts(session: Session) {
     // تسجيل في سجل الأرشفة
     await prisma.archiveLog.create({
       data: {
-        id: `archive-expired-${Date.now()}`,
+        id: `archive-completed-${Date.now()}`,
         entityType: "CONTRACT",
         entityId: "BULK",
-        action: "ARCHIVE_EXPIRED",
+        action: "ARCHIVE_COMPLETED",
         performedBy: session.user.id,
-        reason: "انتهاء صلاحية العقود",
+        reason: "أرشفة العقود المكتملة",
         metadata: JSON.stringify({ count: archivedCount })
       }
     });

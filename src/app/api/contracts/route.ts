@@ -11,7 +11,7 @@ type EmptyContext = { params: Promise<Record<string, never>> };
 
 export const GET = withApiAuth<EmptyContext>(
   { permissions: [Permission.VIEW_CONTRACTS] },
-  async ({ req }) => {
+  async ({ req, session }) => {
     const { searchParams } = new URL(req.url);
     const workerId = searchParams.get('workerId');
     const month = searchParams.get('month');
@@ -23,6 +23,12 @@ export const GET = withApiAuth<EmptyContext>(
       if (workerId) {
         whereClause.workerId = workerId;
         archivedWhereClause.workerId = workerId;
+      }
+
+      // تقييد العرض للمسوقين فقط لعقودهم الخاصة
+      if (session.user.role === 'MARKETER') {
+        whereClause.marketerId = session.user.id;
+        archivedWhereClause.marketerId = session.user.id;
       }
 
       if (month) {
@@ -232,7 +238,7 @@ export const POST = withApiAuth<EmptyContext>(
 
       await createLog(
         session.user.id,
-        'CONTRACT_CREATED',
+        'CONTRACT_CREATE',
         `تم إنشاء عقد للعاملة ${contract.worker.name} مع العميل ${contract.client.name}`
       );
 

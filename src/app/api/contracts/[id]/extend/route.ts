@@ -11,7 +11,7 @@ export const POST = withApiAuth<ContractContext>(
     try {
       const { id } = await context.params;
       const body = await req.json();
-      const { newEndDate, packageType, packageName, totalAmount, notes, additionalAmount } = body;
+      const { newEndDate, packageType, packageName, totalAmount, notes, additionalAmount = 0 } = body;
 
       const contract = await prisma.contract.findUnique({
         where: { id },
@@ -40,7 +40,7 @@ export const POST = withApiAuth<ContractContext>(
           endDate: newEndDateObj,
           packageType: packageType || contract.packageType,
           packageName: packageName || contract.packageName,
-          totalAmount,
+          totalAmount: totalAmount !== undefined ? totalAmount : contract.totalAmount,
           notes: notes || contract.notes,
         },
         include: { client: true, worker: true },
@@ -48,7 +48,7 @@ export const POST = withApiAuth<ContractContext>(
 
       await prisma.log.create({
         data: {
-          action: 'تمديد العقد',
+          action: 'CONTRACT_EXTEND',
           message: `تم تمديد العقد للعميل ${contract.client.name} والعاملة ${contract.worker.name} من ${contract.endDate.toLocaleDateString('ar')} إلى ${newEndDateObj.toLocaleDateString('ar')}${
             additionalAmount > 0 ? ` بمبلغ إضافي ${additionalAmount.toLocaleString('ar-SA')} ريال` : ''
           }`,

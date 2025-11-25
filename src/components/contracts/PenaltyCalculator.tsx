@@ -132,7 +132,6 @@ export default function PenaltyCalculator({
               label="تاريخ الإرجاع الفعلي"
               value={returnDate}
               onChange={setReturnDate}
-              min={new Date(endDate).toISOString().split('T')[0]}
               className="w-full"
             />
           </div>
