@@ -67,7 +67,7 @@ async function getWorkers() {
     nationality: worker.nationality,
     residencyNumber: worker.residencyNumber,
     dateOfBirth: worker.dateOfBirth,
-    phone: worker.phone,
+    phone: worker.phone ?? '',
     status: worker.contracts && worker.contracts.length > 0 ? 'RENTED' : worker.status,
   }));
 }

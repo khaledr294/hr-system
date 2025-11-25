@@ -29,7 +29,7 @@ export const GET = withApiAuth<EmptyContext>(
 
       if (format === 'excel') {
         const buffer = await exportMarketersReportToExcel(report);
-        return new Response(buffer, {
+        return new Response(buffer as unknown as BodyInit, {
           headers: {
             'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Content-Disposition': `attachment; filename="marketers-report-${month}.xlsx"`,

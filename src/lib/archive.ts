@@ -440,14 +440,16 @@ export async function archiveWorker(
         originalId: workerId,
         name: worker.name,
         code: parseInt(worker.code),
+        nationality: worker.nationality,
+        residencyNumber: worker.residencyNumber,
+        dateOfBirth: worker.dateOfBirth,
+        phone: worker.phone ?? '',
+        status: worker.status,
         archiveReason: reason,
         archivedBy: userId,
         contractsCount: totalContracts,
         metadata: JSON.stringify({
-          nationality: worker.nationality,
-          residencyNumber: worker.residencyNumber,
-          phone: worker.phone,
-          status: worker.status,
+          salary: worker.salary,
           createdAt: worker.createdAt,
         })
       }

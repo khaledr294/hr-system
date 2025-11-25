@@ -14,6 +14,7 @@ model Log {
   entity    String?
   entityId  String?
   message   String?
+  details   String?  @db.Text
   createdAt DateTime @default(now())
   user      User?    @relation("UserLogs", fields: [userId], references: [id])
 }
@@ -221,7 +222,7 @@ model ArchivedWorker {
   nationality     String
   residencyNumber String
   dateOfBirth     DateTime
-  phone           String
+  phone           String?
   status          String
   passportNumber  String?
   salary          Float?
@@ -242,6 +243,7 @@ model Backup {
   type      String   @default("automatic")
   status    String   @default("in_progress")
   error     String?
+  data      String?  @db.Text
   createdAt DateTime @default(now())
 
   @@index([createdAt])
