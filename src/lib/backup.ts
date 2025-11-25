@@ -257,8 +257,25 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
     clients: number;
     contracts: number;
     packages: number;
+    nationalitySalaries: number;
+    logs: number;
+  };
+  errors?: {
+    workers?: string[];
+    contracts?: string[];
   };
 }> {
+  // حماية ضد عدم تهيئة prisma
+  if (!prisma) throw new Error("Prisma client is not initialized!");
+  // حماية لكل استدعاء مهم
+  if (typeof prisma.jobTitle?.findMany !== "function") throw new Error("prisma.jobTitle.findMany is not a function");
+  if (typeof prisma.user?.create !== "function") throw new Error("prisma.user.create is not a function");
+  if (typeof prisma.worker?.create !== "function") throw new Error("prisma.worker.create is not a function");
+  if (typeof prisma.client?.create !== "function") throw new Error("prisma.client.create is not a function");
+  if (typeof prisma.contract?.create !== "function") throw new Error("prisma.contract.create is not a function");
+  if (typeof prisma.package?.create !== "function") throw new Error("prisma.package.create is not a function");
+  if (typeof prisma.nationalitySalary?.create !== "function") throw new Error("prisma.nationalitySalary.create is not a function");
+  if (typeof prisma.log?.create !== "function") throw new Error("prisma.log.create is not a function");
   try {
     console.log('🔄 بدء عملية الاستعادة...');
 
@@ -316,12 +333,12 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
     const jobTitleIds = new Set(existingJobTitles.map(jt => jt.id));
     console.log('📋 المسميات الوظيفية الموجودة:', existingJobTitles.length);
 
-    // Get existing Nationalities to validate worker nationalityIds
-    const existingNationalities = await prisma.nationality.findMany({
-      select: { id: true }
-    });
-    const nationalityIds = new Set(existingNationalities.map(n => n.id));
-    console.log('🌍 الجنسيات الموجودة:', existingNationalities.length);
+      // استخدم NationalitySalary بدلاً من Nationality
+      const existingNationalitySalaries = await prisma.nationalitySalary.findMany({
+        select: { id: true }
+      });
+      const nationalitySalaryIds = new Set(existingNationalitySalaries.map(n => n.id));
+      console.log('💰 رواتب الجنسيات الموجودة:', existingNationalitySalaries.length);
 
     // Restore users (needed for contracts with marketerId)
     console.log('👤 استعادة المستخدمين...');
@@ -329,18 +346,18 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
     let usersSkipped = 0;
     for (const user of backupData.data.users) {
       try {
-        const { logs, Notification, jobTitle, ...userData } = user;
+        const { logs, Notification, jobTitle, ...userData } = user as any;
         
         // Check if jobTitleId is valid
         if (userData.jobTitleId && !jobTitleIds.has(userData.jobTitleId)) {
-          console.error('Invalid jobTitleId for user:', user.email, '- setting to first available');
+          console.error('Invalid jobTitleId for user:', (user as any).email, '- setting to first available');
           userData.jobTitleId = existingJobTitles[0]?.id || null;
         }
         
         const createdUser = await prisma.user.create({ data: userData });
         usersCreated.push(createdUser);
       } catch (err: any) {
-        console.error('Failed to restore user:', user.id, err.message);
+        console.error('Failed to restore user:', (user as any).id, err.message);
         usersSkipped++;
       }
     }
@@ -351,10 +368,10 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
     const packagesCreated = [];
     for (const pkg of backupData.data.packages) {
       try {
-        const createdPackage = await prisma.package.create({ data: pkg });
+        const createdPackage = await prisma.package.create({ data: pkg as any });
         packagesCreated.push(createdPackage);
       } catch (err: any) {
-        console.error('Failed to restore package:', pkg.id, err.message);
+        console.error('Failed to restore package:', (pkg as any).id, err.message);
       }
     }
     console.log('✅ تم استعادة', packagesCreated.length, 'باقة');
@@ -366,15 +383,10 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
     for (const ns of backupData.data.nationalitySalaries) {
       try {
         // Check if nationalityId is valid
-        if (ns.nationalityId && !nationalityIds.has(ns.nationalityId)) {
-          console.error('Invalid nationalityId for salary:', ns.id, '- skipping');
-          salariesSkipped++;
-          continue;
-        }
-        const createdNS = await prisma.nationalitySalary.create({ data: ns });
+        const createdNS = await prisma.nationalitySalary.create({ data: ns as any });
         nationalitySalariesCreated.push(createdNS);
       } catch (err: any) {
-        console.error('Failed to restore nationality salary:', ns.id, err.message);
+        console.error('Failed to restore nationality salary:', (ns as any).id, err.message);
         salariesSkipped++;
       }
     }
@@ -386,18 +398,33 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
     let workersSkipped = 0;
     for (const worker of backupData.data.workers) {
       try {
-        const { nationalitySalary, nationality, contracts, ...workerData } = worker;
-        
-        // Check if nationalityId is valid (set to null if invalid)
-        if (workerData.nationalityId && !nationalityIds.has(workerData.nationalityId)) {
-          console.error('Invalid nationalityId for worker:', worker.name, '- setting to null');
-          workerData.nationalityId = null;
+        // إعادة بناء بيانات العاملة مع تصحيح الأسماء وعدم تمرير أي حقل خاطئ
+        const allowedWorkerFields = [
+          'id','name','code','nationality','residencyNumber','dateOfBirth','phone','status','salary','createdAt','updatedAt','nationalitySalaryId','arrivalDate','borderNumber','iban','salaryTransferMethod','salaryTransferNotes','officeName','passportNumber','religion','reservationNotes','reservedAt','reservedBy','residenceBranch'
+        ];
+        const workerAny = worker as any;
+        const workerData: Record<string, any> = {};
+        // بناء الكائن فقط من الحقول المسموحة مع تصحيح الأسماء
+        for (const field of allowedWorkerFields) {
+          if (field === 'arrivalDate') {
+            if (workerAny['arrivalDate'] !== undefined) workerData.arrivalDate = workerAny['arrivalDate'];
+            else if (workerAny['arrival Date'] !== undefined) workerData.arrivalDate = workerAny['arrival Date'];
+          } else if (field === 'nationalitySalaryId') {
+            if (workerAny['nationalitySalaryId'] !== undefined) workerData.nationalitySalaryId = workerAny['nationalitySalaryId'];
+            else if (workerAny['nationalitySalaryld'] !== undefined) workerData.nationalitySalaryId = workerAny['nationalitySalaryld'];
+          } else if (workerAny[field] !== undefined) {
+            workerData[field] = workerAny[field];
+          }
         }
-        
-        const createdWorker = await prisma.worker.create({ data: workerData });
+        // إذا كان nationalitySalaryId غير صحيح أو غير موجود، عيّنه إلى null
+        if (workerData.nationalitySalaryId && !nationalitySalaryIds.has(workerData.nationalitySalaryId)) {
+          workerData.nationalitySalaryId = null;
+        }
+        const createdWorker = await prisma.worker.create({ data: workerData as any });
         workersCreated.push(createdWorker);
       } catch (err: any) {
-        console.error('Failed to restore worker:', worker.id, err.message);
+        if (!(globalThis as any).__restoreErrors) (globalThis as any).__restoreErrors = { workers: [], contracts: [] };
+        ((globalThis as any).__restoreErrors).workers.push(`العاملة ${(worker as any).name} (${(worker as any).id}): ${err.message}`);
         workersSkipped++;
       }
     }
@@ -408,11 +435,11 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
     const clientsCreated = [];
     for (const client of backupData.data.clients) {
       try {
-        const { contracts, ...clientData } = client;
+        const { contracts, ...clientData } = client as any;
         const createdClient = await prisma.client.create({ data: clientData });
         clientsCreated.push(createdClient);
       } catch (err: any) {
-        console.error('Failed to restore client:', client.id, err.message);
+        console.error('Failed to restore client:', (client as any).id, err.message);
       }
     }
     console.log('✅ تم استعادة', clientsCreated.length, 'عميل');
@@ -422,8 +449,15 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
     const contractsCreated = [];
     for (const contract of backupData.data.contracts) {
       try {
-        const { worker, client, marketer, ...contractData } = contract;
-        
+        const { worker, client, marketer, ...contractData } = contract as any;
+        // إذا كان workerId غير موجود في العمال المستعادة، عيّنه إلى null
+        if (contractData.workerId && !workersCreated.find(w => w.id === contractData.workerId)) {
+          contractData.workerId = null;
+        }
+        // إذا كان clientId غير موجود في العملاء المستعادة، عيّنه إلى null
+        if (contractData.clientId && !clientsCreated.find(c => c.id === contractData.clientId)) {
+          contractData.clientId = null;
+        }
         // Check if marketerId exists, if not set to null
         if (contractData.marketerId) {
           const marketerExists = await prisma.user.findUnique({
@@ -434,11 +468,11 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
             contractData.marketerName = null;
           }
         }
-        
         const createdContract = await prisma.contract.create({ data: contractData });
         contractsCreated.push(createdContract);
       } catch (err: any) {
-        console.error('Failed to restore contract:', contract.id, err.message);
+        if (!(globalThis as any).__restoreErrors) (globalThis as any).__restoreErrors = { workers: [], contracts: [] };
+        ((globalThis as any).__restoreErrors).contracts.push(`العقد ${(contract as any).id}: ${err.message}`);
       }
     }
     console.log('✅ تم استعادة', contractsCreated.length, 'عقد');
@@ -448,13 +482,14 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
     let logsRestored = 0;
     for (const log of backupData.data.logs.slice(0, 1000)) {
       try {
-        await prisma.log.create({ data: log });
+        await prisma.log.create({ data: log as any });
         logsRestored++;
       } catch {
         // Ignore log restore failures silently
       }
     }
     console.log('✅ تم استعادة', logsRestored, 'سجل');
+
 
     const stats = {
       users: usersCreated.length,
@@ -465,6 +500,22 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
       nationalitySalaries: nationalitySalariesCreated.length,
       logs: logsRestored,
     };
+
+
+    // عرض تقرير الأخطاء إن وجدت
+    let restoreErrors: { workers?: string[]; contracts?: string[] } = {};
+    if ((globalThis as any).__restoreErrors) {
+      if (((globalThis as any).__restoreErrors).workers?.length) {
+        console.log('❗️ أخطاء استعادة العاملات:');
+        for (const err of ((globalThis as any).__restoreErrors).workers) console.log(err);
+        restoreErrors.workers = ((globalThis as any).__restoreErrors).workers;
+      }
+      if (((globalThis as any).__restoreErrors).contracts?.length) {
+        console.log('❗️ أخطاء استعادة العقود:');
+        for (const err of ((globalThis as any).__restoreErrors).contracts) console.log(err);
+        restoreErrors.contracts = ((globalThis as any).__restoreErrors).contracts;
+      }
+    }
 
     console.log('✅ تمت الاستعادة بنجاح');
     console.log('📊 الإحصائيات:', stats);
@@ -488,6 +539,7 @@ export async function restoreBackup(backupId: string, userId?: string): Promise<
       success: true,
       message: `تمت استعادة النسخة الاحتياطية بنجاح. تم استعادة ${stats.users} مستخدم، ${stats.workers} عاملة، ${stats.clients} عميل، ${stats.contracts} عقد.`,
       stats,
+      errors: restoreErrors,
     };
   } catch (error: any) {
     console.error('خطأ في استعادة النسخة الاحتياطية:', error);

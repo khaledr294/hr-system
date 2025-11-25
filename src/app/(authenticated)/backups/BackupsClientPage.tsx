@@ -18,6 +18,21 @@ interface Backup {
 }
 
 export default function BackupsPage() {
+    // حذف نسخة احتياطية
+    const handleDeleteBackup = async (backupId: string) => {
+      if (!confirm('هل أنت متأكد أنك تريد حذف هذه النسخة الاحتياطية؟')) return;
+      try {
+        const response = await fetch(`/api/backups/${backupId}`, { method: 'DELETE' });
+        if (!response.ok) {
+          const data = await response.json();
+          alert('فشل حذف النسخة الاحتياطية: ' + (data.error || response.statusText));
+          return;
+        }
+        setBackups(backups => backups.filter(b => b.id !== backupId));
+      } catch (error) {
+        alert('حدث خطأ أثناء حذف النسخة الاحتياطية');
+      }
+    };
   const router = useRouter();
   const { data: session, status } = useSession();
   const [backups, setBackups] = useState<Backup[]>([]);
@@ -160,7 +175,18 @@ export default function BackupsPage() {
 
       if (response.ok) {
         const result = await response.json();
-        alert(`✅ ${result.message}`);
+        let msg = `✅ ${result.message}`;
+        if (result.errors) {
+          if (result.errors.workers?.length) {
+            msg += `\n\n❗️ أخطاء استعادة العاملات:`;
+            msg += '\n' + result.errors.workers.join('\n');
+          }
+          if (result.errors.contracts?.length) {
+            msg += `\n\n❗️ أخطاء استعادة العقود:`;
+            msg += '\n' + result.errors.contracts.join('\n');
+          }
+        }
+        alert(msg);
         setShowRestoreModal(false);
         router.refresh();
       } else {
@@ -368,6 +394,17 @@ export default function BackupsPage() {
                         <span>تحميل</span>
                       </div>
                     </Button>
+                    <Button
+                      onClick={() => handleDeleteBackup(backup.id)}
+                      variant="danger"
+                      size="sm"
+                      disabled={restoring !== null}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span>حذف</span>
+                      </div>
+                    </Button>
+
                   </div>
                 )}
               </div>
