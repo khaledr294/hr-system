@@ -34,7 +34,7 @@ export default function ExtendContractForm({ contract }: ExtendContractFormProps
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     newEndDate: '',
-    extensionPeriod: '6', // بالأشهر
+    extensionPeriod: '30', // بالأيام (شهر)
     packageType: contract.packageType,
     packageName: contract.packageName || '',
     totalAmount: contract.totalAmount,
@@ -43,41 +43,25 @@ export default function ExtendContractForm({ contract }: ExtendContractFormProps
   });
 
   // حساب التاريخ الجديد عند تغيير فترة التمديد
-  const handleExtensionPeriodChange = (months: string) => {
+  const handleExtensionPeriodChange = (days: string) => {
     const currentEndDate = new Date(contract.endDate);
     const newEndDate = new Date(currentEndDate);
-    newEndDate.setMonth(newEndDate.getMonth() + parseInt(months));
+    newEndDate.setDate(newEndDate.getDate() + parseInt(days));
     
-    const day = newEndDate.getDate().toString().padStart(2, '0');
-    const month = (newEndDate.getMonth() + 1).toString().padStart(2, '0');
+    // Format as YYYY-MM-DD for date input
     const year = newEndDate.getFullYear();
+    const month = (newEndDate.getMonth() + 1).toString().padStart(2, '0');
+    const day = newEndDate.getDate().toString().padStart(2, '0');
     
     setFormData(prev => ({
       ...prev,
-      extensionPeriod: months,
-      newEndDate: `${day}/${month}/${year}`
+      extensionPeriod: days,
+      newEndDate: `${year}-${month}-${day}`
     }));
   };
 
-  // تنسيق تاريخ الإدخال
-  const formatDateInput = (value: string) => {
-    const numbersOnly = value.replace(/\D/g, '');
-    if (numbersOnly.length >= 2) {
-      let formatted = numbersOnly.substring(0, 2);
-      if (numbersOnly.length >= 4) {
-        formatted += '/' + numbersOnly.substring(2, 4);
-        if (numbersOnly.length >= 6) {
-          formatted += '/' + numbersOnly.substring(4, 8);
-        }
-      }
-      return formatted;
-    }
-    return numbersOnly;
-  };
-
   const handleDateChange = (value: string) => {
-    const formatted = formatDateInput(value);
-    setFormData(prev => ({ ...prev, newEndDate: formatted }));
+    setFormData(prev => ({ ...prev, newEndDate: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,17 +70,17 @@ export default function ExtendContractForm({ contract }: ExtendContractFormProps
 
     try {
       // التحقق من صحة التاريخ
-      const dateParts = formData.newEndDate.split('/');
-      if (dateParts.length !== 3) {
-        alert('يرجى إدخال تاريخ صحيح بصيغة يوم/شهر/سنة');
+      if (!formData.newEndDate) {
+        alert('يرجى إدخال تاريخ النهاية الجديد');
+        setIsLoading(false);
         return;
       }
 
-      const [day, month, year] = dateParts;
-      const newEndDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      const newEndDate = new Date(formData.newEndDate);
       
       if (newEndDate <= contract.endDate) {
         alert('تاريخ النهاية الجديد يجب أن يكون بعد تاريخ النهاية الحالي');
+        setIsLoading(false);
         return;
       }
 
@@ -136,17 +120,17 @@ export default function ExtendContractForm({ contract }: ExtendContractFormProps
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            فترة التمديد (بالأشهر)
+            فترة التمديد
           </label>
           <select
             value={formData.extensionPeriod}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleExtensionPeriodChange(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="3">3 أشهر</option>
-            <option value="6">6 أشهر</option>
-            <option value="12">سنة كاملة</option>
-            <option value="24">سنتان</option>
+            <option value="3">3 أيام</option>
+            <option value="7">أسبوع (7 أيام)</option>
+            <option value="15">15 يوم</option>
+            <option value="30">شهر (30 يوم)</option>
           </select>
         </div>
 
@@ -154,16 +138,14 @@ export default function ExtendContractForm({ contract }: ExtendContractFormProps
           <label className="block text-sm font-medium text-gray-700 mb-2">
             تاريخ النهاية الجديد
           </label>
-          <Input
-            type="text"
-            placeholder="يوم/شهر/سنة (مثال: 15/12/2025)"
+          <input
+            type="date"
             value={formData.newEndDate}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleDateChange(e.target.value)}
-            maxLength={10}
             required
-            className="w-full"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
           />
-          <p className="text-xs text-gray-500 mt-1">تنسيق: يوم/شهر/سنة</p>
+          <p className="text-xs text-gray-500 mt-1">اختر التاريخ من التقويم</p>
         </div>
 
         <div>

@@ -9,6 +9,7 @@ import GenerateWordButton from '@/components/contracts/GenerateWordButton';
 import PenaltyCalculator from '@/components/contracts/PenaltyCalculator';
 import ExtendContractButton from '@/components/contracts/ExtendContractButton';
 import ArchiveContractButton from '@/components/contracts/ArchiveContractButton';
+import RevertContractButton from '@/components/contracts/RevertContractButton';
 import React from 'react';
 import { formatDate } from '@/lib/date';
 
@@ -66,15 +67,24 @@ export default async function ContractDetailsPage({
               </>
             )}
             
-            {/* زر الأرشفة - يظهر فقط للعقود المكتملة أو الملغاة */}
+            {/* زر الأرشفة والتراجع - يظهر فقط للعقود المكتملة أو الملغاة */}
             {(contract.status === 'COMPLETED' || contract.status === 'CANCELLED') && (
-              <ArchiveContractButton
-                contractId={contract.id}
-                contractStatus={contract.status}
-                workerName={contract.worker.name}
-                clientName={contract.client.name}
-                contractNumber={contract.contractNumber}
-              />
+              <>
+                <ArchiveContractButton
+                  contractId={contract.id}
+                  contractStatus={contract.status}
+                  workerName={contract.worker.name}
+                  clientName={contract.client.name}
+                  contractNumber={contract.contractNumber}
+                />
+                <RevertContractButton
+                  contractId={contract.id}
+                  contractStatus={contract.status}
+                  isHRManager={session.user.role === 'HR_MANAGER'}
+                  workerName={contract.worker.name}
+                  clientName={contract.client.name}
+                />
+              </>
             )}
             
             <GenerateWordButton 

@@ -283,6 +283,8 @@ model SystemSettings {
   sessionTimeout            Int      @default(60)
   maxLoginAttempts          Int      @default(5)
   enableActivityLogging     Boolean  @default(true)
+  marketerBonusPackages     String?  @db.Text // JSON array of eligible package names
+  marketerBonusAmount       Int      @default(50) // Default bonus amount per contract
   createdAt                 DateTime @default(now())
   updatedAt                 DateTime @updatedAt
 }

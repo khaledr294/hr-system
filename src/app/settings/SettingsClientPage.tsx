@@ -34,6 +34,29 @@ export default async function SettingsPage() {
               </div>
             </div>
           </Link>
+
+          {/* Marketer Bonus Settings Card - HR Only */}
+          <Link href="/settings/marketer-bonus" className="group">
+            <div className="border-2 border-slate-900 bg-white p-6 hover:bg-slate-50 transition-all duration-200">
+              <div className="flex items-center mb-4">
+                <div className="bg-purple-600 text-white p-3 border-2 border-slate-900">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mr-4">إعدادات بونص المسوقين</h3>
+              </div>
+              <p className="text-slate-600 mb-4">
+                تحديد الباقات المؤهلة للبونص الشهري وقيمة البونص لكل باقة (HR فقط)
+              </p>
+              <div className="flex items-center text-purple-600 font-bold">
+                <span>إدارة البونص</span>
+                <svg className="w-4 h-4 mr-2 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </div>
+            </div>
+          </Link>
         </div>
       </div>
   );

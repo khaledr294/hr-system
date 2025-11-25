@@ -491,52 +491,103 @@ export async function generateMarketersReport(
   const startDate = new Date(year, monthNum - 1, 1);
   const endDate = new Date(year, monthNum, 0, 23, 59, 59);
 
+  // Get bonus settings
+  const settings = await prisma.systemSettings.findUnique({
+    where: { id: 'system' },
+    select: {
+      marketerBonusPackages: true,
+      marketerBonusAmount: true,
+    },
+  });
+
+  // Parse eligible packages
+  interface PackageBonus {
+    packageName: string;
+    bonusAmount: number;
+    enabled: boolean;
+  }
+  
+  let eligiblePackages: PackageBonus[] = [];
+  if (settings?.marketerBonusPackages) {
+    try {
+      eligiblePackages = JSON.parse(settings.marketerBonusPackages);
+      // Filter only enabled packages
+      eligiblePackages = eligiblePackages.filter(p => p.enabled);
+    } catch {
+      eligiblePackages = [];
+    }
+  }
+
+  const defaultBonusAmount = settings?.marketerBonusAmount || 50;
+
   // Get all contracts created in the specified month
-    const contracts = await prisma.contract.findMany({
-      where: {
-        createdAt: {
-          gte: startDate,
-          lte: endDate,
+  const contracts = await prisma.contract.findMany({
+    where: {
+      createdAt: {
+        gte: startDate,
+        lte: endDate,
+      },
+    },
+    select: {
+      id: true,
+      marketer: {
+        select: {
+          name: true,
         },
       },
-      select: {
-        id: true,
-        marketer: {
-          select: {
-            name: true,
-          },
-        },
-        totalAmount: true,
-      },
-    });
+      totalAmount: true,
+      packageName: true,
+      packageType: true,
+    },
+  });
+
+  // Group by marketer
+  const marketerMap = new Map<string, { count: number; revenue: number; bonusEligibleCount: number; totalBonus: number }>();
   
-    // Group by marketer
-    const marketerMap = new Map<string, { count: number; revenue: number }>();
+  contracts.forEach(contract => {
+    const name = contract.marketer?.name || 'غير محدد';
+    const packageName = contract.packageName || contract.packageType || '';
     
-    contracts.forEach(contract => {
-      const name = contract.marketer?.name || 'غير محدد';
-      const existing = marketerMap.get(name) || { count: 0, revenue: 0 };
-      marketerMap.set(name, {
-        count: existing.count + 1,
-        revenue: existing.revenue + (contract.totalAmount || 0),
-      });
+    // Check if this package is eligible for bonus
+    let contractBonus = 0;
+    if (eligiblePackages.length > 0) {
+      // Find matching package in eligible list
+      const matchingPackage = eligiblePackages.find(p => 
+        packageName.toLowerCase().includes(p.packageName.toLowerCase()) ||
+        p.packageName.toLowerCase().includes(packageName.toLowerCase())
+      );
+      
+      if (matchingPackage) {
+        contractBonus = matchingPackage.bonusAmount;
+      }
+    } else {
+      // If no packages configured, use default bonus for all
+      contractBonus = defaultBonusAmount;
+    }
+    
+    const existing = marketerMap.get(name) || { count: 0, revenue: 0, bonusEligibleCount: 0, totalBonus: 0 };
+    marketerMap.set(name, {
+      count: existing.count + 1,
+      revenue: existing.revenue + (contract.totalAmount || 0),
+      bonusEligibleCount: existing.bonusEligibleCount + (contractBonus > 0 ? 1 : 0),
+      totalBonus: existing.totalBonus + contractBonus,
     });
-  
-    // Calculate bonuses (50 SAR per contract)
-    const BONUS_PER_CONTRACT = 50;
-    const marketers = Array.from(marketerMap.entries()).map(([name, data]) => ({
-      marketerName: name,
-      contractsCount: data.count,
-      totalRevenue: data.revenue,
-      suggestedBonus: data.count * BONUS_PER_CONTRACT,
-    }));
-  
-    // Sort by contracts count descending
-    marketers.sort((a, b) => b.contractsCount - a.contractsCount);
-  
-    const totalContracts = contracts.length;
-    const totalRevenue = contracts.reduce((sum, c) => sum + (c.totalAmount || 0), 0);
-    const totalBonus = marketers.reduce((sum, m) => sum + m.suggestedBonus, 0);
+  });
+
+  // Build marketers array
+  const marketers = Array.from(marketerMap.entries()).map(([name, data]) => ({
+    marketerName: name,
+    contractsCount: data.count,
+    totalRevenue: data.revenue,
+    suggestedBonus: data.totalBonus,
+  }));
+
+  // Sort by contracts count descending
+  marketers.sort((a, b) => b.contractsCount - a.contractsCount);
+
+  const totalContracts = contracts.length;
+  const totalRevenue = contracts.reduce((sum, c) => sum + (c.totalAmount || 0), 0);
+  const totalBonus = marketers.reduce((sum, m) => sum + m.suggestedBonus, 0);
 
   return {
     month,
