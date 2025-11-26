@@ -26,7 +26,7 @@ export const GET = withApiAuth<EmptyContext>(
       }
 
       // تقييد العرض للمسوقين فقط لعقودهم الخاصة
-      if (session.user.role === 'MARKETER') {
+if (session.user.role === 'MARKETER' || session.user.roleLabel === 'مسوق') {
         whereClause.marketerId = session.user.id;
         archivedWhereClause.marketerId = session.user.id;
       }

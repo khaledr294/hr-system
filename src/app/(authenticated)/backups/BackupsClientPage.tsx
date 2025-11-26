@@ -39,6 +39,7 @@ export default function BackupsPage() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [restoring, setRestoring] = useState<string | null>(null);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [selectedBackupId, setSelectedBackupId] = useState<string | null>(null);
@@ -128,6 +129,33 @@ export default function BackupsPage() {
       setCreating(false);
     }
   };
+
+  const handleExportDatabase = async () => {
+    setExporting(true);
+    try {
+      const response = await fetch('/api/backups/export-database');
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `database-export-${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        alert('✅ تم تصدير قاعدة البيانات بنجاح!');
+      } else {
+        alert('❌ فشل تصدير قاعدة البيانات');
+      }
+    } catch (error) {
+      console.error('Error exporting database:', error);
+      alert('حدث خطأ أثناء تصدير قاعدة البيانات');
+    } finally {
+      setExporting(false);
+    }
+  };
+
 
   const downloadBackup = async (backupId: string, filename: string) => {
     try {
@@ -324,6 +352,14 @@ export default function BackupsPage() {
             className="hidden"
             disabled={uploading}
           />
+          {session?.user?.role === 'HR_MANAGER' && (
+            <Button onClick={handleExportDatabase} disabled={exporting} variant="secondary">
+              <div className="flex items-center gap-2">
+                {exporting ? <LoadingSpinner size="sm" /> : <Database className="w-5 h-5" />}
+                <span>{exporting ? 'جاري التصدير...' : 'تصدير قاعدة البيانات (Excel)'}</span>
+              </div>
+            </Button>
+          )}
           <Button onClick={createBackup} disabled={creating} variant="primary">
             <div className="flex items-center gap-2">
               {creating ? <LoadingSpinner size="sm" /> : <Upload className="w-5 h-5" />}
