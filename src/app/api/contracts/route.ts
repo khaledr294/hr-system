@@ -26,7 +26,12 @@ export const GET = withApiAuth<EmptyContext>(
       }
 
       // تقييد العرض للمسوقين فقط لعقودهم الخاصة
-if (session.user.role === 'MARKETER' || session.user.roleLabel === 'مسوق') {
+      if (session.user.role === 'MARKETER' || session.user.roleLabel === 'مسوق') {
+        console.log('🔍 Marketer filter applied:', { 
+          userId: session.user.id, 
+          roleLabel: session.user.roleLabel, 
+          role: session.user.role 
+        });
         whereClause.marketerId = session.user.id;
         archivedWhereClause.marketerId = session.user.id;
       }

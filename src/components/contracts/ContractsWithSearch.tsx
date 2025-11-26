@@ -209,23 +209,23 @@ export default function ContractsWithSearch({ contracts }: ContractsWithSearchPr
           </p>
         </div>
         
-        <div className="flex flex-col md:flex-row items-center gap-4">
-          <div className="flex-1 w-full">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="flex-grow sm:flex-1">
             <Input
               type="text"
               placeholder="اكتب هنا للبحث في العقود..."
               value={searchQuery}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-              className="w-full"
+              className="w-full text-base py-2.5"
             />
           </div>
           
           {/* Status Filter */}
-          <div className="w-full md:w-48">
+          <div className="w-full sm:w-auto sm:min-w-[180px]">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="w-full px-3 py-2.5 text-base border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             >
               <option value="ALL">جميع الحالات</option>
               <option value="ACTIVE">نشط</option>
@@ -238,7 +238,7 @@ export default function ContractsWithSearch({ contracts }: ContractsWithSearchPr
           {(searchQuery || statusFilter !== 'ALL') && (
             <button
               onClick={() => { setSearchQuery(''); setStatusFilter('ALL'); }}
-              className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors whitespace-nowrap"
+              className="px-4 py-2.5 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors whitespace-nowrap"
             >
               مسح الفلتر
             </button>

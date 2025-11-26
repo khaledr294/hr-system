@@ -14,7 +14,16 @@ export default async function ContractsPage() {
     redirect('/auth/login');
   }
 
+  // بناء الشرط الأساسي للاستعلام
+  const whereClause: any = {};
+  
+  // تقييد العرض للمسوقين فقط لعقودهم الخاصة
+  if (session.user.role === 'MARKETER' || session.user.roleLabel === 'مسوق') {
+    whereClause.marketerId = session.user.id;
+  }
+
   const contracts = await prisma.contract.findMany({
+    where: whereClause,
     include: {
       client: {
         select: {
@@ -37,6 +46,7 @@ export default async function ContractsPage() {
   }).catch(async () => {
     // Fallback for missing columns
     return await prisma.contract.findMany({
+      where: whereClause,
       select: {
         id: true,
         status: true,

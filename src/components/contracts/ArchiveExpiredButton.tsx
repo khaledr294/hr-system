@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Archive } from "lucide-react";
 
 interface ArchiveExpiredButtonProps {
@@ -11,6 +12,12 @@ interface ArchiveExpiredButtonProps {
 export default function ArchiveExpiredButton({ count }: ArchiveExpiredButtonProps) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { data: session } = useSession();
+
+  // إخفاء الزر عن المسوقين
+  if (session?.user?.roleLabel === 'مسوق' || session?.user?.role === 'MARKETER') {
+    return null;
+  }
 
   const handleArchive = async () => {
     if (!confirm(`هل تريد نقل ${count} عقد مكتمل إلى الأرشيف؟`)) {
