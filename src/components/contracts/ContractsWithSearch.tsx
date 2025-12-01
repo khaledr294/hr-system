@@ -210,7 +210,7 @@ export default function ContractsWithSearch({ contracts }: ContractsWithSearchPr
         </div>
         
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <div className="flex-grow sm:flex-1">
+          <div className="grow sm:flex-1">
             <Input
               type="text"
               placeholder="اكتب هنا للبحث في العقود..."

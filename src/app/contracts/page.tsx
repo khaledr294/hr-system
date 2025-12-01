@@ -15,7 +15,7 @@ export default async function ContractsPage() {
   }
 
   // بناء الشرط الأساسي للاستعلام
-  const whereClause: any = {};
+  const whereClause: { marketerId?: string } = {};
   
   // تقييد العرض للمسوقين فقط لعقودهم الخاصة
   if (session.user.role === 'MARKETER' || session.user.roleLabel === 'مسوق') {

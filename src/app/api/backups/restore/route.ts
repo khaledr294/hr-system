@@ -1,4 +1,3 @@
-import { NextRequest } from 'next/server';
 import { withApiAuth } from '@/lib/api-guard';
 import { Permission } from '@prisma/client';
 import { restoreBackup } from '@/lib/backup';
@@ -26,9 +25,9 @@ export const POST = withApiAuth<EmptyContext>(
       const result = await restoreBackup(backupId, session?.user?.id);
 
       return Response.json(result);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error restoring backup:', error);
-      return new Response(error.message || 'Failed to restore backup', { status: 500 });
+      return new Response(error instanceof Error ? error.message : 'Failed to restore backup', { status: 500 });
     }
   }
 );

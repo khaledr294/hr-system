@@ -28,7 +28,7 @@ async function testBackupUpdate() {
     });
 
     // Marketer
-    const marketer = await prisma.marketer.create({
+    await prisma.marketer.create({
       data: {
         name: 'Test Marketer',
         phone: '123456',

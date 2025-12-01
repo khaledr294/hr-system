@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { prisma } from './prisma';
 import { v4 as uuidv4 } from 'uuid';
 import pako from 'pako';

@@ -29,7 +29,7 @@ export default function BackupsPage() {
           return;
         }
         setBackups(backups => backups.filter(b => b.id !== backupId));
-      } catch (error) {
+      } catch {
         alert('حدث خطأ أثناء حذف النسخة الاحتياطية');
       }
     };

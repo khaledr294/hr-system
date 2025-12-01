@@ -1,4 +1,3 @@
-import { NextRequest } from 'next/server';
 import { withApiAuth } from '@/lib/api-guard';
 import { Permission } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
@@ -68,9 +67,9 @@ export const POST = withApiAuth<EmptyContext>(
           createdAt: backup.createdAt,
         },
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error uploading backup:', error);
-      return new Response(error.message || 'Failed to upload backup', { status: 500 });
+      return new Response(error instanceof Error ? error.message : 'Failed to upload backup', { status: 500 });
     }
   }
 );

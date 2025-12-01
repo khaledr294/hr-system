@@ -7,7 +7,7 @@ type ContractContext = { params: Promise<{ id: string }> };
 
 export const POST = withApiAuth<ContractContext>(
   { permissions: [Permission.EDIT_CONTRACTS], auditAction: 'CONTRACT_REVERT' },
-  async ({ req, context, session }) => {
+  async ({ context, session }) => {
     try {
       const { id } = await context.params;
       

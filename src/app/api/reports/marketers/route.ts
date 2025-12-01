@@ -1,4 +1,3 @@
-import { NextRequest } from 'next/server';
 import { withApiAuth } from '@/lib/api-guard';
 import { Permission } from '@prisma/client';
 import { generateMarketersReport, exportMarketersReportToExcel } from '@/lib/reports';

@@ -1,4 +1,3 @@
-import { NextRequest } from 'next/server';
 import { withApiAuth } from '@/lib/api-guard';
 import { Permission } from '@prisma/client';
 import { archiveWorker, restoreWorker } from '@/lib/archive';
@@ -23,9 +22,9 @@ export const POST = withApiAuth<EmptyContext>(
       const result = await archiveWorker(workerId, reason, session?.user?.id);
 
       return Response.json(result);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error archiving worker:', error);
-      return new Response(error.message || 'Failed to archive worker', { status: 500 });
+      return new Response(error instanceof Error ? error.message : 'Failed to archive worker', { status: 500 });
     }
   }
 );
@@ -44,9 +43,9 @@ export const PUT = withApiAuth<EmptyContext>(
       const result = await restoreWorker(archivedWorkerId, session?.user?.id);
 
       return Response.json(result);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error restoring worker:', error);
-      return new Response(error.message || 'Failed to restore worker', { status: 500 });
+      return new Response(error instanceof Error ? error.message : 'Failed to restore worker', { status: 500 });
     }
   }
 );
@@ -54,7 +53,7 @@ export const PUT = withApiAuth<EmptyContext>(
 // List archived workers
 export const GET = withApiAuth<EmptyContext>(
   { permissions: [Permission.VIEW_ARCHIVE], auditAction: 'ARCHIVED_WORKERS_VIEW' },
-  async ({ req }) => {
+  async () => {
     try {
       const archivedWorkers = await prisma.archivedWorker.findMany({
         orderBy: { archivedAt: 'desc' }
