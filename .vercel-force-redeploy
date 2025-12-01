@@ -1,3 +1,0 @@
-# Force Vercel Redeploy
-Timestamp: 2025-11-12T12:00:00Z
-Reason: Fix worker form validations - ensure clean deployment

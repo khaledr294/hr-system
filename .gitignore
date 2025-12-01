@@ -30,8 +30,16 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files - NEVER commit these!
+.env
+.env.*
+.env.local
+.env.development
+.env.production
+.env.backup
+.env.tunnel
+.env.vercel
+!.env.example
 
 # vercel
 .vercel
@@ -44,5 +52,31 @@ next-env.d.ts
 /dist
 /src/generated/prisma
 
-.vercel
-.env*.local
+# Backup files
+*.backup
+*.bak
+backup_*.json
+
+# Sensitive files
+*credentials*
+*secrets*
+*.key
+*.pem
+*.p12
+
+# Test files
+test-*.js
+test-*.mjs
+test-*.ts
+test-*.ps1
+
+# SQL files (except migrations)
+/*.sql
+
+# IDE
+.idea/
+.vscode/settings.json
+
+# Logs
+logs/
+*.log

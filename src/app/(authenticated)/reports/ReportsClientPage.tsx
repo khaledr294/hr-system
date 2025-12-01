@@ -540,7 +540,7 @@ export default function ReportsPage() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
-        className="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-lg shadow-sm border border-purple-200"
+        className="bg-linear-to-r from-purple-50 to-indigo-50 p-6 rounded-lg shadow-sm border border-purple-200"
       >
         <div className="flex items-center gap-2 mb-4">
           <Users className="text-purple-600" size={24} />

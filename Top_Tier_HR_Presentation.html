@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart HR SaaS | عرض تقديمي للعملاء</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <style>
+    :root {
+      --bg: #050b18;
+      --surface: rgba(255,255,255,0.04);
+      --surface-strong: rgba(10,13,40,0.9);
+      --border: rgba(255,255,255,0.08);
+      --primary: #8b5cf6;
+      --secondary: #22d3ee;
+      --accent: #f472b6;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --success: #4ade80;
+      --warning: #facc15;
+      font-size: 16px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Cairo', sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 20%, rgba(136, 84, 247, 0.25), transparent 45%),
+        radial-gradient(circle at 80% 0%, rgba(34, 211, 238, 0.2), transparent 40%),
+        var(--bg);
+    }
+    img { max-width: 100%; display: block; }
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+    header.hero {
+      background: linear-gradient(135deg, rgba(139,92,246,0.75), rgba(34,211,238,0.65));
+      border-radius: 32px;
+      padding: 3.5rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 25px 60px rgba(5,11,24,0.55);
+    }
+    header.hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('data:image/svg+xml,%3Csvg width="300" height="300" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"%3E%3Cdefs%3E%3ClinearGradient id="g" x1="0%25" y1="0%25" x2="100%25" y2="100%25"%3E%3Cstop stop-color="%23ffffff" stop-opacity="0.12" offset="0%25"/%3E%3Cstop stop-color="%23ffffff" stop-opacity="0" offset="100%25"/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx="150" cy="150" r="120" stroke="url(%23g)" stroke-width="2" fill="none"/%3E%3C/svg%3E');
+      opacity: .35;
+    }
+    header.hero h1 { font-size: 3rem; margin: 0; }
+    header.hero p {
+      margin: 1rem 0 2rem;
+      font-size: 1.2rem;
+      max-width: 600px;
+    }
+    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 0.85rem 1.8rem;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      color: #0f172a;
+      background: #fff;
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+    .btn.secondary {
+      background: rgba(255,255,255,0.18);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.35);
+    }
+    .btn:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0,0,0,0.2); }
+    .hero-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      margin-top: 2.5rem;
+    }
+    .metric-card {
+      background: rgba(255,255,255,0.12);
+      border-radius: 22px;
+      padding: 1rem;
+      text-align: center;
+      backdrop-filter: blur(6px);
+    }
+    .metric-card strong { display: block; font-size: 2rem; }
+
+    section {
+      margin-top: 4rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 2.5rem;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    }
+    section h2 {
+      margin-top: 0;
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .tagline { color: var(--muted); margin-top: -1rem; margin-bottom: 2rem; }
+
+    .value-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+    }
+    .value-card {
+      background: var(--surface-strong);
+      border-radius: 22px;
+      padding: 1.5rem;
+      border: 1px solid var(--border);
+      min-height: 180px;
+    }
+    .value-card i { font-size: 1.8rem; color: var(--secondary); }
+    .value-card h3 { margin: 0.7rem 0 0.5rem; font-size: 1.3rem; }
+    .value-card p { color: var(--muted); margin: 0; line-height: 1.7; }
+
+    .split {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px,1fr));
+      gap: 2rem;
+      align-items: start;
+    }
+    .feature-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1rem; }
+    .feature-list li {
+      display: flex;
+      gap: 1rem;
+      padding: 1.2rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 18px;
+      border: 1px solid var(--border);
+    }
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      display: grid;
+      place-items: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .feature-body strong { font-size: 1.05rem; display: block; }
+    .feature-body span { color: var(--muted); }
+
+    .shot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+    .shot-card {
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+      min-height: 220px;
+      background: radial-gradient(circle at top, rgba(139,92,246,0.35), rgba(2,6,23,0.95));
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .shot-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: var(--shot);
+      background-size: cover;
+      background-position: center;
+      opacity: 0.92;
+    }
+    .shot-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(160deg, rgba(5,11,24,0.05), rgba(5,11,24,0.75));
+    }
+    .shot-label {
+      position: absolute;
+      inset: auto 0 0;
+      padding: 1.2rem;
+      z-index: 2;
+      backdrop-filter: blur(6px);
+      background: linear-gradient(90deg, rgba(5,11,24,0.75), rgba(5,11,24,0.05));
+    }
+    .shot-label h4 { margin: 0 0 0.4rem; }
+    .shot-label p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+
+    .kpi-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    .kpi-card {
+      padding: 1.5rem;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+    }
+    .kpi-card span { color: var(--muted); font-size: 0.9rem; }
+    .kpi-card strong { font-size: 2rem; display: block; margin-top: 0.5rem; }
+
+    .timeline {
+      border-right: 3px solid rgba(255,255,255,0.1);
+      padding-right: 1.5rem;
+      margin-right: 1rem;
+    }
+    .timeline-step { margin-bottom: 1.5rem; position: relative; }
+    .timeline-step::after {
+      content: '';
+      position: absolute;
+      top: 0.3rem;
+      right: -2.1rem;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--secondary);
+    }
+
+    .cta-panel {
+      margin-top: 4rem;
+      padding: 3rem;
+      border-radius: 30px;
+      background: linear-gradient(120deg, rgba(139,92,246,0.9), rgba(244,114,182,0.85));
+      text-align: center;
+      box-shadow: 0 30px 60px rgba(8,7,17,0.4);
+    }
+    .cta-panel h2 { justify-content: center; }
+    .cta-panel p { max-width: 640px; margin: 0 auto 1.8rem; color: #fde68a; }
+
+    footer { text-align: center; margin: 3rem 0 1rem; color: var(--muted); font-size: 0.9rem; }
+
+    @media (max-width: 640px) {
+      header.hero { padding: 2.4rem; }
+      section { padding: 1.8rem; }
+      .hero-actions { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <h1>Top Tier HR SaaS</h1>
+      <p>منصة الموارد البشرية الموجهة لشركات الاستقدام لتشغيل كل ما يتعلق بالعمالة، العقود، العملاء، الرواتب، والأرشفة في تجربة عربية مذهلة مدعومة بالبيانات.</p>
+      <div class="hero-actions">
+      </div>
+      <div class="hero-metrics">
+        <div class="metric-card"><span>العقود النشطة</span><strong>25</strong><small>تمت متابعتها يوميًا</small></div>
+        <div class="metric-card"><span>العملاء</span><strong>29</strong><small>أفضل العملاء في صفحة واحدة</small></div>
+        <div class="metric-card"><span>العاملات</span><strong>32</strong><small>منسقات حسب الحالة والجنسية</small></div>
+        <div class="metric-card"><span>الاستجابة</span><strong>90%</strong><small>تمت آليًا عبر الإشعارات</small></div>
+      </div>
+    </header>
+
+    <section id="value">
+      <h2><i class="fa-solid fa-star"></i> عرض القيمة</h2>
+      <p class="tagline">كل ما يحتاجه فريق الاستقدام في لوحة تحكم واحدة تُحدث البيانات لحظيًا.</p>
+      <div class="value-grid">
+        <div class="value-card">
+          <i class="fa-solid fa-diagram-project"></i>
+          <h3>تشغيل شامل</h3>
+          <p>إدارة العمالة، العملاء، العقود، الباقات، وتسليم الرواتب بدون مغادرة الشاشة.</p>
+        </div>
+        <div class="value-card">
+          <i class="fa-solid fa-chart-line"></i>
+          <h3>قرارات مدعومة بالبيانات</h3>
+          <p>لوحات مراقبة حية وتقارير قابلة للتصدير (PDF/Excel) تشخص الأداء المالي والتشغيلي.</p>
+        </div>
+        <div class="value-card">
+          <i class="fa-solid fa-lock"></i>
+          <h3>حوكمة وأمان</h3>
+          <p>نظام صلاحيات RBAC بـ 33 صلاحية، سجل نشاط، ونسخ احتياطية لحظية.</p>
+        </div>
+        <div class="value-card">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <h3>تجربة مذهلة</h3>
+          <p>واجهة عربية كاملة، تصميم متجاوب، وتكامل مع مولدات العقود Word.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="operations">
+      <h2><i class="fa-solid fa-layer-group"></i> التميز التشغيلي</h2>
+      <div class="split">
+        <ul class="feature-list">
+          <li>
+            <div class="feature-icon"><i class="fa-solid fa-users"></i></div>
+            <div class="feature-body">
+              <strong>لوحة العمالة الذكية</strong>
+              <span>بحث في جميع الأعمدة، فلاتر جنسية وحالة، وحجز العاملات بضغطة واحدة.</span>
+            </div>
+          </li>
+          <li>
+            <div class="feature-icon"><i class="fa-solid fa-user-tag"></i></div>
+            <div class="feature-body">
+              <strong>المسميات الوظيفية والصلاحيات</strong>
+              <span>إسناد 35 صلاحية تفصيلية لكل دور وظيفي مع تقارير عن استخدام الصلاحيات.</span>
+            </div>
+          </li>
+          <li>
+            <div class="feature-icon"><i class="fa-solid fa-chart-column"></i></div>
+            <div class="feature-body">
+              <strong>إدارة الباقات والبونص</strong>
+              <span>تعريف الباقات وتعيين قيمة البونص للمسوقين آليًا من شاشة واحدة.</span>
+            </div>
+          </li>
+          <li>
+            <div class="feature-icon"><i class="fa-solid fa-file-signature"></i></div>
+            <div class="feature-body">
+              <strong>مولد العقود الذكي</strong>
+              <span>رفع قوالب Word، دمج البيانات تلقائيًا، وتوليد ملفات جاهزة للتوقيع.</span>
+            </div>
+          </li>
+        </ul>
+        <div>
+          <div class="kpi-card" style="margin-bottom: 1rem;">
+            <span>معدل أتمتة العمليات</span>
+            <strong>82%</strong>
+            <p>من إنشاء العقد وحتى تسليم الرواتب يتم دون تدخل يدوي.</p>
+          </div>
+          <div class="kpi-card timeline">
+            <div class="timeline-step">
+              <strong>دقيقة 0</strong>
+              <p class="tagline">إضافة عاملة أو عميل جديد.</p>
+            </div>
+            <div class="timeline-step">
+              <strong>دقيقة 5</strong>
+              <p class="tagline">إنشاء عقد وربطه بالباقات المناسبة.</p>
+            </div>
+            <div class="timeline-step" style="margin-bottom:0;">
+              <strong>دقيقة 7</strong>
+              <p class="tagline">جدولة الرواتب والإشعارات تلقائيًا.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <section id="finance">
+      <h2><i class="fa-solid fa-coins"></i> الذكاء المالي</h2>
+      <div class="split">
+        <div>
+          <div class="kpi-cards">
+            <div class="kpi-card"><span>إجمالي الرواتب</span><strong>5,801 ر.س</strong><p>شهر ديسمبر 2025</p></div>
+            <div class="kpi-card"><span>إجمالي الإيرادات</span><strong>70,800 ر.س</strong><p>مع تفصيل حسب الباقات.</p></div>
+            <div class="kpi-card"><span>البونص المستحق</span><strong>950 ر.س</strong><p>مسوقين مؤهلين حسب إعدادات الباقات.</p></div>
+          </div>
+        </div>
+        <div>
+          <h3>لماذا يعشق المدير المالي Smart HR؟</h3>
+          <ul class="feature-list">
+            <li>
+              <div class="feature-icon"><i class="fa-solid fa-calendar-check"></i></div>
+              <div class="feature-body"><strong>جدولة تلقائية</strong><span>كل عقد يحوّل إلى جدول رواتب آلي مع تذكير قبل الاستحقاق.</span></div>
+            </li>
+            <li>
+              <div class="feature-icon"><i class="fa-solid fa-receipt"></i></div>
+              <div class="feature-body"><strong>قوالب جاهزة لإيصالات الرواتب</strong><span>تصدير PDF مختوم أو Excel للتدقيق.</span></div>
+            </li>
+            <li>
+              <div class="feature-icon"><i class="fa-solid fa-file-import"></i></div>
+              <div class="feature-body"><strong>إدارة الباقات</strong><span>إنشاء باقة أو خدمة جديدة مع مدة وسعر افتراضي خلال ثوانٍ.</span></div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="governance">
+      <h2><i class="fa-solid fa-shield-halved"></i> الأمان والحوكمة</h2>
+      <div class="value-grid">
+        <div class="value-card">
+          <i class="fa-solid fa-database"></i>
+          <h3>نسخ احتياطي واستعادة</h3>
+          <p>إنشاء نسخ احتياطية آلية ويومية مع إمكانية التنزيل أو الاستعادة من لوحة واحدة.</p>
+        </div>
+        <div class="value-card">
+          <i class="fa-solid fa-clipboard-list"></i>
+          <h3>سجل نشاط لحظي</h3>
+          <p>تتبع كل عملية (عرض تقرير، تعديل عقد، حذف مستخدم) مع الطابع الزمني.</p>
+        </div>
+        <div class="value-card">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <h3>بحث متقدم</h3>
+          <p>محرّك بحث يقرأ كل الحقول داخل العمالة، العملاء، العقود، وسجلات الأرشيف.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="plans">
+      <h2><i class="fa-solid fa-rocket"></i> مسار الانضمام</h2>
+      <div class="split">
+        <div>
+          <div class="timeline-step"><strong>1. جلسة التعارف</strong><p class="tagline">مشاركة شاشات حية + استعراض حالاتكم الحالية.</p></div>
+          <div class="timeline-step"><strong>2. تهيئة البيانات</strong><p class="tagline">استيراد العاملات والعملاء والعقود خلال 48 ساعة.</p></div>
+          <div class="timeline-step"><strong>3. تدريب الفرق</strong><p class="tagline">جلسة تدريب للمسوقين، الموارد البشرية، والمالية.</p></div>
+          <div class="timeline-step"><strong>4. الإطلاق الفعلي</strong><p class="tagline">دعم مباشر لمدة أسبوعين مع لوحات مراقبة للأداء.</p></div>
+        </div>
+        <div class="kpi-card">
+          <span>نموذج الاشتراك المفضل</span>
+          <strong>اشتراك سنوي</strong>
+          <p>يشمل التحديثات والنسخ الاحتياطية والدعم العربي 7/24.</p>
+          <hr style="border-color: rgba(255,255,255,0.08); margin: 1rem 0;">
+          <p><i class="fa-solid fa-check"></i> حسابات غير محدودة للمستخدمين.</p>
+          <p><i class="fa-solid fa-check"></i> تكامل مع أدوات العقود الإلكترونية.</p>
+          <p><i class="fa-solid fa-check"></i> بنية تحتية سحابية PostgreSQL.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="cta-panel">
+      <h2><i class="fa-solid fa-bolt"></i> جاهزون لرقمنة عمليات الاستقدام لديكم؟</h2>
+      <p>امنح فريقك منصة موحدة تتحدث بالأرقام، وتقلل الأخطاء، وتزيد سرعة إبرام العقود. نحن نرافقكم من أول عقد وحتى أرشفة آخر سجل.</p>
+      <div class="hero-actions" style="justify-content: center;">
+      </div>
+    </div>
+
+    <footer>
+       Top Tier HR © 2025 — منصة لإدارة عمليات تأجير العمالة من الألف إلى الياء.
+    </footer>
+  </div>
+</body>
+</html>
