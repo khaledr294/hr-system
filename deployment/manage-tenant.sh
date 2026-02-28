@@ -129,11 +129,18 @@ case "$ACTION" in
     [[ -z "$TENANT_ID" ]] && { echo "❌ --tenant-id required"; exit 1; }
     TENANT_DIR="$TENANTS_DIR/$TENANT_ID"
     echo "🔄 Updating $TENANT_ID..."
+    
+    # Run migrations via temporary container
+    source "$TENANT_DIR/.env"
+    docker run --rm \
+      -e "DATABASE_URL=${DATABASE_URL}" \
+      -v "${PROJECT_DIR}/prisma:/app/prisma" \
+      --network host \
+      node:20-alpine sh -c "npm install -g prisma@6 && prisma migrate deploy --schema /app/prisma/schema.prisma" 2>/dev/null || true
+    
+    # Restart app container
     cd "$TENANT_DIR"
-    docker compose pull 2>/dev/null || true
     docker compose up -d
-    sleep 5
-    docker exec "hr-${TENANT_ID}" sh -c "npx prisma migrate deploy" || true
     echo "✅ Updated."
     ;;
 
@@ -148,9 +155,17 @@ case "$ACTION" in
       tid=$(jq -r '.tenantId' "$meta")
       echo "  → Updating $tid..."
       cd "$TENANTS_DIR/$tid"
+      
+      # Run migrations
+      source "$TENANTS_DIR/$tid/.env"
+      docker run --rm \
+        -e "DATABASE_URL=${DATABASE_URL}" \
+        -v "${PROJECT_DIR}/prisma:/app/prisma" \
+        --network host \
+        node:20-alpine sh -c "npm install -g prisma@6 && prisma migrate deploy --schema /app/prisma/schema.prisma" 2>/dev/null || true
+      
       docker compose up -d
       sleep 3
-      docker exec "hr-${tid}" sh -c "npx prisma migrate deploy" 2>/dev/null || true
     done
     echo "✅ All tenants updated."
     ;;

@@ -140,16 +140,23 @@ sleep 10
 
 # ── 4. Run migrations ────────────────────────────────────────
 echo "📚 Running database migrations..."
-docker exec "hr-${TENANT_ID}" sh -c "npx prisma migrate deploy"
+docker run --rm \
+  -e "DATABASE_URL=postgresql://postgres:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}?schema=public" \
+  -v "${PROJECT_DIR}/prisma:/app/prisma" \
+  --network host \
+  node:20-alpine sh -c "npm install -g prisma@6 && prisma migrate deploy --schema /app/prisma/schema.prisma"
 
 # ── 5. Seed tenant data (admin user + settings) ──────────────
 echo "🌱 Seeding tenant data..."
-docker exec "hr-${TENANT_ID}" sh -c \
-  "SEED_COMPANY_NAME='$COMPANY_NAME' \
-   SEED_ADMIN_EMAIL='$ADMIN_EMAIL' \
-   SEED_ADMIN_PASSWORD='$ADMIN_PASSWORD' \
-   SEED_TRIAL_DAYS='$TRIAL_DAYS' \
-   node scripts/create-tenant-admin.js"
+docker run --rm \
+  -e "DATABASE_URL=postgresql://postgres:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}?schema=public" \
+  -e "SEED_COMPANY_NAME=${COMPANY_NAME}" \
+  -e "SEED_ADMIN_EMAIL=${ADMIN_EMAIL}" \
+  -e "SEED_ADMIN_PASSWORD=${ADMIN_PASSWORD}" \
+  -e "SEED_TRIAL_DAYS=${TRIAL_DAYS}" \
+  -v "${PROJECT_DIR}:/app" \
+  --network host \
+  node:20-alpine sh -c "cd /app && npm install --omit=dev 2>/dev/null && npx ts-node scripts/create-tenant-admin.ts"
 
 # ── 6. Configure Nginx ───────────────────────────────────────
 echo "🌐 Configuring Nginx for $DOMAIN"

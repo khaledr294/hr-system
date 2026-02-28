@@ -30,7 +30,7 @@ export default async function TrialExpiredPage() {
   return (
     <div
       dir="rtl"
-      className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center p-4"
+      className="min-h-screen bg-linear-to-b from-gray-50 to-gray-100 flex items-center justify-center p-4"
     >
       <div className="max-w-lg w-full bg-white rounded-2xl shadow-xl p-8 text-center space-y-6">
         {/* Icon */}
