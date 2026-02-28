@@ -285,6 +285,11 @@ model SystemSettings {
   enableActivityLogging     Boolean  @default(true)
   marketerBonusPackages     String?  @db.Text // JSON array of eligible package names
   marketerBonusAmount       Int      @default(50) // Default bonus amount per contract
+  // Trial & Subscription
+  trialStartDate            DateTime?
+  trialEndDate              DateTime?
+  isTrialActive             Boolean  @default(true)
+  subscriptionStatus        String   @default("trial") // trial | active | expired | suspended
   createdAt                 DateTime @default(now())
   updatedAt                 DateTime @updatedAt
 }

@@ -49,6 +49,14 @@ export default async function proxy(request: NextRequest) {
     return new NextResponse("Not Found", { status: 404 });
   }
 
+  // Trial/subscription check — redirect expired tenants (except to trial-expired and auth pages)
+  if (!pathname.startsWith("/trial-expired") && !pathname.startsWith("/auth")) {
+    const trialStatus = request.cookies.get("x-subscription-status")?.value;
+    if (trialStatus === "expired" || trialStatus === "suspended") {
+      return NextResponse.redirect(new URL("/trial-expired", request.url));
+    }
+  }
+
   // Create response with security headers
   const response = NextResponse.next();
 

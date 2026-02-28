@@ -4,6 +4,7 @@ import { Permission } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { hasAllPermissions, hasAnyPermission } from "@/lib/permissions";
 import { createLog } from "@/lib/logger";
+import { getTrialStatus } from "@/lib/trial-guard";
 
 export type ApiGuardMode = "all" | "any";
 
@@ -108,6 +109,25 @@ export function withApiAuth<TContext = Record<string, never>>(
         );
         return addSecurityHeaders(
           NextResponse.json({ error: "Forbidden" }, { status: 403 })
+        );
+      }
+    }
+
+    // Trial/subscription enforcement — block writes when expired
+    const writeMethods = ["POST", "PUT", "PATCH", "DELETE"];
+    if (writeMethods.includes(req.method)) {
+      const trialStatus = await getTrialStatus();
+      if (trialStatus.isReadOnly) {
+        return addSecurityHeaders(
+          NextResponse.json(
+            {
+              error: "انتهت فترة التجربة — الوضع للقراءة فقط",
+              code: "TRIAL_EXPIRED",
+              status: trialStatus.status,
+              daysRemaining: trialStatus.daysRemaining,
+            },
+            { status: 403 }
+          )
         );
       }
     }

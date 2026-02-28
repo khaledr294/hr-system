@@ -89,6 +89,27 @@ async function main() {
   await ensureJobTitles()
   console.log('✅ Job titles created/updated\n')
 
+  // Ensure SystemSettings exists with trial config from env
+  const trialDays = parseInt(process.env.SEED_TRIAL_DAYS || '0', 10)
+  const companyName = process.env.SEED_COMPANY_NAME || 'شركة ساعد للإستقدام'
+  
+  const trialData = trialDays > 0 ? {
+    trialStartDate: new Date(),
+    trialEndDate: new Date(Date.now() + trialDays * 86_400_000),
+    isTrialActive: true,
+    subscriptionStatus: 'trial',
+  } : {
+    subscriptionStatus: 'active',
+    isTrialActive: false,
+  }
+
+  await prisma.systemSettings.upsert({
+    where: { id: 'system' },
+    update: { companyName, ...trialData },
+    create: { id: 'system', companyName, ...trialData },
+  })
+  console.log(`✅ SystemSettings configured (company: ${companyName}, trial: ${trialDays > 0 ? trialDays + ' days' : 'none — active subscription'})\n`)
+
   // Note: User accounts should be created through the admin panel
   // No default test accounts are created in seed
 
